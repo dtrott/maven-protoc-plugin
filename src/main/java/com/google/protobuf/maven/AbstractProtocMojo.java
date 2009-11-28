@@ -210,7 +210,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
           uncompressedCopy.getParentFile().mkdirs();
           copyStreamToFile(new RawInputStreamFacade(classpathJar
               .getInputStream(jarEntry)), uncompressedCopy);
-          protoDirectories.add(uncompressedCopy);
+          protoDirectories.add(uncompressedCopy.getParentFile());
         }
       }
 
