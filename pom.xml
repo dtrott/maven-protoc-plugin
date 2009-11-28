@@ -16,12 +16,17 @@
     </scm>
 
     <distributionManagement>
-        <downloadUrl>http://dtrott.truefreehost.com/maven2/repository/</downloadUrl>
+        <downloadUrl>http://maven.davidtrott.com/repository</downloadUrl>
         <repository>
-            <id>truefreehost</id>
-            <name>Truefreehost Repository</name>
-            <url>ftp://ftp.truefreehost.com/htdocs/maven2/repository</url>
+            <id>dtrott-public</id>
+            <name>David Trott's Public Repository</name>
+            <url>ftp://maven.davidtrott.com/repository</url>
         </repository>
+        <snapshotRepository>
+            <id>dtrott-public</id>
+            <name>David Trott's Public Snapshot Repository</name>
+            <url>ftp://maven.davidtrott.com/snapshot</url>
+        </snapshotRepository>
     </distributionManagement>
 
     <build>
