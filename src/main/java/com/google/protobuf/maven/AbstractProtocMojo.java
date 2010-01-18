@@ -194,7 +194,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
 //      checkArgument(classpathElementFile.isFile(), "%s is not a file",
 //         classpathElementFile);
       // create the jar file. the constructor validates.
-			if (!classpathElementFile.isFile()) {
+			if (!classpathElementFile.isFile() || !classpathElementFile.canRead()) {
 				continue;
 			}
 			
