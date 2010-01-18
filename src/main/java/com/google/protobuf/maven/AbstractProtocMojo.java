@@ -191,9 +191,13 @@ abstract class AbstractProtocMojo extends AbstractMojo {
     }
     Set<File> protoDirectories = newHashSet();
     for (File classpathElementFile : classpathElementFiles) {
-      checkArgument(classpathElementFile.isFile(), "%s is not a file",
-          classpathElementFile);
+//      checkArgument(classpathElementFile.isFile(), "%s is not a file",
+//         classpathElementFile);
       // create the jar file. the constructor validates.
+			if (!classpathElementFile.isFile()) {
+				continue;
+			}
+			
       JarFile classpathJar = null;
       try {
         classpathJar = new JarFile(classpathElementFile);
