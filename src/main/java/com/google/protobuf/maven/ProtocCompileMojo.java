@@ -1,7 +1,6 @@
 package com.google.protobuf.maven;
 
 import com.google.common.collect.ImmutableList;
-
 import org.apache.maven.artifact.Artifact;
 
 import java.io.File;
@@ -21,44 +20,44 @@ import java.util.List;
 
 public final class ProtocCompileMojo extends AbstractProtocMojo {
 
-  /**
-   * The source directories containing the sources to be compiled.
-   *
-   * @parameter default-value="${basedir}/src/main/proto"
-   * @required
-   */
-  private File protoSourceRoot;
+    /**
+     * The source directories containing the sources to be compiled.
+     *
+     * @parameter default-value="${basedir}/src/main/proto"
+     * @required
+     */
+    private File protoSourceRoot;
 
-  /**
-   * This is the directory into which the {@code .java} will be created.
-   *
-   * @parameter default-value="${project.build.directory}/generated-sources/protoc"
-   * @required
-   */
-  private File outputDirectory;
+    /**
+     * This is the directory into which the {@code .java} will be created.
+     *
+     * @parameter default-value="${project.build.directory}/generated-sources/protoc"
+     * @required
+     */
+    private File outputDirectory;
 
-  @Override
-  protected List<Artifact> getDependencyArtifacts() {
-    // TODO(gak): maven-project needs generics
-    @SuppressWarnings("unchecked")
-    List<Artifact> compileArtifacts = project.getCompileArtifacts();
-    return compileArtifacts;
-  }
+    @Override
+    protected List<Artifact> getDependencyArtifacts() {
+        // TODO(gak): maven-project needs generics
+        @SuppressWarnings("unchecked")
+        List<Artifact> compileArtifacts = project.getCompileArtifacts();
+        return compileArtifacts;
+    }
 
-  @Override
-  protected File getOutputDirectory() {
-    return outputDirectory;
-  }
+    @Override
+    protected File getOutputDirectory() {
+        return outputDirectory;
+    }
 
-  @Override
-  protected File getProtoSourceRoot() {
-    return protoSourceRoot;
-  }
+    @Override
+    protected File getProtoSourceRoot() {
+        return protoSourceRoot;
+    }
 
-  @Override
-  protected void attachFiles() {
-    project.addCompileSourceRoot(outputDirectory.getAbsolutePath());
-    projectHelper.addResource(project, protoSourceRoot.getAbsolutePath(),
-        ImmutableList.of("**/*.proto"), ImmutableList.of());
-  }
+    @Override
+    protected void attachFiles() {
+        project.addCompileSourceRoot(outputDirectory.getAbsolutePath());
+        projectHelper.addResource(project, protoSourceRoot.getAbsolutePath(),
+                ImmutableList.of("**/*.proto"), ImmutableList.of());
+    }
 }
