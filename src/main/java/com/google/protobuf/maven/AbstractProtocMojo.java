@@ -24,6 +24,7 @@ import org.codehaus.plexus.util.cli.CommandLineException;
 import org.codehaus.plexus.util.io.RawInputStreamFacade;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
@@ -193,33 +194,38 @@ abstract class AbstractProtocMojo extends AbstractMojo {
     }
     Set<File> protoDirectories = newHashSet();
     for (File classpathElementFile : classpathElementFiles) {
-//      checkArgument(classpathElementFile.isFile(), "%s is not a file",
-//         classpathElementFile);
-      // create the jar file. the constructor validates.
-			if (!classpathElementFile.isFile() || !classpathElementFile.canRead()) {
-				continue;
+			if (classpathElementFile.isFile() && classpathElementFile.canRead() ) {
+	      JarFile classpathJar = null;
+	      try {
+	        classpathJar = new JarFile(classpathElementFile);
+	      } catch (IOException e) {
+	        throw new IllegalArgumentException(format(
+	            "%s was not a readable artifact", classpathElementFile));
+	      }
+	      for (JarEntry jarEntry : list(classpathJar.entries())) {
+	        final String jarEntryName = jarEntry.getName();
+	        if (jarEntry.getName().endsWith(PROTO_FILE_SUFFIX)) {
+	          final File uncompressedCopy =
+	              new File(new File(temporaryProtoFileDirectory, classpathJar
+	                  .getName()), jarEntryName);
+	          uncompressedCopy.getParentFile().mkdirs();
+	          copyStreamToFile(new RawInputStreamFacade(classpathJar
+	              .getInputStream(jarEntry)), uncompressedCopy);
+	          protoDirectories.add(uncompressedCopy.getParentFile());
+	        }
+	      }
+			} else if (classpathElementFile.isDirectory()) {
+				File[] protoFiles = classpathElementFile.listFiles(new FilenameFilter() {
+					
+					public boolean accept(File dir, String name)
+					{
+						return name.endsWith(PROTO_FILE_SUFFIX);
+					}
+				});
+				if (protoFiles.length > 0) {
+					protoDirectories.add(classpathElementFile);
+				}
 			}
-			
-      JarFile classpathJar = null;
-      try {
-        classpathJar = new JarFile(classpathElementFile);
-      } catch (IOException e) {
-        throw new IllegalArgumentException(format(
-            "%s was not a readable artifact", classpathElementFile));
-      }
-      for (JarEntry jarEntry : list(classpathJar.entries())) {
-        final String jarEntryName = jarEntry.getName();
-        if (jarEntry.getName().endsWith(PROTO_FILE_SUFFIX)) {
-          final File uncompressedCopy =
-              new File(new File(temporaryProtoFileDirectory, classpathJar
-                  .getName()), jarEntryName);
-          uncompressedCopy.getParentFile().mkdirs();
-          copyStreamToFile(new RawInputStreamFacade(classpathJar
-              .getInputStream(jarEntry)), uncompressedCopy);
-          protoDirectories.add(uncompressedCopy.getParentFile());
-        }
-      }
-
     }
     forceDeleteOnExit(temporaryProtoFileDirectory);
     return ImmutableSet.copyOf(protoDirectories);
