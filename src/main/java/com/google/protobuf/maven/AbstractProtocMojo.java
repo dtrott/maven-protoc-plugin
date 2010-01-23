@@ -115,6 +115,8 @@ abstract class AbstractProtocMojo extends AbstractMojo {
                   .build();
           final int exitStatus = protoc.compile();
           if (exitStatus != 0) {
+            getLog().error("Protoc failed output: " + protoc.getOutput());
+            getLog().error("Protoc failed error: " + protoc.getError());
             throw new MojoFailureException(
                 "Protoc did not exit cleanly.  Review output for more information.");
           }

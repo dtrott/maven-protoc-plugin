@@ -6,18 +6,16 @@ import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newLinkedList;
 import static com.google.common.collect.Sets.newHashSet;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
+import java.io.File;
+import java.util.List;
+import java.util.Set;
 
 import org.codehaus.plexus.util.cli.CommandLineException;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
 import org.codehaus.plexus.util.cli.Commandline;
-import org.codehaus.plexus.util.cli.DefaultConsumer;
-import org.codehaus.plexus.util.cli.StreamConsumer;
 
-import java.io.File;
-import java.util.List;
-import java.util.Set;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * This class represents an invokable configuration of the {@code protoc}
@@ -33,6 +31,7 @@ final class Protoc {
   private final ImmutableSet<File> protoPathElements;
   private final ImmutableSet<File> protofiles;
   private final File javaOutputDirectory;
+  private final CommandLineUtils.StringStreamConsumer error, output;
 
   /**
    * Constructs a new instance. This should only be used by the {@link Builder}.
@@ -50,6 +49,8 @@ final class Protoc {
     this.protofiles = checkNotNull(protoFiles, "protoFiles");
     this.javaOutputDirectory =
         checkNotNull(javaOutputDirectory, "javaOutputDirectory");
+    this.error = new CommandLineUtils.StringStreamConsumer();
+    this.output = new CommandLineUtils.StringStreamConsumer();
   }
 
   /**
@@ -62,8 +63,6 @@ final class Protoc {
   public int compile() throws CommandLineException {
     Commandline cl = new Commandline(executable);
     cl.addArguments(buildProtocCommand().toArray(new String[] {}));
-    StreamConsumer output = new DefaultConsumer();
-    StreamConsumer error = new DefaultConsumer();
     return CommandLineUtils.executeCommandLine(cl, null, output, error);
   }
 
@@ -88,6 +87,22 @@ final class Protoc {
   }
 
   /**
+	 * @return the output
+	 */
+	public String getOutput()
+	{
+		return output.getOutput();
+	}
+
+	/**
+	 * @return the error
+	 */
+	public String getError()
+	{
+		return error.getOutput();
+	}
+
+	/**
    * This class builds {@link Protoc} instances.
    * 
    * @author gak@google.com (Gregory Kick)
