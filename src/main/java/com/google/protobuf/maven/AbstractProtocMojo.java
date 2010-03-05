@@ -31,6 +31,17 @@ import static org.codehaus.plexus.util.FileUtils.copyStreamToFile;
 import static org.codehaus.plexus.util.FileUtils.forceDeleteOnExit;
 import static org.codehaus.plexus.util.FileUtils.getFiles;
 
+/**
+ * Abstract Mojo implementation.
+ * <p/>
+ * This class is extended by {@link com.google.protobuf.maven.ProtocCompileMojo} and
+ * {@link com.google.protobuf.maven.ProtocTestCompileMojo} in order to override the specific configuration for
+ * compiling the main or test classes respectively.
+ *
+ * @author Gregory Kick
+ * @author David Trott
+ * @author Brice Figureau
+ */
 abstract class AbstractProtocMojo extends AbstractMojo {
 
     private static final String PROTO_FILE_SUFFIX = ".proto";
@@ -69,11 +80,11 @@ abstract class AbstractProtocMojo extends AbstractMojo {
     private File[] additionalProtopathElements = new File[]{};
 
     /**
-     * Since {@code protoc} cannot access jars, proto files in dependenceies are
+     * Since {@code protoc} cannot access jars, proto files in dependencies are
      * extracted to this location and deleted on exit. This directory is always
      * cleaned during execution.
      *
-     * @parameter expression="${java.io.tmpdir}/maven-protoc"
+     * @parameter expression="${project.build.directory}/protoc-dependencies"
      * @required
      */
     private File temporaryProtoFileDirectory;
