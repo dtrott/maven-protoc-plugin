@@ -2,6 +2,7 @@ package com.google.protobuf.maven;
 
 import com.google.common.collect.ImmutableSet;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.repository.DefaultArtifactRepository;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -90,6 +91,14 @@ abstract class AbstractProtocMojo extends AbstractMojo {
     private File temporaryProtoFileDirectory;
 
     /**
+     * This is the path to the local maven {@code repository}.
+     *
+     * @parameter default-value="${localRepository}"
+     * @required
+     */
+    private DefaultArtifactRepository localRepository;
+
+    /**
      * @parameter
      */
     private Set<String> includes = ImmutableSet.of(DEFAULT_INCLUDES);
@@ -130,7 +139,6 @@ abstract class AbstractProtocMojo extends AbstractMojo {
                     }
                     attachFiles();
                 }
-
             } catch (IOException e) {
                 throw new MojoExecutionException("An IO error occured", e);
             } catch (IllegalArgumentException e) {
@@ -192,7 +200,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
         Set<File> protoDirectories = newHashSet();
         for (File classpathElementFile : classpathElementFiles) {
             if (classpathElementFile.isFile() && classpathElementFile.canRead()) {
-                JarFile classpathJar = null;
+                JarFile classpathJar;
                 try {
                     classpathJar = new JarFile(classpathElementFile);
                 } catch (IOException e) {
@@ -203,8 +211,8 @@ abstract class AbstractProtocMojo extends AbstractMojo {
                     final String jarEntryName = jarEntry.getName();
                     if (jarEntry.getName().endsWith(PROTO_FILE_SUFFIX)) {
                         final File uncompressedCopy =
-                                new File(new File(temporaryProtoFileDirectory, classpathJar
-                                        .getName()), jarEntryName);
+                                new File(new File(temporaryProtoFileDirectory,
+                                        truncatePath(classpathJar.getName())), jarEntryName);
                         uncompressedCopy.getParentFile().mkdirs();
                         copyStreamToFile(new RawInputStreamFacade(classpathJar
                                 .getInputStream(jarEntry)), uncompressedCopy);
@@ -245,4 +253,31 @@ abstract class AbstractProtocMojo extends AbstractMojo {
         return ImmutableSet.copyOf(protoFiles);
     }
 
+    /**
+     * Truncates the path of jar files so that they are relative to the local repository.
+     *
+     * @param jarPath the full path of a jar file.
+     * @return the truncated path relative to the local repository or root of the drive.
+     */
+    String truncatePath(final String jarPath) {
+        String repository = localRepository.getBasedir().replace('\\', '/');
+        if (!repository.endsWith("/")) {
+            repository += "/";
+        }
+
+        String path = jarPath.replace('\\', '/');
+        int repositoryIndex = path.indexOf(repository);
+        if (repositoryIndex != -1) {
+            path = path.substring(repositoryIndex + repository.length());
+        }
+
+        // By now the path should be good, but do a final check to fix windows machines.
+        int colonIndex = path.indexOf(':');
+        if (colonIndex != -1) {
+            // 2 = :\ in C:\
+            path = path.substring(colonIndex + 2);
+        }
+
+        return path;
+    }
 }
