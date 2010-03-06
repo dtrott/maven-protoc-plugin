@@ -67,8 +67,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
     protected MavenProjectHelper projectHelper;
 
     /**
-     * This is the path to the {@code protoc} executable. By default it will
-     * search the {@code $PATH}.
+     * This is the path to the {@code protoc} executable. By default it will search the {@code $PATH}.
      *
      * @parameter default-value="protoc"
      * @required
@@ -78,12 +77,11 @@ abstract class AbstractProtocMojo extends AbstractMojo {
     /**
      * @parameter
      */
-    private File[] additionalProtopathElements = new File[]{};
+    private File[] additionalProtoPathElements = new File[]{};
 
     /**
-     * Since {@code protoc} cannot access jars, proto files in dependencies are
-     * extracted to this location and deleted on exit. This directory is always
-     * cleaned during execution.
+     * Since {@code protoc} cannot access jars, proto files in dependencies are extracted to this location
+     * and deleted on exit. This directory is always cleaned during execution.
      *
      * @parameter expression="${project.build.directory}/protoc-dependencies"
      * @required
@@ -120,34 +118,38 @@ abstract class AbstractProtocMojo extends AbstractMojo {
                 if (protoFiles.isEmpty()) {
                     getLog().info("No proto files to compile.");
                 } else {
-                    ImmutableSet<File> derivedProtopathElements =
-                            makeProtopathFromJars(temporaryProtoFileDirectory, getDependencyArtifactFiles());
+                    ImmutableSet<File> derivedProtoPathElements =
+                            makeProtoPathFromJars(temporaryProtoFileDirectory, getDependencyArtifactFiles());
                     final File outputDirectory = getOutputDirectory();
                     outputDirectory.mkdirs();
+
+                    // Quick fix to fix issues with two mvn installs in a row (ie no clean)
+                    cleanDirectory(outputDirectory);
+
                     Protoc protoc = new Protoc.Builder(protocExecutable, outputDirectory)
-                            .addProtopathElement(protoSourceRoot)
-                            .addProtopathElements(derivedProtopathElements)
-                            .addProtopathElements(asList(additionalProtopathElements))
+                            .addProtoPathElement(protoSourceRoot)
+                            .addProtoPathElements(derivedProtoPathElements)
+                            .addProtoPathElements(asList(additionalProtoPathElements))
                             .addProtoFiles(protoFiles)
                             .build();
                     final int exitStatus = protoc.compile();
                     if (exitStatus != 0) {
-                        getLog().error("Protoc failed output: " + protoc.getOutput());
-                        getLog().error("Protoc failed error: " + protoc.getError());
+                        getLog().error("protoc failed output: " + protoc.getOutput());
+                        getLog().error("protoc failed error: " + protoc.getError());
                         throw new MojoFailureException(
-                                "Protoc did not exit cleanly.  Review output for more information.");
+                                "protoc did not exit cleanly. Review output for more information.");
                     }
                     attachFiles();
                 }
             } catch (IOException e) {
                 throw new MojoExecutionException("An IO error occured", e);
             } catch (IllegalArgumentException e) {
-                throw new MojoFailureException("Protoc failed to execute because: " + e.getMessage(), e);
+                throw new MojoFailureException("protoc failed to execute because: " + e.getMessage(), e);
             } catch (CommandLineException e) {
-                throw new MojoExecutionException("An error occured while invoking protoc.", e);
+                throw new MojoExecutionException("An error occurred while invoking protoc.", e);
             }
         } else {
-            getLog().info(format("%s does not exist.  Review the configuration or consider disabling the plugin.",
+            getLog().info(format("%s does not exist. Review the configuration or consider disabling the plugin.",
                     protoSourceRoot));
         }
     }
@@ -190,7 +192,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
     /**
      * @throws IOException
      */
-    ImmutableSet<File> makeProtopathFromJars(File temporaryProtoFileDirectory, Iterable<File> classpathElementFiles)
+    ImmutableSet<File> makeProtoPathFromJars(File temporaryProtoFileDirectory, Iterable<File> classpathElementFiles)
             throws IOException {
         checkNotNull(classpathElementFiles, "classpathElementFiles");
         // clean the temporary directory to ensure that stale files aren't used
@@ -200,6 +202,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
         Set<File> protoDirectories = newHashSet();
         for (File classpathElementFile : classpathElementFiles) {
             if (classpathElementFile.isFile() && classpathElementFile.canRead()) {
+                // create the jar file. the constructor validates.
                 JarFile classpathJar;
                 try {
                     classpathJar = new JarFile(classpathElementFile);

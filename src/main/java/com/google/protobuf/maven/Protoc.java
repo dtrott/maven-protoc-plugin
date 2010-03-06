@@ -184,7 +184,7 @@ final class Protoc {
          * @throws IllegalArgumentException If {@code protpathElement} is not a
          *                                  directory.
          */
-        public Builder addProtopathElement(File protopathElement) {
+        public Builder addProtoPathElement(File protopathElement) {
             checkNotNull(protopathElement);
             checkArgument(protopathElement.isDirectory());
             protopathElements.add(protopathElement);
@@ -192,11 +192,11 @@ final class Protoc {
         }
 
         /**
-         * @see #addProtopathElement(File)
+         * @see #addProtoPathElement(File)
          */
-        public Builder addProtopathElements(Iterable<File> protopathElements) {
+        public Builder addProtoPathElements(Iterable<File> protopathElements) {
             for (File protopathElement : protopathElements) {
-                addProtopathElement(protopathElement);
+                addProtoPathElement(protopathElement);
             }
             return this;
         }
