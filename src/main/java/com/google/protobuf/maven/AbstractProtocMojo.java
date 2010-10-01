@@ -2,7 +2,7 @@ package com.google.protobuf.maven;
 
 import com.google.common.collect.ImmutableSet;
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.repository.DefaultArtifactRepository;
+import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -95,7 +95,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
      * @parameter default-value="${localRepository}"
      * @required
      */
-    private DefaultArtifactRepository localRepository;
+    private ArtifactRepository localRepository;
 
     /**
      * Set this to {@code false} to disable hashing of dependent jar paths.
