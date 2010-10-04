@@ -214,8 +214,11 @@ abstract class AbstractProtocMojo extends AbstractMojo {
         }
         Set<File> protoDirectories = newHashSet();
         for (File classpathElementFile : classpathElementFiles) {
-        		// for some reason under IAM, we receive poms as dependent files
-            if (classpathElementFile.isFile() && classpathElementFile.canRead() && classpathElementFile.getName().endsWith(".jar")) {
+            // for some reason under IAM, we receive poms as dependent files
+            // I am excluding .xml rather than including .jar as there may be other extensions in use (sar, har, zip)
+            if (classpathElementFile.isFile() && classpathElementFile.canRead() &&
+                    !classpathElementFile.getName().endsWith(".xml")) {
+
                 // create the jar file. the constructor validates.
                 JarFile classpathJar;
                 try {
