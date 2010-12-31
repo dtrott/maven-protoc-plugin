@@ -59,7 +59,8 @@ final class Protoc {
      * @throws CommandLineException
      */
     public int compile() throws CommandLineException {
-        Commandline cl = new Commandline(executable);
+        Commandline cl = new Commandline();
+        cl.setExecutable(executable);
         cl.addArguments(buildProtocCommand().toArray(new String[]{}));
         return CommandLineUtils.executeCommandLine(cl, null, output, error);
     }
