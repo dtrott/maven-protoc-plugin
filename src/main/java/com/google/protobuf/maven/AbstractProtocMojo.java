@@ -128,12 +128,14 @@ abstract class AbstractProtocMojo extends AbstractMojo {
         if (protoSourceRoot.exists()) {
             try {
                 ImmutableSet<File> protoFiles = findProtoFilesInDirectory(protoSourceRoot);
+                final File outputDirectory = getOutputDirectory();
                 if (protoFiles.isEmpty()) {
                     getLog().info("No proto files to compile.");
+                } else if (lastModified(protoFiles) < outputDirectory.lastModified()) {
+                    getLog().info("Skipping compilation because target directory newer than sources.");
                 } else {
                     ImmutableSet<File> derivedProtoPathElements =
                             makeProtoPathFromJars(temporaryProtoFileDirectory, getDependencyArtifactFiles());
-                    final File outputDirectory = getOutputDirectory();
                     outputDirectory.mkdirs();
 
                     // Quick fix to fix issues with two mvn installs in a row (ie no clean)
@@ -165,6 +167,15 @@ abstract class AbstractProtocMojo extends AbstractMojo {
             getLog().info(format("%s does not exist. Review the configuration or consider disabling the plugin.",
                     protoSourceRoot));
         }
+    }
+
+    private long lastModified(ImmutableSet<File> protoFiles) {
+        long result = 0;
+        for (File file : protoFiles) {
+            if (file.lastModified() > result)
+                result = file.lastModified();
+        }
+        return result;
     }
 
     private void checkParameters() {
