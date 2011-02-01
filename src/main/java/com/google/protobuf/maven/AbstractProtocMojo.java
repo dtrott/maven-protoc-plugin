@@ -120,6 +120,16 @@ abstract class AbstractProtocMojo extends AbstractMojo {
     private Set<String> excludes = ImmutableSet.of();
 
     /**
+     * @parameter
+     */
+    private long staleMillis = 0;
+
+    /**
+     * @parameter
+     */
+    private boolean checkStaleness = false;
+
+    /**
      * Executes the mojo.
      */
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -129,9 +139,11 @@ abstract class AbstractProtocMojo extends AbstractMojo {
             try {
                 ImmutableSet<File> protoFiles = findProtoFilesInDirectory(protoSourceRoot);
                 final File outputDirectory = getOutputDirectory();
+                ImmutableSet<File> outputFiles = findGeneratedFilesInDirectory(getOutputDirectory());
+
                 if (protoFiles.isEmpty()) {
                     getLog().info("No proto files to compile.");
-                } else if (lastModified(protoFiles) < outputDirectory.lastModified()) {
+                } else if (checkStaleness && ((lastModified(protoFiles) + staleMillis) < lastModified(outputFiles))) {
                     getLog().info("Skipping compilation because target directory newer than sources.");
                 } else {
                     ImmutableSet<File> derivedProtoPathElements =
@@ -169,9 +181,19 @@ abstract class AbstractProtocMojo extends AbstractMojo {
         }
     }
 
-    private long lastModified(ImmutableSet<File> protoFiles) {
+    ImmutableSet<File> findGeneratedFilesInDirectory(File directory) throws IOException {
+        if (directory == null || !directory.isDirectory())
+            return ImmutableSet.of();
+
+        // TODO(gak): plexus-utils needs generics
+        @SuppressWarnings("unchecked")
+        List<File> javaFilesInDirectory = getFiles(directory, "**/*.java", null);
+        return ImmutableSet.copyOf(javaFilesInDirectory);
+    }
+
+    private long lastModified(ImmutableSet<File> files) {
         long result = 0;
-        for (File file : protoFiles) {
+        for (File file : files) {
             if (file.lastModified() > result)
                 result = file.lastModified();
         }
