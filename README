@@ -4,9 +4,8 @@
 
 A minimal configuration to invoke this plugin would be:
 
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.mycompany.example</groupId>
     <artifactId>example-protoc</artifactId>
@@ -46,7 +45,7 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         <dependency>
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java</artifactId>
-            <version>2.2.0</version>
+            <version>2.3.0</version>
         </dependency>
     </dependencies>
 </project>
@@ -77,4 +76,11 @@ plugin:
                     <url>http://maven.davidtrott.com/repository</url>
                 </pluginRepository>
             </pluginRepositories>  
+
+Normally this plug-in executes the protoc compilation on every execution
+this can be overriden by setting:
+                  <checkStaleness>true</checkStaleness>
+
+If you build on NFS you may also need the following setting:
+                  <staleMillis>10000</staleMillis>
 
