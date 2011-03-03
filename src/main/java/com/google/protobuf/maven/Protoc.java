@@ -28,9 +28,10 @@ import static com.google.common.collect.Sets.newHashSet;
 final class Protoc {
     private final String executable;
     private final ImmutableSet<File> protoPathElements;
-    private final ImmutableSet<File> protofiles;
+    private final ImmutableSet<File> protoFiles;
     private final File javaOutputDirectory;
-    private final CommandLineUtils.StringStreamConsumer error, output;
+    private final CommandLineUtils.StringStreamConsumer output;
+    private final CommandLineUtils.StringStreamConsumer error;
 
     /**
      * Constructs a new instance. This should only be used by the {@link Builder}.
@@ -45,7 +46,7 @@ final class Protoc {
                    ImmutableSet<File> protoFiles, File javaOutputDirectory) {
         this.executable = checkNotNull(executable, "executable");
         this.protoPathElements = checkNotNull(protoPath, "protoPath");
-        this.protofiles = checkNotNull(protoFiles, "protoFiles");
+        this.protoFiles = checkNotNull(protoFiles, "protoFiles");
         this.javaOutputDirectory = checkNotNull(javaOutputDirectory, "javaOutputDirectory");
         this.error = new CommandLineUtils.StringStreamConsumer();
         this.output = new CommandLineUtils.StringStreamConsumer();
@@ -79,7 +80,7 @@ final class Protoc {
             command.add("--proto_path=" + protoPathElement);
         }
         command.add("--java_out=" + javaOutputDirectory);
-        for (File protoFile : protofiles) {
+        for (File protoFile : protoFiles) {
             command.add(protoFile.toString());
         }
         return ImmutableList.copyOf(command);
