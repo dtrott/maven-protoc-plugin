@@ -145,6 +145,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
                     getLog().info("No proto files to compile.");
                 } else if (checkStaleness && ((lastModified(protoFiles) + staleMillis) < lastModified(outputFiles))) {
                     getLog().info("Skipping compilation because target directory newer than sources.");
+                    attachFiles();
                 } else {
                     ImmutableSet<File> derivedProtoPathElements =
                             makeProtoPathFromJars(temporaryProtoFileDirectory, getDependencyArtifactFiles());
