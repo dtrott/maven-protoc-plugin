@@ -73,7 +73,7 @@ final class Protoc {
      *
      * @return A list consisting of the executable followed by any arguments.
      */
-    ImmutableList<String> buildProtocCommand() {
+    public ImmutableList<String> buildProtocCommand() {
         final List<String> command = newLinkedList();
         // add the executable
         for (File protoPathElement : protoPathElements) {

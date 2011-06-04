@@ -1,5 +1,6 @@
 package com.google.protobuf.maven;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -19,6 +20,7 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.jar.JarEntry;
@@ -199,6 +201,40 @@ abstract class AbstractProtocMojo extends AbstractMojo {
                             .addProtoPathElements(asList(additionalProtoPathElements))
                             .addProtoFiles(protoFiles)
                             .build();
+
+                    if (getLog().isDebugEnabled()) {
+                        getLog().debug("Proto source root:");
+                        getLog().debug(" " + protoSourceRoot);
+
+                        getLog().debug("Derived proto paths:");
+                        for (File path : derivedProtoPathElements) {
+                            getLog().debug(" " + path);
+                        }
+
+                        getLog().debug("Additional proto paths:");
+                        for (File path : additionalProtoPathElements) {
+                            getLog().debug(" " + path);
+                        }
+
+                        getLog().debug("Executable: ");
+                        getLog().debug(' ' + protocExecutable);
+
+                        ImmutableList<String> cl = protoc.buildProtocCommand();
+                        if (cl != null && !cl.isEmpty()) {
+                            StringBuffer sb = new StringBuffer();
+                            for (Iterator<String> iterator = cl.iterator(); iterator.hasNext(); ) {
+                                sb.append(iterator.next());
+                                if (iterator.hasNext()) {
+                                    sb.append(' ');
+                                }
+                            }
+                            getLog().debug("Command line options:");
+                            getLog().debug(sb);
+                        }
+                    }
+
+                    getLog().info(format("Compiling %d proto file(s) to %s", protoFiles.size(), outputDirectory));
+
                     final int exitStatus = protoc.compile();
                     if (exitStatus != 0) {
                         getLog().error("protoc failed output: " + protoc.getOutput());
