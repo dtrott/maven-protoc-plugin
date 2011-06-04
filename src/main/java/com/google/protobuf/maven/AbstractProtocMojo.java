@@ -3,11 +3,14 @@ package com.google.protobuf.maven;
 import com.google.common.collect.ImmutableSet;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectHelper;
+import org.apache.maven.toolchain.Toolchain;
+import org.apache.maven.toolchain.ToolchainManager;
 import org.codehaus.plexus.util.cli.CommandLineException;
 import org.codehaus.plexus.util.io.RawInputStreamFacade;
 
@@ -60,6 +63,24 @@ abstract class AbstractProtocMojo extends AbstractMojo {
     protected MavenProject project;
 
     /**
+     * The current Maven Session Object.
+     *
+     * @parameter expression="${session}" default-value="${session}"
+     * @required
+     * @readonly
+     * @since 0.1.10
+     */
+    private MavenSession session;
+
+    /**
+     * An optional tool chain manager.
+     *
+     * @component
+     * @since 0.1.10
+     */
+    private ToolchainManager toolchainManager;
+
+    /**
      * A helper used to add resources to the project.
      *
      * @component
@@ -68,17 +89,16 @@ abstract class AbstractProtocMojo extends AbstractMojo {
     protected MavenProjectHelper projectHelper;
 
     /**
-     * This is the path to the {@code protoc} executable. By default it will search the {@code $PATH}.
+     * This is the path to the {@code protoc} executable.
      *
-     * @parameter default-value="protoc"
-     * @required
+     * @parameter
      */
     private String protocExecutable;
 
     /**
      * @parameter
      */
-    private File[] additionalProtoPathElements = new File[]{};
+    private File[] additionalProtoPathElements = new File[] {};
 
     /**
      * Since {@code protoc} cannot access jars, proto files in dependencies are extracted to this location
@@ -154,6 +174,25 @@ abstract class AbstractProtocMojo extends AbstractMojo {
                     // Quick fix to fix issues with two mvn installs in a row (ie no clean)
                     cleanDirectory(outputDirectory);
 
+                    //get toolchain from context
+                    Toolchain tc = toolchainManager.getToolchainFromBuildContext("protobuf", session); //NOI18N
+                    if (tc != null) {
+                        getLog().info("Toolchain in protobuf-plugin: " + tc);
+                        //when the executable to use is explicitly set by user in mojo's parameter, ignore toolchains.
+                        if (protocExecutable != null) {
+                            getLog().warn(
+                                    "Toolchains are ignored, 'protocExecutable' parameter is set to " + protocExecutable);
+                        } else {
+                            //assign the path to executable from toolchains
+                            protocExecutable = tc.findTool("protoc"); //NOI18N
+                        }
+                    }
+                    if (protocExecutable == null) {
+                        // TODO try to fall back to 'protoc' or 'protoc.exe' in $PATH
+                        throw new MojoExecutionException(
+                                "No protobuf toolchain and no 'protocExecutable' is configured");
+                    }
+
                     Protoc protoc = new Protoc.Builder(protocExecutable, outputDirectory)
                             .addProtoPathElement(protoSourceRoot)
                             .addProtoPathElements(derivedProtoPathElements)
@@ -183,8 +222,9 @@ abstract class AbstractProtocMojo extends AbstractMojo {
     }
 
     ImmutableSet<File> findGeneratedFilesInDirectory(File directory) throws IOException {
-        if (directory == null || !directory.isDirectory())
+        if (directory == null || !directory.isDirectory()) {
             return ImmutableSet.of();
+        }
 
         // TODO(gak): plexus-utils needs generics
         @SuppressWarnings("unchecked")
@@ -195,8 +235,9 @@ abstract class AbstractProtocMojo extends AbstractMojo {
     private long lastModified(ImmutableSet<File> files) {
         long result = 0;
         for (File file : files) {
-            if (file.lastModified() > result)
+            if (file.lastModified() > result) {
                 result = file.lastModified();
+            }
         }
         return result;
     }
@@ -204,7 +245,6 @@ abstract class AbstractProtocMojo extends AbstractMojo {
     private void checkParameters() {
         checkNotNull(project, "project");
         checkNotNull(projectHelper, "projectHelper");
-        checkNotNull(protocExecutable, "protocExecutable");
         final File protoSourceRoot = getProtoSourceRoot();
         checkNotNull(protoSourceRoot);
         checkArgument(!protoSourceRoot.isFile(), "protoSourceRoot is a file, not a diretory");
