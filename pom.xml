@@ -9,6 +9,7 @@
     <packaging>maven-plugin</packaging>
     <name>Maven Protoc Plugin</name>
     <version>0.1.11-SNAPSHOT</version>
+    <url>https://github.com/dtrott/maven-protoc-plugin</url>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -64,6 +65,13 @@
                 </configuration>
             </plugin>
 
+            <!-- maven-site-plugin has to be of version 3.0+ when build is being run under maven 3.x -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <version>3.0-beta-3</version>
+            </plugin>
+
         </plugins>
 
         <extensions>
@@ -77,11 +85,19 @@
 
     <reporting>
         <plugins>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-project-info-reports-plugin</artifactId>
+                <version>2.4</version>
+            </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-plugin-plugin</artifactId>
                 <version>2.7</version>
             </plugin>
+
         </plugins>
     </reporting>
 

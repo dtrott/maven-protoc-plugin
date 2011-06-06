@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns="http://maven.apache.org/DECORATION/1.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/DECORATION/1.0.0 http://maven.apache.org/xsd/decoration-1.0.0.xsd">
+
+    <body>
+        <menu name="Overview">
+            <item name="Introduction" href="index.html"/>
+            <item name="Goals" href="plugin-info.html"/>
+            <!-- TODO -->
+            <!--<item name="Usage" href="usage.html"/>-->
+            <!--<item name="FAQ" href="faq.html"/>-->
+        </menu>
+
+        <menu name="Examples">
+            <!-- TODO -->
+            <!--<item name="Creating Content" href="/examples/creating-content.html"/>-->
+        </menu>
+
+        <menu ref="reports"/>
+    </body>
+</project>
