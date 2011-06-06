@@ -1,3 +1,6 @@
+// A test to verify that protoc location is picked up from 'protobuf' tool chain,
+// and proto compilation completes successfully.
+
 outputDirectory = new File(basedir, 'target/generated-sources/protoc');
 assert outputDirectory.exists();
 assert outputDirectory.isDirectory();
