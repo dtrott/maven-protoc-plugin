@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<faqs xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns="http://maven.apache.org/FML/1.0.1"
+      xsi:schemaLocation="http://maven.apache.org/FML/1.0.1 http://maven.apache.org/xsd/fml-1.0.1.xsd"
+      id="FAQ" title="Frequently Asked Questions">
+
+    <part id="General">
+        <faq id="faq_1">
+            <question>
+                Can the plugin automatically download and use the required version of protoc?
+            </question>
+            <answer>
+                Protocol Buffer Compiler is a native application and is distributed as a binary executable file.
+                For the time being, it is not distributed via Maven repository (and unlikely that it will ever be).
+                Therefore the application developer will need to configure protoc executable location
+                for the plugin, either explicitly via plugin configuration parameters,
+                or, preferably, by using protobuf {{{./examples/protobuf-toolchain.html} toolchain}}.
+            </answer>
+        </faq>
+
+        <!-- TODO -->
+
+    </part>
+</faqs>

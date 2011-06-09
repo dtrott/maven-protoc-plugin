@@ -1,0 +1,40 @@
+            -----
+            Usage
+            -----
+
+~~ APT Format: http://maven.apache.org/doxia/references/apt-format.html
+
+Usage
+
+  The Protoc Plugin generates java sources from <<<.proto>>> files using the <<<protoc>>> tool.
+  The following examples describe the basic usage of the Plugin.
+
+* Compile Protobuf Sources
+
+  ~~ TODO
+
+* Running Plugin Goals On Command Line
+
+  ~~ TODO
+
+  It is possible to run Protoc Plugin goals from the command line,
+  even if the plugin is not configured in the project:
+
++-----+
+
+mvn protoc:compile     -DprotocExecutable="C:/Java/protobuf-2.4.1/bin/protoc.exe"
+mvn protoc:testCompile -DprotocExecutable="C:/Java/protobuf-2.4.1/bin/protoc.exe"
+
++-----+
+
+  If a <<<protobuf>>> toolchain is configured in the project,
+  then the toolchains plugin needs to be executed first
+  and there is no need to specify the <<<protocExecutable>>> parameter.
+
++-----+
+
+mvn toolchains:toolchain protoc:compile
+mvn toolchains:toolchain protoc:testCompile
+
++-----+
+

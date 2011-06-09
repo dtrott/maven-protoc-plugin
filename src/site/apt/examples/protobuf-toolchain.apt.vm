@@ -1,0 +1,197 @@
+            ------------------------
+            Using Protobuf Toolchain
+            ------------------------
+
+~~ APT Format: http://maven.apache.org/doxia/references/apt-format.html
+
+Using Protobuf Toolchain
+
+* Defining Toolchains
+
+  Toolchains are declared in a <<<toolchains.xml>>> file, which is by default expected to reside in
+  <<<~/.m2>>> directory (however, in Maven3 it is possible to override the default location
+  with <<<-t>>> or <<<--toolchains>>> command line parameter).
+
+  A sample <<<toolchains.xml>>> file with a protobuf toolchain definition:
+
++-----+
+
+<?xml version="1.0" encoding="UTF-8"?>
+<toolchains>
+  <toolchain>
+    <type>protobuf</type>
+    <provides>
+      <version>2.4.1</version>
+    </provides>
+    <configuration>
+      <protocExecutable>C:/Java/protobuf-2.4.1/bin/protoc.exe</protocExecutable>
+    </configuration>
+  </toolchain>
+  ...
+</toolchains>
+
++-----+
+
+  ~~ TODO explain the above
+
+* Using Protobuf Toolchain In Standalone Project
+
+  ~~ TODO detailed explanation
+  ~~ TODO mention that protoc-plugin extensions are required for the operation toolchains-plugin
+
+  A sample configuration is provided below:
+
++-----+
+
+<project>
+  ...
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-toolchains-plugin</artifactId>
+        <version>1.0</version>
+        <executions>
+          <execution>
+            <phase>validate</phase>
+            <goals>
+              <goal>toolchain</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <toolchains>
+            <protobuf>
+              <version>[2.4,2.5)</version>
+            </protobuf>
+          </toolchains>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>com.google.protobuf.tools</groupId>
+        <artifactId>maven-protoc-plugin</artifactId>
+        <version>${project.version}</version>
+        <extensions>true</extensions>
+        <executions>
+          <execution>
+            <goals>
+              <goal>compile</goal>
+              <goal>testCompile</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      ...
+    </plugins>
+    ...
+  </build>
+  ...
+</project>
+
++-----+
+
+* Reusing Protobuf Toolchain From Parent Project
+
+  Suppose that there is a common parent for a number of child projects,
+  which may also be contained as modules in the parent project.
+  In that case it makes sense to enforce the toolchain once
+  in the parent project and let the children inherit it.
+
+  Parent project is configured as in the example below.
+  Note that only extensions are required from protoc-plugin;
+  all the executions will be declared in the child projects.
+
++-----+
+
+<project>
+  ...
+  <packaging>pom</packaging>
+  <groupId>com.yourcompany</groupId>
+  <artifactId>parent</artifactId>
+  <version>1.0</version>
+  ...
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-toolchains-plugin</artifactId>
+        <version>1.0</version>
+        <executions>
+          <execution>
+            <phase>validate</phase>
+            <goals>
+              <goal>toolchain</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <toolchains>
+            <protobuf>
+              <version>[2.4,2.5)</version>
+            </protobuf>
+          </toolchains>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>com.google.protobuf.tools</groupId>
+        <artifactId>maven-protoc-plugin</artifactId>
+        <version>${project.version}</version>
+        <extensions>true</extensions>
+      </plugin>
+      ...
+    </plugins>
+    ...
+  </build>
+  ...
+</project>
+
++-----+
+
+  Child project is configured as in the example below.
+  Note that there is no need to load protoc-plugin extensions in the child project,
+  and neither there is any need to load toolchains again: this is all handled by the parent project.
+
++-----+
+
+<project>
+  ...
+  <parent>
+    <groupId>com.yourcompany</groupId>
+    <artifactId>parent</artifactId>
+    <version>1.0</version>
+  </parent>
+  <groupId>com.yourcompany</groupId>
+  <artifactId>child</artifactId>
+  <version>1.0</version>
+  ...
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>com.google.protobuf.tools</groupId>
+        <artifactId>maven-protoc-plugin</artifactId>
+        <version>${project.version}</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>compile</goal>
+              <goal>testCompile</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      ...
+    </plugins>
+    ...
+  </build>
+  ...
+</project>
+
++-----+
+
+* References
+
+  * {{{http://maven.apache.org/plugins/maven-toolchains-plugin/} Maven Toolchains Plugin}}
+
+  * {{{http://maven.apache.org/ref/2.2.1/maven-toolchain/toolchains.html} Toolchain descriptor}}
+
+  []

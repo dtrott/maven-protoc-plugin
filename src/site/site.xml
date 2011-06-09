@@ -5,17 +5,21 @@
          xsi:schemaLocation="http://maven.apache.org/DECORATION/1.0.0 http://maven.apache.org/xsd/decoration-1.0.0.xsd">
 
     <body>
+
+        <links>
+            <item name="Google Protocol Buffers" href="http://code.google.com/p/protobuf/"/>
+        </links>
+
         <menu name="Overview">
             <item name="Introduction" href="index.html"/>
             <item name="Goals" href="plugin-info.html"/>
-            <!-- TODO -->
-            <!--<item name="Usage" href="usage.html"/>-->
-            <!--<item name="FAQ" href="faq.html"/>-->
+            <item name="Usage" href="usage.html"/>
+            <item name="FAQ" href="faq.html"/>
         </menu>
 
         <menu name="Examples">
             <!-- TODO -->
-            <!--<item name="Creating Content" href="/examples/creating-content.html"/>-->
+            <item name="Protobuf Toolchain" href="examples/protobuf-toolchain.html"/>
         </menu>
 
         <menu ref="reports"/>
