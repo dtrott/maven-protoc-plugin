@@ -14,6 +14,8 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <mavenVersion>2.0.9</mavenVersion>
+        <plexusVersion>1.5.5</plexusVersion>
+        <plexusUtilsVersion>1.5.4</plexusUtilsVersion>
     </properties>
 
     <prerequisites>
@@ -50,6 +52,20 @@
                         <id>generated-helpmojo</id>
                         <goals>
                             <goal>helpmojo</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.plexus</groupId>
+                <artifactId>plexus-component-metadata</artifactId>
+                <version>${plexusVersion}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>generate-metadata</goal>
+                            <goal>generate-test-metadata</goal>
                         </goals>
                     </execution>
                 </executions>
@@ -96,6 +112,34 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-plugin-plugin</artifactId>
                 <version>2.7</version>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.8</version>
+                <configuration>
+                    <minmemory>128m</minmemory>
+                    <maxmemory>512m</maxmemory>
+                    <tagletArtifacts>
+                        <tagletArtifact>
+                            <groupId>org.apache.maven.plugin-tools</groupId>
+                            <artifactId>maven-plugin-tools-javadoc</artifactId>
+                            <version>2.7</version>
+                        </tagletArtifact>
+                        <tagletArtifact>
+                            <groupId>org.codehaus.plexus</groupId>
+                            <artifactId>plexus-component-javadoc</artifactId>
+                            <version>1.5.5</version>
+                        </tagletArtifact>
+                    </tagletArtifacts>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jxr-plugin</artifactId>
+                <version>2.2</version>
             </plugin>
 
         </plugins>
@@ -171,7 +215,12 @@
         <dependency>
             <groupId>org.codehaus.plexus</groupId>
             <artifactId>plexus-utils</artifactId>
-            <version>1.5.4</version>
+            <version>${plexusUtilsVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.codehaus.plexus</groupId>
+            <artifactId>plexus-component-annotations</artifactId>
+            <version>${plexusVersion}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.maven</groupId>

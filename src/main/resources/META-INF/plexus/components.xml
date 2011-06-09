@@ -1,9 +1,0 @@
-<component-set>
-    <components>
-        <component>
-            <role>org.apache.maven.toolchain.ToolchainFactory</role>
-            <role-hint>protobuf</role-hint>
-            <implementation>com.google.protobuf.maven.toolchain.DefaultProtobufToolchainFactory</implementation>
-        </component>
-    </components>
-</component-set>
