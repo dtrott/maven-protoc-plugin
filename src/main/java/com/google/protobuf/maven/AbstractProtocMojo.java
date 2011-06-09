@@ -178,7 +178,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
                     //get toolchain from context
                     Toolchain tc = toolchainManager.getToolchainFromBuildContext("protobuf", session); //NOI18N
                     if (tc != null) {
-                        getLog().info("Toolchain in protobuf-plugin: " + tc);
+                        getLog().info("Toolchain in protoc-plugin: " + tc);
                         //when the executable to use is explicitly set by user in mojo's parameter, ignore toolchains.
                         if (protocExecutable != null) {
                             getLog().warn(
