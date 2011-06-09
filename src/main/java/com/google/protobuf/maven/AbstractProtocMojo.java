@@ -92,7 +92,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
     /**
      * This is the path to the {@code protoc} executable.
      *
-     * @parameter
+     * @parameter expression="${protocExecutable}"
      */
     private String protocExecutable;
 
