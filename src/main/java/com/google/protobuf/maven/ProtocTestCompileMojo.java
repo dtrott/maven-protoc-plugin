@@ -7,14 +7,21 @@ import java.io.File;
 import java.util.List;
 
 /**
+ * This mojo executes the {@code protoc} compiler for generating test java sources
+ * from protocol buffer definitions. It also searches dependency artifacts in the test scope for
+ * {@code .proto} files and includes them in the {@code proto_path} so that they can be
+ * referenced. Finally, it adds the {@code .proto} files to the project as test resources so
+ * that they can be included in the test-jar artifact.
+ *
  * @phase generate-test-sources
  * @goal testCompile
  * @requiresDependencyResolution test
+ * @threadSafe
  */
 public final class ProtocTestCompileMojo extends AbstractProtocMojo {
 
     /**
-     * The source directories containing the sources to be compiled.
+     * The source directories containing the test {@code .proto} definitions to be compiled.
      *
      * @parameter default-value="${basedir}/src/test/proto"
      * @required
@@ -22,7 +29,7 @@ public final class ProtocTestCompileMojo extends AbstractProtocMojo {
     private File protoTestSourceRoot;
 
     /**
-     * This is the directory into which the {@code .java} will be created.
+     * This is the directory into which the {@code .java} test sources will be created.
      *
      * @parameter default-value="${project.build.directory}/generated-test-sources/protoc"
      * @required
@@ -53,5 +60,4 @@ public final class ProtocTestCompileMojo extends AbstractProtocMojo {
     protected File getProtoSourceRoot() {
         return protoTestSourceRoot;
     }
-
 }

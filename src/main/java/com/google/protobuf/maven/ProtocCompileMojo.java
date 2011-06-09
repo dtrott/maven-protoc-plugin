@@ -7,15 +7,16 @@ import java.io.File;
 import java.util.List;
 
 /**
- * This mojo executes the {@code protoc} compiler for generating java sources
+ * This mojo executes the {@code protoc} compiler for generating main java sources
  * from protocol buffer definitions. It also searches dependency artifacts for
- * proto files and includes them in the protopath so that they can be
- * referenced. Finally, it adds the proto files to the project as resources so
+ * {@code .proto} files and includes them in the {@code proto_path} so that they can be
+ * referenced. Finally, it adds the {@code .proto} files to the project as resources so
  * that they are included in the final artifact.
  *
  * @phase generate-sources
  * @goal compile
  * @requiresDependencyResolution compile
+ * @threadSafe
  */
 
 public final class ProtocCompileMojo extends AbstractProtocMojo {
