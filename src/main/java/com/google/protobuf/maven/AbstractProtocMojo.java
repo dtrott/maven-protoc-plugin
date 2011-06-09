@@ -1,6 +1,5 @@
 package com.google.protobuf.maven;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -190,9 +189,9 @@ abstract class AbstractProtocMojo extends AbstractMojo {
                         }
                     }
                     if (protocExecutable == null) {
-                        // TODO try to fall back to 'protoc' or 'protoc.exe' in $PATH
-                        throw new MojoExecutionException(
-                                "No protobuf toolchain and no 'protocExecutable' is configured");
+                        // Try to fall back to 'protoc' in $PATH
+                        getLog().warn("No 'protocExecutable' parameter is configured, using the default: 'protoc'");
+                        protocExecutable = "protoc";
                     }
 
                     Protoc protoc = new Protoc.Builder(protocExecutable, outputDirectory)
@@ -219,9 +218,9 @@ abstract class AbstractProtocMojo extends AbstractMojo {
                         getLog().debug("Executable: ");
                         getLog().debug(' ' + protocExecutable);
 
-                        ImmutableList<String> cl = protoc.buildProtocCommand();
+                        List<String> cl = protoc.buildProtocCommand();
                         if (cl != null && !cl.isEmpty()) {
-                            StringBuffer sb = new StringBuffer();
+                            StringBuilder sb = new StringBuilder();
                             for (Iterator<String> iterator = cl.iterator(); iterator.hasNext(); ) {
                                 sb.append(iterator.next());
                                 if (iterator.hasNext()) {

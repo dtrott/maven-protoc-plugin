@@ -6,7 +6,7 @@
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.google.protobuf.tools.maven-protoc-plugin.its</groupId>
-    <artifactId>TEST-1</artifactId>
+    <artifactId>TEST-3</artifactId>
     <name>Integration Test</name>
     <version>0.0.1-SNAPSHOT</version>
     <build>
@@ -31,36 +31,6 @@
                     </toolchains>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>com.google.protobuf.tools</groupId>
-                <artifactId>maven-protoc-plugin</artifactId>
-                <version>@project.version@</version>
-                <extensions>true</extensions>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>compile</goal>
-                            <goal>testCompile</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.3.2</version>
-                <configuration>
-                    <source>1.5</source>
-                    <target>1.5</target>
-                </configuration>
-            </plugin>
         </plugins>
     </build>
-    <dependencies>
-        <dependency>
-            <groupId>com.google.protobuf</groupId>
-            <artifactId>protobuf-java</artifactId>
-            <version>[2.4,2.5)</version>
-        </dependency>
-    </dependencies>
 </project>

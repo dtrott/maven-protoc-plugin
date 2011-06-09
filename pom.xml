@@ -119,10 +119,6 @@
                             </pomIncludes>
                             <postBuildHookScript>verify</postBuildHookScript>
                             <localRepositoryPath>${project.build.directory}/local-repo</localRepositoryPath>
-                            <goals>
-                                <goal>clean</goal>
-                                <goal>process-test-resources</goal>
-                            </goals>
                             <settingsFile>src/it/settings.xml</settingsFile>
                             <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
                             <properties>
@@ -142,6 +138,16 @@
 
                 </plugins>
             </build>
+
+            <reporting>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-invoker-plugin</artifactId>
+                        <version>1.5</version>
+                    </plugin>
+                </plugins>
+            </reporting>
         </profile>
     </profiles>
 
