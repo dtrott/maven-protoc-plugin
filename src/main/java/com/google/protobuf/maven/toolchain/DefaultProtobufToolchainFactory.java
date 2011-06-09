@@ -16,6 +16,7 @@ import java.io.File;
  * Based on {@code org.apache.maven.toolchain.java.DefaultJavaToolchainFactory}.
  *
  * @author Sergei Ivanov
+ * @since 0.2.0
  */
 public class DefaultProtobufToolchainFactory implements ToolchainFactory, LogEnabled {
 

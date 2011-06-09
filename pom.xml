@@ -8,7 +8,7 @@
     <artifactId>maven-protoc-plugin</artifactId>
     <packaging>maven-plugin</packaging>
     <name>Maven Protoc Plugin</name>
-    <version>0.1.11-SNAPSHOT</version>
+    <version>0.2.0-SNAPSHOT</version>
     <url>https://github.com/dtrott/maven-protoc-plugin</url>
 
     <properties>

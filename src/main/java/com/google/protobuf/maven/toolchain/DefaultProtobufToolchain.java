@@ -11,6 +11,7 @@ import java.io.File;
  * Based on {@code org.apache.maven.toolchain.java.DefaultJavaToolChain}.
  *
  * @author Sergei Ivanov
+ * @since 0.2.0
  */
 public class DefaultProtobufToolchain extends DefaultToolchain implements ProtobufToolchain {
 

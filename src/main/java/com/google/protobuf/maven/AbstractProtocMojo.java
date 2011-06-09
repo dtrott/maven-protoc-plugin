@@ -69,7 +69,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
      * @parameter expression="${session}" default-value="${session}"
      * @required
      * @readonly
-     * @since 0.1.10
+     * @since 0.2.0
      */
     private MavenSession session;
 
@@ -77,7 +77,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
      * An optional tool chain manager.
      *
      * @component
-     * @since 0.1.10
+     * @since 0.2.0
      */
     private ToolchainManager toolchainManager;
 
