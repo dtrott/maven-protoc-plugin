@@ -91,12 +91,18 @@ abstract class AbstractProtocMojo extends AbstractMojo {
 
     /**
      * This is the path to the {@code protoc} executable.
+     * When this parameter is not set, the plugin attempts to load
+     * a {@code protobuf} toolchain and use it locate {@code protoc} executable.
+     * If no {@code protobuf} toolchain is defined in the project,
+     * the {@code protoc} executable in the {@code PATH} is used.
      *
      * @parameter expression="${protocExecutable}"
      */
     private String protocExecutable;
 
     /**
+     * Additional source paths for {@code .proto} definitions.
+     *
      * @parameter
      */
     private File[] additionalProtoPathElements = new File[] {};
@@ -113,15 +119,16 @@ abstract class AbstractProtocMojo extends AbstractMojo {
     /**
      * This is the path to the local maven {@code repository}.
      *
-     * @parameter default-value="${localRepository}"
+     * @parameter expression="${localRepository}" default-value="${localRepository}"
      * @required
+     * @readonly
      */
     private ArtifactRepository localRepository;
 
     /**
      * Set this to {@code false} to disable hashing of dependent jar paths.
      * <p/>
-     * This plugin expands jars on the classpath looking for embedded .proto files.
+     * This plugin expands jars on the classpath looking for embedded {@code .proto} files.
      * Normally these paths are hashed (MD5) to avoid issues with long file names on windows.
      * However if this property is set to {@code false} longer paths will be used.
      *
@@ -131,30 +138,58 @@ abstract class AbstractProtocMojo extends AbstractMojo {
     private boolean hashDependentPaths;
 
     /**
+     * A list of &lt;include&gt; elements specifying the protobuf definition files (by pattern)
+     * that should be included in compilation.
+     * When not specified, the default includes will be:
+     * <code><br/>
+     * &lt;includes&gt;<br/>
+     * &nbsp;&lt;include&gt;**&#47;*.proto&lt;/include&gt;<br/>
+     * &lt;/includes&gt;<br/>
+     * </code>
+     *
      * @parameter
      */
     private Set<String> includes = ImmutableSet.of(DEFAULT_INCLUDES);
 
     /**
+     * A list of &lt;exclude&gt; elements specifying the protobuf definition files (by pattern)
+     * that should be excluded from compilation.
+     * When not specified, the default excludes will be empty:
+     * <code><br/>
+     * &lt;excludes&gt;<br/>
+     * &lt;/excludes&gt;<br/>
+     * </code>
+     *
      * @parameter
      */
     private Set<String> excludes = ImmutableSet.of();
 
     /**
-     * @parameter
-     */
-    private long staleMillis = 0;
-
-    /**
-     * @parameter
-     */
-    private boolean checkStaleness = false;
-
-    /**
-     * When <code>true</code>, skip the execution.
+     * Sets the granularity in milliseconds of the last modification date
+     * for testing whether source protobuf definitions need recompilation.
      *
-     * @parameter expression="${protoc.skip}"
-     * default-value="false"
+     * <p>This parameter is only used when {@link #checkStaleness} parameter is set to {@code true}.
+     *
+     * <p>If the project is built on NFS it's recommended to set this parameter to {@code 10000}.
+     *
+     * @parameter default-value="0"
+     */
+    private long staleMillis;
+
+    /**
+     * Normally {@code protoc} is invoked on every execution of the plugin.
+     * Setting this parameter to {@code true} will enable checking
+     * timestamps of source protobuf definitions vs. generated sources.
+     *
+     * @parameter default-value="false"
+     * @see #staleMillis
+     */
+    private boolean checkStaleness;
+
+    /**
+     * When {@code true}, skip the execution.
+     *
+     * @parameter expression="${protoc.skip}" default-value="false"
      * @since 0.2.0
      */
     private boolean skip;
@@ -162,11 +197,10 @@ abstract class AbstractProtocMojo extends AbstractMojo {
     /**
      * Usually most of protobuf mojos will not get executed on parent poms
      * (i.e. projects with packaging type 'pom').
-     * Setting this parameter to <code>true</code> will force
+     * Setting this parameter to {@code true} will force
      * the execution of this mojo, even if it would usually get skipped in this case.
      *
-     * @parameter expression="${protoc.force}"
-     * default-value="false"
+     * @parameter expression="${protoc.force}" default-value="false"
      * @required
      * @since 0.2.0
      */
