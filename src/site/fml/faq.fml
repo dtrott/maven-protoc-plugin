@@ -8,14 +8,14 @@
     <part id="General">
         <faq id="faq_1">
             <question>
-                Can the plugin automatically download and use the required version of protoc?
+                Can the plugin automatically download and use the required version of <code>protoc</code>?
             </question>
             <answer>
                 Protocol Buffer Compiler is a native application and is distributed as a binary executable file.
                 For the time being, it is not distributed via Maven repository (and unlikely that it will ever be).
-                Therefore the application developer will need to configure protoc executable location
-                for the plugin, either explicitly via plugin configuration parameters,
-                or, preferably, by using protobuf {{{./examples/protobuf-toolchain.html} toolchain}}.
+                Therefore the application developer will need to configure <code>protoc</code> executable location
+                for the plugin, either explicitly with <code>protocExecutable</code> plugin configuration parameter,
+                or, preferably, by using protobuf <a href="./examples/protobuf-toolchain.html">toolchain</a>.
             </answer>
         </faq>
 
