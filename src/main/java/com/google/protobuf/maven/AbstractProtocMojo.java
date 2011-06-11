@@ -151,9 +151,35 @@ abstract class AbstractProtocMojo extends AbstractMojo {
     private boolean checkStaleness = false;
 
     /**
+     * When <code>true</code>, skip the execution.
+     *
+     * @parameter expression="${protoc.skip}"
+     * default-value="false"
+     * @since 0.2.0
+     */
+    private boolean skip;
+
+    /**
+     * Usually most of protobuf mojos will not get executed on parent poms
+     * (i.e. projects with packaging type 'pom').
+     * Setting this parameter to <code>true</code> will force
+     * the execution of this mojo, even if it would usually get skipped in this case.
+     *
+     * @parameter expression="${protoc.force}"
+     * default-value="false"
+     * @required
+     * @since 0.2.0
+     */
+    private boolean forceMojoExecution;
+
+    /**
      * Executes the mojo.
      */
     public void execute() throws MojoExecutionException, MojoFailureException {
+        if (skipMojo()) {
+            return;
+        }
+
         checkParameters();
         final File protoSourceRoot = getProtoSourceRoot();
         if (protoSourceRoot.exists()) {
@@ -256,7 +282,33 @@ abstract class AbstractProtocMojo extends AbstractMojo {
         }
     }
 
-    ImmutableSet<File> findGeneratedFilesInDirectory(File directory) throws IOException {
+    /**
+     * <p>Determine if the mojo execution should get skipped.</p>
+     * This is the case if:
+     * <ul>
+     * <li>{@link #skip} is <code>true</code></li>
+     * <li>if the mojo gets executed on a project with packaging type 'pom' and
+     * {@link #forceMojoExecution} is <code>false</code></li>
+     * </ul>
+     *
+     * @return <code>true</code> if the mojo execution should be skipped.
+     * @since 0.2.0
+     */
+    protected boolean skipMojo() {
+        if (skip) {
+            getLog().info("Skipping protoc mojo execution");
+            return true;
+        }
+
+        if (!forceMojoExecution && "pom".equals(this.project.getPackaging())) {
+            getLog().info("Skipping protoc mojo execution for project with packaging type 'pom'");
+            return true;
+        }
+
+        return false;
+    }
+
+    protected ImmutableSet<File> findGeneratedFilesInDirectory(File directory) throws IOException {
         if (directory == null || !directory.isDirectory()) {
             return ImmutableSet.of();
         }
@@ -314,7 +366,9 @@ abstract class AbstractProtocMojo extends AbstractMojo {
     /**
      * @throws IOException
      */
-    ImmutableSet<File> makeProtoPathFromJars(File temporaryProtoFileDirectory, Iterable<File> classpathElementFiles)
+    protected ImmutableSet<File> makeProtoPathFromJars(
+            File temporaryProtoFileDirectory,
+            Iterable<File> classpathElementFiles)
             throws IOException, MojoExecutionException {
         checkNotNull(classpathElementFiles, "classpathElementFiles");
         // clean the temporary directory to ensure that stale files aren't used
@@ -363,7 +417,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
         return ImmutableSet.copyOf(protoDirectories);
     }
 
-    ImmutableSet<File> findProtoFilesInDirectory(File directory) throws IOException {
+    protected ImmutableSet<File> findProtoFilesInDirectory(File directory) throws IOException {
         checkNotNull(directory);
         checkArgument(directory.isDirectory(), "%s is not a directory", directory);
         final Joiner joiner = Joiner.on(',');
@@ -374,7 +428,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
         return ImmutableSet.copyOf(protoFilesInDirectory);
     }
 
-    ImmutableSet<File> findProtoFilesInDirectories(Iterable<File> directories) throws IOException {
+    protected ImmutableSet<File> findProtoFilesInDirectories(Iterable<File> directories) throws IOException {
         checkNotNull(directories);
         Set<File> protoFiles = newHashSet();
         for (File directory : directories) {
@@ -389,7 +443,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
      * @param jarPath the full path of a jar file.
      * @return the truncated path relative to the local repository or root of the drive.
      */
-    String truncatePath(final String jarPath) throws MojoExecutionException {
+    protected String truncatePath(final String jarPath) throws MojoExecutionException {
 
         if (hashDependentPaths) {
             try {
