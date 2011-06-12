@@ -1,0 +1,9 @@
+import "test1.proto";
+
+option java_package = "it.project2.messages";
+option java_outer_classname = "TestProtos";
+option optimize_for = SPEED;
+
+message TestMessage2 {
+    optional TestMessage1 included = 1;
+}
