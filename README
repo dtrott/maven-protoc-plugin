@@ -24,8 +24,8 @@ A minimal configuration to invoke this plugin would be:
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>com.google.protobuf.tools</groupId>
-                <artifactId>maven-protoc-plugin</artifactId>
+                <groupId>uk.co.jemos.maven.plugins.protoc</groupId>
+                <artifactId>maven-jemosProtoc-plugin</artifactId>
                 <configuration>
                     <protocExecutable>/usr/local/bin/protoc</protocExecutable>
                 </configuration>
@@ -58,6 +58,15 @@ You must:
 + Define the executions you want (you probably don't need the testCompile
   unless you have custom protocol buffer objects in your tests.
 + Include the dependency on protobuf-java or your compile will fail.
+
+You should:
++ Add the following to your Maven settings.xml file to be able to execute the plugin as: 
+   
+  $ mvn jemosProtoc:generatePojos
+
+    <pluginGroups>      
+      <pluginGroup>uk.co.jemos.maven.plugins</pluginGroup>      
+   </pluginGroups>
 
 
 Once this is all done add your *.protoc files to the directory: src/main/proto

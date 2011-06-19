@@ -1,81 +1,172 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.google.protobuf.tools</groupId>
-    <artifactId>maven-protoc-plugin</artifactId>
-    <packaging>maven-plugin</packaging>
-    <name>Maven Protoc Plugin</name>
-    <version>0.1.11-SNAPSHOT</version>
+	<parent>
+		<groupId>org.sonatype.oss</groupId>
+		<artifactId>oss-parent</artifactId>
+		<version>7</version>
+	</parent>
 
-    <prerequisites>
-        <maven>2.0.6</maven>
-    </prerequisites>
+	<groupId>uk.co.jemos.maven.plugins</groupId>
+	<artifactId>maven-jemosProtoc-plugin</artifactId>
+	<version>0.0.1.RELEASE</version>
+	<packaging>maven-plugin</packaging>
 
-    <scm>
-        <connection>scm:git:git://github.com/dtrott/maven-protoc-plugin.git</connection>
-    </scm>
+	<name>maven-jemosProtoc-plugin</name>
+	<url>http://maven.apache.org</url>
 
-    <distributionManagement>
-        <downloadUrl>http://maven.davidtrott.com/repository</downloadUrl>
-        <repository>
-            <id>dtrott-public</id>
-            <name>David Trott's Public Repository</name>
-            <url>file:///repositories/maven.davidtrott.com/release</url>
-        </repository>
-        <snapshotRepository>
-            <id>dtrott-public</id>
-            <name>David Trott's Public Snapshot Repository</name>
-            <url>file:///repositories/maven.davidtrott.com/snapshot</url>
-        </snapshotRepository>
-    </distributionManagement>
+	<licenses>
+		<license>
+			<name>Protomak runs under the MIT license</name>
+			<url>LICENSE.txt</url>
+		</license>
+	</licenses>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>1.5</source>
-                    <target>1.5</target>
-                </configuration>
-            </plugin>
-        </plugins>
+	<issueManagement>
+		<system>JIRA</system>
+		<url>http://www.jemos.eu/jira</url>
+	</issueManagement>
 
-        <extensions>
-            <extension>
-                <groupId>org.apache.maven.wagon</groupId>
-                <artifactId>wagon-ftp</artifactId>
-                <version>1.0-beta-6</version>
-            </extension>
-        </extensions>
-    </build>
+	<ciManagement>
+		<system>Jenkins</system>
+		<url>http://www.jemos.eu/jenkins</url>
+	</ciManagement>
 
-    <dependencies>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.5</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.maven</groupId>
-            <artifactId>maven-plugin-api</artifactId>
-            <version>2.0.9</version>
-        </dependency>
-        <dependency>
-            <groupId>com.google.collections</groupId>
-            <artifactId>google-collections</artifactId>
-            <version>0.8</version>
-        </dependency>
-        <dependency>
-            <groupId>org.codehaus.plexus</groupId>
-            <artifactId>plexus-utils</artifactId>
-            <version>1.5.4</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.maven</groupId>
-            <artifactId>maven-project</artifactId>
-            <version>2.0.9</version>
-        </dependency>
-    </dependencies>
+	<mailingLists>
+		<mailingList>
+			<name>protomak - Google Groups</name>
+			<subscribe>http://groups.google.com/group/protomak</subscribe>
+			<unsubscribe>http://groups.google.com/group/protomak</unsubscribe>
+		</mailingList>
+	</mailingLists>
+
+	<scm>
+		<url>scm:git clone git://github.com/mtedone/maven-protoc-plugin.git</url>
+		<connection>scm:git git://github.com/mtedone/maven-protoc-plugin.git</connection>
+	</scm>
+
+	<developers>
+		<developer>
+			<id>mtedone</id>
+			<name>Marco Tedone</name>
+			<email>marco.tedone@gmail.com</email>
+			<organization>Jemos</organization>
+			<organizationUrl>http://www.jemos.eu/projects/protomak</organizationUrl>
+			<roles>
+				<role>Project Lead</role>
+				<role>Team Member</role>
+			</roles>
+			<timezone>UTC</timezone>
+			<url>http://tedone.typepad.com/blog/</url>
+		</developer>
+	</developers>
+
+	<distributionManagement>
+		<site>
+			<id>www.jemos.eu/maven-jemosProtoc-plugin</id>
+			<url>scp://tedonema@thor/home/tedonema/runtime/www/projects/jemos-maven-plugins/maven-jemosProtoc-plugin</url>
+		</site>
+	</distributionManagement>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.3.2</version>
+				<configuration>
+					<source>1.5</source>
+					<target>1.5</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-plugin-plugin</artifactId>
+				<version>2.5.1</version>
+				<dependencies>
+				  <dependency>
+				    <groupId>org.apache.maven</groupId>
+				    <artifactId>maven-plugin-registry</artifactId>
+				    <version>2.0.9</version>
+				  </dependency>
+				</dependencies>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-site-plugin</artifactId>
+				<version>3.0-beta-3</version>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-project-info-reports-plugin</artifactId>
+				<version>2.3.1</version>
+			</plugin>
+			<!-- It signs the artifact for uploading to Maven Central -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-gpg-plugin</artifactId>
+				<version>1.1</version>
+				<executions>
+					<execution>
+						<id>sign-artifacts</id>
+						<phase>deploy</phase>
+						<goals>
+							<goal>sign</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>2.2</version>
+				<executions>
+					<execution>
+						<id>assembly-project</id>
+						<phase>deploy</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<outputDirectory>${project.build.directory}/site/downloads</outputDirectory>
+					<descriptors>
+						<descriptor>src/main/assembly/project.xml</descriptor>
+						<descriptor>src/main/assembly/bin.xml</descriptor>
+					</descriptors>
+				</configuration>
+			</plugin>
+
+
+		</plugins>
+
+		<extensions>
+			<extension>
+				<groupId>org.apache.maven.wagon</groupId>
+				<artifactId>wagon-ftp</artifactId>
+				<version>1.0-beta-6</version>
+			</extension>
+		</extensions>
+	</build>
+
+	<dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.5</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+		  <groupId>commons-io</groupId>
+		  <artifactId>commons-io</artifactId>
+		  <version>1.2</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.maven</groupId>
+			<artifactId>maven-plugin-api</artifactId>
+			<version>2.0.9</version>
+		</dependency>
+	</dependencies>
 </project>
