@@ -14,11 +14,11 @@
 	<packaging>maven-plugin</packaging>
 
 	<name>maven-jemosProtoc-plugin</name>
-	<url>http://maven.apache.org</url>
+	<url>http://www.jemos.eu/projects/protomak</url>
 
 	<licenses>
 		<license>
-			<name>Protomak runs under the MIT license</name>
+			<name>Maven JemosProtoc Plugin runs under the MIT license</name>
 			<url>LICENSE.txt</url>
 		</license>
 	</licenses>
