@@ -15,6 +15,7 @@
         <connection>scm:git:git://github.com/binkley/maven-protoc-plugin.git</connection>
     </scm>
 
+    <!-- mvn -DaltDeploymentRepository=snapshot-repo::default::file:../binkley-maven-repo/snapshots clean deploy -->
     <distributionManagement>
         <downloadUrl>http://maven.davidtrott.com/repository</downloadUrl>
         <repository>
