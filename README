@@ -93,3 +93,4 @@ Changes by binkley from dtrott:
 * The default descriptor set file name is ${project.artifactId}-${project.version}.proto.bin.
 * Change the descriptor set file name with <descriptorSetOut>...</descriptorSetOut>.
 * Enable --include_imports with <includeImports/>.
+* Maven repo at http://github.com/binkley/binkley-maven-repo (instruction there).
