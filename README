@@ -88,6 +88,7 @@ If you build on NFS you may also need the following setting:
 
 Changes by binkley from dtrott:
 
+* Include target/classes as a proto path to aid test protos which include production protos.
 * Support --descriptor_set_out and --include_imports options to protoc.
 * Binary descriptor set writes to ${project.build.directory}/generated-resources/protoc and ${project.build.directory}/generated-test-resources/protoc.
 * The default descriptor set file name is ${project.artifactId}-${project.version}.proto.bin.
