@@ -7,6 +7,7 @@ import org.codehaus.plexus.util.cli.CommandLineUtils;
 import org.codehaus.plexus.util.cli.Commandline;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -28,8 +29,11 @@ import static com.google.common.collect.Sets.newHashSet;
 final class Protoc {
     private final String executable;
     private final ImmutableSet<File> protoPathElements;
+    private final String descriptorSetOut;
+    private final boolean includeImports;
     private final ImmutableSet<File> protoFiles;
     private final File javaOutputDirectory;
+    private final File resourceOutputDirectory;
     private final CommandLineUtils.StringStreamConsumer output;
     private final CommandLineUtils.StringStreamConsumer error;
 
@@ -38,16 +42,23 @@ final class Protoc {
      *
      * @param executable          The path to the {@code protoc} executable.
      * @param protoPath           The directories in which to search for imports.
+     * @param descriptorSetOut    The file for writing out the descriptor set, if any.
+     * @param includeImports      Flag to include imports in the descriptor set.
      * @param protoFiles          The proto source files to compile.
      * @param javaOutputDirectory The directory into which the java source files
      *                            will be generated.
      */
     private Protoc(String executable, ImmutableSet<File> protoPath,
-                   ImmutableSet<File> protoFiles, File javaOutputDirectory) {
+                   String descriptorSetOut, boolean includeImports,
+                   ImmutableSet<File> protoFiles, File javaOutputDirectory,
+                   File resourceOutputDirectory) {
         this.executable = checkNotNull(executable, "executable");
         this.protoPathElements = checkNotNull(protoPath, "protoPath");
+        this.descriptorSetOut = descriptorSetOut;
+        this.includeImports = includeImports;
         this.protoFiles = checkNotNull(protoFiles, "protoFiles");
         this.javaOutputDirectory = checkNotNull(javaOutputDirectory, "javaOutputDirectory");
+        this.resourceOutputDirectory = checkNotNull(resourceOutputDirectory, "resourceOutputDirectory");
         this.error = new CommandLineUtils.StringStreamConsumer();
         this.output = new CommandLineUtils.StringStreamConsumer();
     }
@@ -62,6 +73,15 @@ final class Protoc {
     public int compile() throws CommandLineException {
         Commandline cl = new Commandline();
         cl.setExecutable(executable);
+        if (null != descriptorSetOut) {
+            List<String> descriptorArgs = new ArrayList<String>(2);
+            descriptorArgs.add("--descriptor_set_out="
+                    + new File(resourceOutputDirectory, descriptorSetOut));
+            if (includeImports) {
+                descriptorArgs.add("--include_imports");
+            }
+            cl.addArguments(descriptorArgs.toArray(new String[descriptorArgs.size()]));
+        }
         cl.addArguments(buildProtocCommand().toArray(new String[]{}));
         return CommandLineUtils.executeCommandLine(cl, null, output, error);
     }
@@ -108,7 +128,10 @@ final class Protoc {
     static final class Builder {
         private final String executable;
         private final File javaOutputDirectory;
+        private final File resourceOutputDirectory;
         private Set<File> protopathElements;
+        private String descriptorSetOut;
+        private boolean includeImports;
         private Set<File> protoFiles;
 
         /**
@@ -122,9 +145,11 @@ final class Protoc {
          * @throws IllegalArgumentException If the {@code javaOutputDirectory} is
          *                                  not a directory.
          */
-        public Builder(String executable, File javaOutputDirectory) {
+        public Builder(String executable, File javaOutputDirectory,
+                       File resourceOutputDirectory) {
             this.executable = checkNotNull(executable, "executable");
-            this.javaOutputDirectory = checkNotNull(javaOutputDirectory);
+            this.javaOutputDirectory = checkNotNull(javaOutputDirectory, "javaOutputDirectory");
+            this.resourceOutputDirectory = checkNotNull(resourceOutputDirectory, "resourceOutputDirectory");
             checkArgument(javaOutputDirectory.isDirectory());
             this.protoFiles = newHashSet();
             this.protopathElements = newHashSet();
@@ -204,13 +229,26 @@ final class Protoc {
         }
 
         /**
+         * Sets the {@code descriptorSetOut}, if any, respecting {@code includeImports}.
+         *
+         * @param descriptorSetOut The descriptor set file path.
+         * @param includeImports Flag to include imports in the descriptor.
+         */
+        public Builder setDescriptorSetOut(String descriptorSetOut, boolean includeImports) {
+            this.descriptorSetOut = descriptorSetOut;
+            this.includeImports = includeImports;
+            return this;
+        }
+
+        /**
          * @return A configured {@link Protoc} instance.
          * @throws IllegalStateException If no proto files have been added.
          */
         public Protoc build() {
             checkState(!protoFiles.isEmpty());
             return new Protoc(executable, ImmutableSet.copyOf(protopathElements),
-                    ImmutableSet.copyOf(protoFiles), javaOutputDirectory);
+                    descriptorSetOut, includeImports,
+                    ImmutableSet.copyOf(protoFiles), javaOutputDirectory, resourceOutputDirectory);
         }
     }
 }
