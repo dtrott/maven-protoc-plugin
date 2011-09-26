@@ -141,6 +141,11 @@ abstract class AbstractProtocMojo extends AbstractMojo {
     private boolean includeImports = false;
 
     /**
+     * @parameter
+     */
+    private boolean verbose = false;
+
+    /**
      * Executes the mojo.
      */
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -168,13 +173,15 @@ abstract class AbstractProtocMojo extends AbstractMojo {
                     cleanDirectory(outputDirectory);
                     cleanDirectory(resourceDirectory);
 
-                    Protoc protoc = new Protoc.Builder(protocExecutable, outputDirectory, resourceDirectory)
+                    Protoc.Builder builder = new Protoc.Builder(protocExecutable, outputDirectory, resourceDirectory)
                             .addProtoPathElement(protoSourceRoot)
                             .addProtoPathElements(derivedProtoPathElements)
                             .addProtoPathElements(asList(additionalProtoPathElements))
                             .setDescriptorSetOut(descriptorSetOut, includeImports)
-                            .addProtoFiles(protoFiles)
-                            .build();
+                            .addProtoFiles(protoFiles);
+                    if (verbose)
+                            builder.withLogger(getLog());
+                    Protoc protoc = builder.build();
                     final int exitStatus = protoc.compile();
                     if (exitStatus != 0) {
                         getLog().error("protoc failed output: " + protoc.getOutput());

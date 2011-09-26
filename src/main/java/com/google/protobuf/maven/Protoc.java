@@ -1,7 +1,9 @@
 package com.google.protobuf.maven;
 
+import com.google.common.base.Join;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import org.apache.maven.plugin.logging.Log;
 import org.codehaus.plexus.util.cli.CommandLineException;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
 import org.codehaus.plexus.util.cli.Commandline;
@@ -34,6 +36,7 @@ final class Protoc {
     private final ImmutableSet<File> protoFiles;
     private final File javaOutputDirectory;
     private final File resourceOutputDirectory;
+    private final Log logger;
     private final CommandLineUtils.StringStreamConsumer output;
     private final CommandLineUtils.StringStreamConsumer error;
 
@@ -47,11 +50,12 @@ final class Protoc {
      * @param protoFiles          The proto source files to compile.
      * @param javaOutputDirectory The directory into which the java source files
      *                            will be generated.
+     * @param logger              Print compiler details when set.
      */
     private Protoc(String executable, ImmutableSet<File> protoPath,
                    String descriptorSetOut, boolean includeImports,
                    ImmutableSet<File> protoFiles, File javaOutputDirectory,
-                   File resourceOutputDirectory) {
+                   File resourceOutputDirectory, Log logger) {
         this.executable = checkNotNull(executable, "executable");
         this.protoPathElements = checkNotNull(protoPath, "protoPath");
         this.descriptorSetOut = descriptorSetOut;
@@ -59,6 +63,7 @@ final class Protoc {
         this.protoFiles = checkNotNull(protoFiles, "protoFiles");
         this.javaOutputDirectory = checkNotNull(javaOutputDirectory, "javaOutputDirectory");
         this.resourceOutputDirectory = checkNotNull(resourceOutputDirectory, "resourceOutputDirectory");
+        this.logger = logger;
         this.error = new CommandLineUtils.StringStreamConsumer();
         this.output = new CommandLineUtils.StringStreamConsumer();
     }
@@ -83,6 +88,9 @@ final class Protoc {
             cl.addArguments(descriptorArgs.toArray(new String[descriptorArgs.size()]));
         }
         cl.addArguments(buildProtocCommand().toArray(new String[]{}));
+        if (null != logger && logger.isInfoEnabled()) {
+            logger.info("Running " + Join.join(" ", cl.getCommandline()));
+        }
         return CommandLineUtils.executeCommandLine(cl, null, output, error);
     }
 
@@ -133,6 +141,7 @@ final class Protoc {
         private String descriptorSetOut;
         private boolean includeImports;
         private Set<File> protoFiles;
+        private Log logger;
 
         /**
          * Constructs a new builder. The two parameters are present as they are
@@ -241,6 +250,16 @@ final class Protoc {
         }
 
         /**
+         * Sets verbose output for debugging the build.
+         *
+         * @param logger Sets logger output.
+         */
+        public Builder withLogger(Log logger) {
+            this.logger = logger;
+            return this;
+        }
+
+        /**
          * @return A configured {@link Protoc} instance.
          * @throws IllegalStateException If no proto files have been added.
          */
@@ -248,7 +267,8 @@ final class Protoc {
             checkState(!protoFiles.isEmpty());
             return new Protoc(executable, ImmutableSet.copyOf(protopathElements),
                     descriptorSetOut, includeImports,
-                    ImmutableSet.copyOf(protoFiles), javaOutputDirectory, resourceOutputDirectory);
+                    ImmutableSet.copyOf(protoFiles), javaOutputDirectory, resourceOutputDirectory,
+                    logger);
         }
     }
 }
