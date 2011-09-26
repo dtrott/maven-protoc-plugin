@@ -68,6 +68,15 @@ abstract class AbstractProtocMojo extends AbstractMojo {
     protected MavenProjectHelper projectHelper;
 
     /**
+     * This is the directory into which project protos are copied before test protos.
+     *
+     * @parameter default-value="${project.build.outputDirectory}"
+     * @required
+     */
+    private File classesDirectory;
+
+
+    /**
      * This is the path to the {@code protoc} executable. By default it will search the {@code $PATH}.
      *
      * @parameter default-value="protoc"
@@ -174,6 +183,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
                     cleanDirectory(resourceDirectory);
 
                     Protoc.Builder builder = new Protoc.Builder(protocExecutable, outputDirectory, resourceDirectory)
+                            .addProtoPathElement(classesDirectory)
                             .addProtoPathElement(protoSourceRoot)
                             .addProtoPathElements(derivedProtoPathElements)
                             .addProtoPathElements(asList(additionalProtoPathElements))
