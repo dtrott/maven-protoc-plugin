@@ -42,6 +42,8 @@ public final class ProtocTestCompileMojo extends AbstractProtocMojo {
         project.addTestCompileSourceRoot(outputDirectory.getAbsolutePath());
         projectHelper.addTestResource(project, protoTestSourceRoot.getAbsolutePath(),
                 ImmutableList.of("**/*.proto"), ImmutableList.of());
+        projectHelper.addTestResource(project, resourceDirectory.getAbsolutePath(),
+                ImmutableList.of("**/*.proto.bin"), ImmutableList.of());
     }
 
     @Override

@@ -72,5 +72,7 @@ public final class ProtocCompileMojo extends AbstractProtocMojo {
         project.addCompileSourceRoot(outputDirectory.getAbsolutePath());
         projectHelper.addResource(project, protoSourceRoot.getAbsolutePath(),
                 ImmutableList.of("**/*.proto"), ImmutableList.of());
+        projectHelper.addResource(project, resourcesDirectory.getAbsolutePath(),
+                ImmutableList.of("**/*.proto.bin"), ImmutableList.of());
     }
 }
