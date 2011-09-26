@@ -84,3 +84,12 @@ this can be overriden by setting:
 If you build on NFS you may also need the following setting:
                   <staleMillis>10000</staleMillis>
 
+====================
+
+Changes by binkley from dtrott:
+
+* Support --descriptor_set_out and --include_imports options to protoc.
+* Binary descriptor set writes to ${project.build.directory}/generated-resources/protoc and ${project.build.directory}/generated-test-resources/protoc.
+* The default descriptor set file name is ${project.artifactId}-${project.version}.proto.bin.
+* Change the descriptor set file name with <descriptorSetOut>...</descriptorSetOut>.
+* Enable --include_imports with <includeImports/>.
