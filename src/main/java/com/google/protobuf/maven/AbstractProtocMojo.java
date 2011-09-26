@@ -173,6 +173,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
                     getLog().info("Skipping compilation because target directory newer than sources.");
                     attachFiles();
                 } else {
+                    classesDirectory.mkdirs();
                     ImmutableSet<File> derivedProtoPathElements =
                             makeProtoPathFromJars(temporaryProtoFileDirectory, getDependencyArtifactFiles());
                     outputDirectory.mkdirs();
