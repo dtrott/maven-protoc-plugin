@@ -64,7 +64,7 @@ final class Protoc {
      * @return The exit status of {@code protoc}.
      * @throws CommandLineException
      */
-    public int compile() throws CommandLineException {
+    public int execute() throws CommandLineException {
         Commandline cl = new Commandline();
         cl.setExecutable(executable);
         cl.addArguments(buildProtocCommand().toArray(new String[] {}));
