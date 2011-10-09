@@ -1,0 +1,11 @@
+package it.project1;
+
+import "it/project1/test1.proto";
+
+option java_package = "it.project1.messages";
+option java_outer_classname = "TestProtos2";
+option optimize_for = SPEED;
+
+message TestMessage2 {
+    optional it.project1.TestMessage1 included = 1;
+}

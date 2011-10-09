@@ -20,7 +20,6 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.jar.JarEntry;
@@ -254,13 +253,16 @@ abstract class AbstractProtocMojo extends AbstractMojo {
                         protocExecutable = "protoc";
                     }
 
-                    Protoc protoc = new Protoc.Builder(protocExecutable, outputDirectory)
-                            .addProtoPathElement(protoSourceRoot)
-                            .addProtoPathElements(derivedProtoPathElements)
-                            .addProtoPathElements(asList(additionalProtoPathElements))
-                            .addProtoFiles(protoFiles)
-                            .build();
+                    final Protoc.Builder protocBuilder =
+                            new Protoc.Builder(protocExecutable, outputDirectory)
+                                    .addProtoPathElement(protoSourceRoot)
+                                    .addProtoPathElements(derivedProtoPathElements)
+                                    .addProtoPathElements(asList(additionalProtoPathElements))
+                                    .addProtoFiles(protoFiles);
+                    addProtocBuilderParameters(protocBuilder);
+                    final Protoc protoc = protocBuilder.build();
 
+                    // TODO encapsulate logging inside Protoc
                     if (getLog().isDebugEnabled()) {
                         getLog().debug("Proto source root:");
                         getLog().debug(" " + protoSourceRoot);
@@ -280,15 +282,8 @@ abstract class AbstractProtocMojo extends AbstractMojo {
 
                         List<String> cl = protoc.buildProtocCommand();
                         if (cl != null && !cl.isEmpty()) {
-                            StringBuilder sb = new StringBuilder();
-                            for (Iterator<String> iterator = cl.iterator(); iterator.hasNext(); ) {
-                                sb.append(iterator.next());
-                                if (iterator.hasNext()) {
-                                    sb.append(' ');
-                                }
-                            }
                             getLog().debug("Command line options:");
-                            getLog().debug(sb);
+                            getLog().debug(Joiner.on(' ').join(cl));
                         }
                     }
 
@@ -314,6 +309,14 @@ abstract class AbstractProtocMojo extends AbstractMojo {
             getLog().info(format("%s does not exist. Review the configuration or consider disabling the plugin.",
                     protoSourceRoot));
         }
+    }
+
+    /**
+     * Adds mojo-specific parameters to the protoc builder.
+     *
+     * @param protocBuilder the builder to be modified.
+     */
+    protected void addProtocBuilderParameters(final Protoc.Builder protocBuilder) {
     }
 
     /**

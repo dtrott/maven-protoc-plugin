@@ -1,0 +1,8 @@
+package it.project1;
+
+option java_package = "it.project1.messages";
+option java_outer_classname = "TestProtos1";
+option optimize_for = SPEED;
+
+message TestMessage1 {
+}

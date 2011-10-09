@@ -37,6 +37,17 @@ public final class ProtocTestCompileMojo extends AbstractProtocMojo {
     private File outputDirectory;
 
     @Override
+    protected void addProtocBuilderParameters(final Protoc.Builder protocBuilder) {
+        super.addProtocBuilderParameters(protocBuilder);
+        // We need to add project output directory to the protobuf import paths,
+        // in case test protobuf definitions extend or depend on production ones
+        final File buildOutputDirectory = new File(project.getBuild().getOutputDirectory());
+        if (buildOutputDirectory.exists()) {
+            protocBuilder.addProtoPathElement(buildOutputDirectory);
+        }
+    }
+
+    @Override
     protected void attachFiles() {
         project.addTestCompileSourceRoot(outputDirectory.getAbsolutePath());
         projectHelper.addTestResource(project, protoTestSourceRoot.getAbsolutePath(),
