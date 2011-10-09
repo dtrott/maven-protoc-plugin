@@ -254,7 +254,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
                     }
 
                     final Protoc.Builder protocBuilder =
-                            new Protoc.Builder(protocExecutable, outputDirectory)
+                            new Protoc.Builder(protocExecutable)
                                     .addProtoPathElement(protoSourceRoot)
                                     .addProtoPathElements(derivedProtoPathElements)
                                     .addProtoPathElements(asList(additionalProtoPathElements))

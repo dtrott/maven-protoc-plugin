@@ -38,6 +38,12 @@ public final class ProtocCompileMojo extends AbstractProtocMojo {
     private File outputDirectory;
 
     @Override
+    protected void addProtocBuilderParameters(final Protoc.Builder protocBuilder) {
+        super.addProtocBuilderParameters(protocBuilder);
+        protocBuilder.setJavaOutputDirectory(getOutputDirectory());
+    }
+
+    @Override
     protected List<Artifact> getDependencyArtifacts() {
         // TODO(gak): maven-project needs generics
         @SuppressWarnings("unchecked")
