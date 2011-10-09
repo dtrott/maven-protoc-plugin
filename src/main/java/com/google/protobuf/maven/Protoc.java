@@ -19,11 +19,8 @@ import static com.google.common.collect.Lists.newLinkedList;
 import static com.google.common.collect.Sets.newHashSet;
 
 /**
- * This class represents an invokable configuration of the {@code protoc}
- * compiler. The actual executable is invoked using the plexus
- * {@link Commandline}.
- * <p/>
- * This class currently only supports generating java source files.
+ * This class represents an invokable configuration of the {@code protoc} compiler.
+ * The actual executable is invoked using the plexus {@link Commandline}.
  *
  * @author gak@google.com (Gregory Kick)
  */
@@ -49,8 +46,7 @@ final class Protoc {
      * @param executable The path to the {@code protoc} executable.
      * @param protoPath The directories in which to search for imports.
      * @param protoFiles The proto source files to compile.
-     * @param javaOutputDirectory The directory into which the java source files
-     * will be generated.
+     * @param javaOutputDirectory The directory into which the java source files will be generated.
      */
     private Protoc(String executable, ImmutableSet<File> protoPath,
                    ImmutableSet<File> protoFiles, File javaOutputDirectory) {
@@ -63,8 +59,7 @@ final class Protoc {
     }
 
     /**
-     * Invokes the {@code protoc} compiler using the configuration specified at
-     * construction.
+     * Invokes the {@code protoc} compiler using the configuration specified at construction.
      *
      * @return The exit status of {@code protoc}.
      * @throws CommandLineException
@@ -96,6 +91,12 @@ final class Protoc {
         return ImmutableList.copyOf(command);
     }
 
+    /**
+     * Logs execution parameters on debug level to the specified logger.
+     * All log messages will be prefixed with "{@value #LOG_PREFIX}".
+     *
+     * @param log a logger.
+     */
     public void logExecutionParameters(final Log log) {
         if (log.isDebugEnabled()) {
             if (log.isDebugEnabled()) {
@@ -162,11 +163,9 @@ final class Protoc {
          * required for all {@link Protoc} instances.
          *
          * @param executable The path to the {@code protoc} executable.
-         * @param javaOutputDirectory The directory into which the java source files
-         * will be generated.
+         * @param javaOutputDirectory The directory into which the java source files will be generated.
          * @throws NullPointerException If either of the arguments are {@code null}.
-         * @throws IllegalArgumentException If the {@code javaOutputDirectory} is
-         * not a directory.
+         * @throws IllegalArgumentException If the {@code javaOutputDirectory} is not a directory.
          */
         public Builder(String executable, File javaOutputDirectory) {
             this.executable = checkNotNull(executable, "executable");
@@ -207,8 +206,7 @@ final class Protoc {
                 return true;
             } else {
                 final File parentDirectory = directory.getParentFile();
-                return (parentDirectory == null) ? false
-                                                 : checkProtoFileIsInProtopathHelper(parentDirectory);
+                return parentDirectory != null && checkProtoFileIsInProtopathHelper(parentDirectory);
             }
         }
 
