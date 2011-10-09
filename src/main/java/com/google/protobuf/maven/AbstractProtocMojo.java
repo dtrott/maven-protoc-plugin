@@ -262,30 +262,25 @@ abstract class AbstractProtocMojo extends AbstractMojo {
                     addProtocBuilderParameters(protocBuilder);
                     final Protoc protoc = protocBuilder.build();
 
-                    // TODO encapsulate logging inside Protoc
                     if (getLog().isDebugEnabled()) {
                         getLog().debug("Proto source root:");
                         getLog().debug(" " + protoSourceRoot);
 
-                        getLog().debug("Derived proto paths:");
-                        for (File path : derivedProtoPathElements) {
-                            getLog().debug(" " + path);
+                        if (derivedProtoPathElements != null && !derivedProtoPathElements.isEmpty()) {
+                            getLog().debug("Derived proto paths:");
+                            for (final File path : derivedProtoPathElements) {
+                                getLog().debug(" " + path);
+                            }
                         }
 
-                        getLog().debug("Additional proto paths:");
-                        for (File path : additionalProtoPathElements) {
-                            getLog().debug(" " + path);
-                        }
-
-                        getLog().debug("Executable: ");
-                        getLog().debug(' ' + protocExecutable);
-
-                        List<String> cl = protoc.buildProtocCommand();
-                        if (cl != null && !cl.isEmpty()) {
-                            getLog().debug("Command line options:");
-                            getLog().debug(Joiner.on(' ').join(cl));
+                        if (additionalProtoPathElements != null && additionalProtoPathElements.length > 0) {
+                            getLog().debug("Additional proto paths:");
+                            for (final File path : additionalProtoPathElements) {
+                                getLog().debug(" " + path);
+                            }
                         }
                     }
+                    protoc.logExecutionParameters(getLog());
 
                     getLog().info(format("Compiling %d proto file(s) to %s", protoFiles.size(), outputDirectory));
 
