@@ -28,15 +28,19 @@
 
     <distributionManagement>
         <downloadUrl>https://github.com/sergei-ivanov/maven-protoc-plugin/downloads</downloadUrl>
+        <site>
+            <id>maven-protoc-plugin-site</id>
+            <url>file:../maven-protoc-plugin-site</url>
+        </site>
         <repository>
             <id>sergei-ivanov-releases</id>
             <name>Sergei Ivanov's Release Repository</name>
-            <url>file:///repositories/maven-releases</url>
+            <url>file:../maven-protoc-plugin-site/repo/releases</url>
         </repository>
         <snapshotRepository>
             <id>sergei-ivanov-snapshots</id>
             <name>Sergei Ivanov's Snapshot Repository</name>
-            <url>file:///repositories/maven-snapshots</url>
+            <url>file:../maven-protoc-plugin-site/repo/snapshots</url>
         </snapshotRepository>
     </distributionManagement>
 
@@ -46,15 +50,57 @@
 
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-enforcer-plugin</artifactId>
+                    <version>1.0</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-plugin-plugin</artifactId>
+                    <version>2.7</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.codehaus.plexus</groupId>
+                    <artifactId>plexus-component-metadata</artifactId>
+                    <version>${plexusVersion}</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <version>2.5</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>2.3.2</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>2.8.1</version>
+                    <version>2.10</version>
                 </plugin>
 
                 <!-- maven-site-plugin has to be of version 3.0+ when build is being run under maven 3.x -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-site-plugin</artifactId>
-                    <version>3.0-beta-3</version>
+                    <version>3.0</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-release-plugin</artifactId>
+                    <version>2.1</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-deploy-plugin</artifactId>
+                    <version>2.6</version>
                 </plugin>
 
             </plugins>
@@ -65,7 +111,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
-                <version>1.0</version>
                 <executions>
                     <execution>
                         <id>enforce-build-environment</id>
@@ -96,7 +141,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-plugin-plugin</artifactId>
-                <version>2.7</version>
                 <executions>
                     <execution>
                         <id>generated-helpmojo</id>
@@ -110,7 +154,6 @@
             <plugin>
                 <groupId>org.codehaus.plexus</groupId>
                 <artifactId>plexus-component-metadata</artifactId>
-                <version>${plexusVersion}</version>
                 <executions>
                     <execution>
                         <goals>
@@ -124,7 +167,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.3.2</version>
                 <configuration>
                     <source>1.5</source>
                     <target>1.5</target>
@@ -134,7 +176,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
-                <version>2.1</version>
                 <configuration>
                     <!-- Enforce integration tests during release -->
                     <arguments>-P run-its</arguments>
@@ -192,13 +233,13 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jxr-plugin</artifactId>
-                <version>2.2</version>
+                <version>2.3</version>
             </plugin>
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-report-plugin</artifactId>
-                <version>2.8.1</version>
+                <version>2.10</version>
             </plugin>
 
             <plugin>
@@ -310,7 +351,7 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.8.2</version>
+            <version>4.10</version>
             <scope>test</scope>
         </dependency>
         <dependency>
