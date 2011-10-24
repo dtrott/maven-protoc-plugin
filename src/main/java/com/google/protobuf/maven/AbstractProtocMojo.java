@@ -264,13 +264,14 @@ abstract class AbstractProtocMojo extends AbstractMojo {
                 for (JarEntry jarEntry : list(classpathJar.entries())) {
                     final String jarEntryName = jarEntry.getName();
                     if (jarEntry.getName().endsWith(PROTO_FILE_SUFFIX)) {
+                        File jarFileDirectory = new File(temporaryProtoFileDirectory,
+                                truncatePath(classpathJar.getName()));
                         final File uncompressedCopy =
-                                new File(new File(temporaryProtoFileDirectory,
-                                        truncatePath(classpathJar.getName())), jarEntryName);
+                                new File(jarFileDirectory, jarEntryName);
                         uncompressedCopy.getParentFile().mkdirs();
                         copyStreamToFile(new RawInputStreamFacade(classpathJar
                                 .getInputStream(jarEntry)), uncompressedCopy);
-                        protoDirectories.add(uncompressedCopy.getParentFile());
+                        protoDirectories.add(jarFileDirectory);
                     }
                 }
             } else if (classpathElementFile.isDirectory()) {
