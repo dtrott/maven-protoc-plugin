@@ -16,10 +16,10 @@ import org.codehaus.plexus.util.cli.CommandLineException;
 import org.codehaus.plexus.util.io.RawInputStreamFacade;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -32,7 +32,6 @@ import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Sets.newHashSet;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
-import static java.util.Collections.list;
 import static org.codehaus.plexus.util.FileUtils.cleanDirectory;
 import static org.codehaus.plexus.util.FileUtils.copyStreamToFile;
 import static org.codehaus.plexus.util.FileUtils.getFiles;
@@ -378,6 +377,8 @@ abstract class AbstractProtocMojo extends AbstractMojo {
 
     protected abstract File getProtoSourceRoot();
 
+    // TODO add artifact filtering (inclusions and exclusions)
+    // TODO add filtering for proto definitions in included artifacts
     protected abstract List<Artifact> getDependencyArtifacts();
 
     protected abstract File getOutputDirectory();
@@ -424,26 +425,25 @@ abstract class AbstractProtocMojo extends AbstractMojo {
                     throw new IllegalArgumentException(format(
                             "%s was not a readable artifact", classpathElementFile));
                 }
-                for (JarEntry jarEntry : list(classpathJar.entries())) {
+                final Enumeration<JarEntry> jarEntries = classpathJar.entries();
+                while (jarEntries.hasMoreElements()) {
+                    final JarEntry jarEntry = jarEntries.nextElement();
                     final String jarEntryName = jarEntry.getName();
-                    if (jarEntry.getName().endsWith(PROTO_FILE_SUFFIX)) {
-                        final File uncompressedCopy =
-                                new File(new File(temporaryProtoFileDirectory,
-                                        truncatePath(classpathJar.getName())), jarEntryName);
+                    // TODO try using org.codehaus.plexus.util.SelectorUtils.matchPath() with DEFAULT_INCLUDES
+                    if (jarEntryName.endsWith(PROTO_FILE_SUFFIX)) {
+                        final File jarDirectory =
+                                new File(temporaryProtoFileDirectory, truncatePath(classpathJar.getName()));
+                        final File uncompressedCopy = new File(jarDirectory, jarEntryName);
                         uncompressedCopy.getParentFile().mkdirs();
-                        copyStreamToFile(new RawInputStreamFacade(classpathJar
-                                .getInputStream(jarEntry)), uncompressedCopy);
-                        protoDirectories.add(uncompressedCopy.getParentFile());
+                        copyStreamToFile(
+                                new RawInputStreamFacade(classpathJar.getInputStream(jarEntry)),
+                                uncompressedCopy);
+                        protoDirectories.add(jarDirectory);
                     }
                 }
             } else if (classpathElementFile.isDirectory()) {
-                File[] protoFiles = classpathElementFile.listFiles(new FilenameFilter() {
-                    public boolean accept(File dir, String name) {
-                        return name.endsWith(PROTO_FILE_SUFFIX);
-                    }
-                });
-
-                if (protoFiles.length > 0) {
+                final List protoFiles = getFiles(classpathElementFile, DEFAULT_INCLUDES, null);
+                if (!protoFiles.isEmpty()) {
                     protoDirectories.add(classpathElementFile);
                 }
             }
