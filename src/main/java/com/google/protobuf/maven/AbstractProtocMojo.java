@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.jar.JarEntry;
@@ -253,43 +252,34 @@ abstract class AbstractProtocMojo extends AbstractMojo {
                         protocExecutable = "protoc";
                     }
 
-                    Protoc protoc = new Protoc.Builder(protocExecutable, outputDirectory)
-                            .addProtoPathElement(protoSourceRoot)
-                            .addProtoPathElements(derivedProtoPathElements)
-                            .addProtoPathElements(asList(additionalProtoPathElements))
-                            .addProtoFiles(protoFiles)
-                            .build();
+                    final Protoc.Builder protocBuilder =
+                            new Protoc.Builder(protocExecutable, outputDirectory)
+                                    .addProtoPathElement(protoSourceRoot)
+                                    .addProtoPathElements(derivedProtoPathElements)
+                                    .addProtoPathElements(asList(additionalProtoPathElements))
+                                    .addProtoFiles(protoFiles);
+                    addProtocBuilderParameters(protocBuilder);
+                    final Protoc protoc = protocBuilder.build();
 
                     if (getLog().isDebugEnabled()) {
                         getLog().debug("Proto source root:");
                         getLog().debug(" " + protoSourceRoot);
 
-                        getLog().debug("Derived proto paths:");
-                        for (File path : derivedProtoPathElements) {
-                            getLog().debug(" " + path);
-                        }
-
-                        getLog().debug("Additional proto paths:");
-                        for (File path : additionalProtoPathElements) {
-                            getLog().debug(" " + path);
-                        }
-
-                        getLog().debug("Executable: ");
-                        getLog().debug(' ' + protocExecutable);
-
-                        List<String> cl = protoc.buildProtocCommand();
-                        if (cl != null && !cl.isEmpty()) {
-                            StringBuilder sb = new StringBuilder();
-                            for (Iterator<String> iterator = cl.iterator(); iterator.hasNext(); ) {
-                                sb.append(iterator.next());
-                                if (iterator.hasNext()) {
-                                    sb.append(' ');
-                                }
+                        if (derivedProtoPathElements != null && !derivedProtoPathElements.isEmpty()) {
+                            getLog().debug("Derived proto paths:");
+                            for (final File path : derivedProtoPathElements) {
+                                getLog().debug(" " + path);
                             }
-                            getLog().debug("Command line options:");
-                            getLog().debug(sb);
+                        }
+
+                        if (additionalProtoPathElements != null && additionalProtoPathElements.length > 0) {
+                            getLog().debug("Additional proto paths:");
+                            for (final File path : additionalProtoPathElements) {
+                                getLog().debug(" " + path);
+                            }
                         }
                     }
+                    protoc.logExecutionParameters(getLog());
 
                     getLog().info(format("Compiling %d proto file(s) to %s", protoFiles.size(), outputDirectory));
 
@@ -313,6 +303,14 @@ abstract class AbstractProtocMojo extends AbstractMojo {
             getLog().info(format("%s does not exist. Review the configuration or consider disabling the plugin.",
                     protoSourceRoot));
         }
+    }
+
+    /**
+     * Adds mojo-specific parameters to the protoc builder.
+     *
+     * @param protocBuilder the builder to be modified.
+     */
+    protected void addProtocBuilderParameters(final Protoc.Builder protocBuilder) {
     }
 
     /**
