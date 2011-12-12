@@ -22,6 +22,41 @@
         <maven>${mavenVersion}</maven>
     </prerequisites>
 
+    <developers>
+        <developer>
+            <id>gak</id>
+            <name>Gregory Kick</name>
+            <organization>Google Inc.</organization>
+            <organizationUrl>http://www.google.com</organizationUrl>
+        </developer>
+        <developer>
+            <id>dtrott</id>
+            <name>David Trott</name>
+            <timezone>-8</timezone>
+        </developer>
+        <developer>
+            <id>masterzen</id>
+            <name>Brice Figureau</name>
+            <timezone>1</timezone>
+        </developer>
+        <developer>
+            <id>sergei-ivanov</id>
+            <name>Sergei Ivanov</name>
+            <timezone>0</timezone>
+        </developer>
+    </developers>
+
+    <contributors>
+        <contributor>
+            <name>Paul Nyheim (pnyheim)</name>
+            <timezone>1</timezone>
+        </contributor>
+        <contributor>
+            <name>B. K. Oxley (binkley)</name>
+            <timezone>-6</timezone>
+        </contributor>
+    </contributors>
+
     <scm>
         <connection>scm:git:git://github.com/sergei-ivanov/maven-protoc-plugin.git</connection>
     </scm>
@@ -254,6 +289,19 @@
                             <report>dependency-updates-report</report>
                             <report>plugin-updates-report</report>
                             <report>property-updates-report</report>
+                        </reports>
+                    </reportSet>
+                </reportSets>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-changes-plugin</artifactId>
+                <version>2.6</version>
+                <reportSets>
+                    <reportSet>
+                        <reports>
+                            <report>changes-report</report>
                         </reports>
                     </reportSet>
                 </reportSets>
