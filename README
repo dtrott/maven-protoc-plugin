@@ -13,6 +13,6 @@ for the time being it can be fetched from the following location:
     <pluginRepositories>
         <pluginRepository>
             <id>protoc-plugin</id>
-            <url>https://github.com/sergei-ivanov/maven-protoc-plugin/tree/gh-pages/repo/releases/</url>
+            <url>http://sergei-ivanov.github.com/maven-protoc-plugin/repo/releases/</url>
         </pluginRepository>
     </pluginRepositories>
