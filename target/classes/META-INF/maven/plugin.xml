@@ -1,0 +1,609 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+  <name>Maven Protoc Plugin</name>
+  <description></description>
+  <groupId>com.google.protobuf.tools</groupId>
+  <artifactId>maven-protoc-plugin</artifactId>
+  <version>0.1.12</version>
+  <goalPrefix>protoc</goalPrefix>
+  <isolatedRealm>false</isolatedRealm>
+  <inheritedByDefault>true</inheritedByDefault>
+  <mojos>
+    <mojo>
+      <goal>test-compile</goal>
+      <description></description>
+      <requiresDirectInvocation>false</requiresDirectInvocation>
+      <requiresProject>true</requiresProject>
+      <requiresReports>false</requiresReports>
+      <aggregator>false</aggregator>
+      <requiresOnline>false</requiresOnline>
+      <inheritedByDefault>true</inheritedByDefault>
+      <phase>generate-test-sources</phase>
+      <implementation>com.google.protobuf.maven.ProtocTestCompileMojo</implementation>
+      <language>java</language>
+      <instantiationStrategy>per-lookup</instantiationStrategy>
+      <executionStrategy>once-per-session</executionStrategy>
+      <threadSafe>false</threadSafe>
+      <parameters>
+        <parameter>
+          <name>additionalProtoPathElements</name>
+          <type>java.io.File[]</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description></description>
+        </parameter>
+        <parameter>
+          <name>checkStaleness</name>
+          <type>boolean</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description></description>
+        </parameter>
+        <parameter>
+          <name>excludes</name>
+          <type>java.util.Set</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description></description>
+        </parameter>
+        <parameter>
+          <name>hashDependentPaths</name>
+          <type>boolean</type>
+          <required>true</required>
+          <editable>true</editable>
+          <description>Set this to {@code false} to disable hashing of dependent jar paths.
+&lt;p/&gt;
+This plugin expands jars on the classpath looking for embedded .proto
+files. Normally these paths are hashed (MD5) to avoid issues with long
+file names on windows. However if this property is set to {@code false}
+longer paths will be used.</description>
+        </parameter>
+        <parameter>
+          <name>includes</name>
+          <type>java.util.Set</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description></description>
+        </parameter>
+        <parameter>
+          <name>languageSpecifications</name>
+          <type>java.util.List</type>
+          <required>true</required>
+          <editable>true</editable>
+          <description>This is the directory into which the {@code .java} will be created.</description>
+        </parameter>
+        <parameter>
+          <name>localRepository</name>
+          <type>org.apache.maven.artifact.repository.ArtifactRepository</type>
+          <required>true</required>
+          <editable>true</editable>
+          <description>This is the path to the local maven {@code repository}.</description>
+        </parameter>
+        <parameter>
+          <name>project</name>
+          <type>org.apache.maven.project.MavenProject</type>
+          <required>true</required>
+          <editable>false</editable>
+          <description>The current Maven project.</description>
+        </parameter>
+        <parameter>
+          <name>protoTestSourceRoot</name>
+          <type>java.io.File</type>
+          <required>true</required>
+          <editable>true</editable>
+          <description>The source directories containing the sources to be compiled.</description>
+        </parameter>
+        <parameter>
+          <name>protocExecutable</name>
+          <type>java.lang.String</type>
+          <required>true</required>
+          <editable>true</editable>
+          <description>This is the path to the {@code protoc} executable. By default it will
+search the {@code $PATH}.</description>
+        </parameter>
+        <parameter>
+          <name>staleMillis</name>
+          <type>long</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description></description>
+        </parameter>
+        <parameter>
+          <name>temporaryProtoFileDirectory</name>
+          <type>java.io.File</type>
+          <required>true</required>
+          <editable>true</editable>
+          <description>Since {@code protoc} cannot access jars, proto files in dependencies are
+extracted to this location and deleted on exit. This directory is always
+cleaned during execution.</description>
+        </parameter>
+      </parameters>
+      <configuration>
+        <hashDependentPaths implementation="boolean" default-value="true"/>
+        <localRepository implementation="org.apache.maven.artifact.repository.ArtifactRepository" default-value="${localRepository}"/>
+        <project implementation="org.apache.maven.project.MavenProject" default-value="${project}"/>
+        <protoTestSourceRoot implementation="java.io.File" default-value="${basedir}/src/test/proto"/>
+        <protocExecutable implementation="java.lang.String" default-value="protoc"/>
+        <temporaryProtoFileDirectory implementation="java.io.File">${project.build.directory}/protoc-dependencies</temporaryProtoFileDirectory>
+      </configuration>
+      <requirements>
+        <requirement>
+          <role>org.apache.maven.project.MavenProjectHelper</role>
+          <field-name>projectHelper</field-name>
+        </requirement>
+      </requirements>
+    </mojo>
+    <mojo>
+      <goal>compile-with-dependencies</goal>
+      <description>This mojo executes the {@code protoc} compiler for generating java sources
+from protocol buffer definitions. It also searches dependency artifacts for
+proto files and includes them in the protopath so that they can be
+referenced. Finally, it adds the proto files to the project as resources so
+that they are included in the final artifact.</description>
+      <requiresDependencyResolution>compile</requiresDependencyResolution>
+      <requiresDirectInvocation>false</requiresDirectInvocation>
+      <requiresProject>true</requiresProject>
+      <requiresReports>false</requiresReports>
+      <aggregator>false</aggregator>
+      <requiresOnline>false</requiresOnline>
+      <inheritedByDefault>true</inheritedByDefault>
+      <phase>generate-sources</phase>
+      <implementation>com.google.protobuf.maven.ProtocCompileWithDependenciesMojo</implementation>
+      <language>java</language>
+      <instantiationStrategy>per-lookup</instantiationStrategy>
+      <executionStrategy>once-per-session</executionStrategy>
+      <threadSafe>false</threadSafe>
+      <parameters>
+        <parameter>
+          <name>additionalProtoPathElements</name>
+          <type>java.io.File[]</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description></description>
+        </parameter>
+        <parameter>
+          <name>checkStaleness</name>
+          <type>boolean</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description></description>
+        </parameter>
+        <parameter>
+          <name>excludes</name>
+          <type>java.util.Set</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description></description>
+        </parameter>
+        <parameter>
+          <name>hashDependentPaths</name>
+          <type>boolean</type>
+          <required>true</required>
+          <editable>true</editable>
+          <description>Set this to {@code false} to disable hashing of dependent jar paths.
+&lt;p/&gt;
+This plugin expands jars on the classpath looking for embedded .proto
+files. Normally these paths are hashed (MD5) to avoid issues with long
+file names on windows. However if this property is set to {@code false}
+longer paths will be used.</description>
+        </parameter>
+        <parameter>
+          <name>includes</name>
+          <type>java.util.Set</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description></description>
+        </parameter>
+        <parameter>
+          <name>languageSpecifications</name>
+          <type>java.util.List</type>
+          <required>true</required>
+          <editable>true</editable>
+          <description>This is the directory into which the {@code .java} will be created.</description>
+        </parameter>
+        <parameter>
+          <name>localRepository</name>
+          <type>org.apache.maven.artifact.repository.ArtifactRepository</type>
+          <required>true</required>
+          <editable>true</editable>
+          <description>This is the path to the local maven {@code repository}.</description>
+        </parameter>
+        <parameter>
+          <name>project</name>
+          <type>org.apache.maven.project.MavenProject</type>
+          <required>true</required>
+          <editable>false</editable>
+          <description>The current Maven project.</description>
+        </parameter>
+        <parameter>
+          <name>protoSourceRoot</name>
+          <type>java.io.File</type>
+          <required>true</required>
+          <editable>true</editable>
+          <description>The source directories containing the sources to be compiled.</description>
+        </parameter>
+        <parameter>
+          <name>protocExecutable</name>
+          <type>java.lang.String</type>
+          <required>true</required>
+          <editable>true</editable>
+          <description>This is the path to the {@code protoc} executable. By default it will
+search the {@code $PATH}.</description>
+        </parameter>
+        <parameter>
+          <name>staleMillis</name>
+          <type>long</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description></description>
+        </parameter>
+        <parameter>
+          <name>temporaryProtoFileDirectory</name>
+          <type>java.io.File</type>
+          <required>true</required>
+          <editable>true</editable>
+          <description>Since {@code protoc} cannot access jars, proto files in dependencies are
+extracted to this location and deleted on exit. This directory is always
+cleaned during execution.</description>
+        </parameter>
+      </parameters>
+      <configuration>
+        <hashDependentPaths implementation="boolean" default-value="true"/>
+        <localRepository implementation="org.apache.maven.artifact.repository.ArtifactRepository" default-value="${localRepository}"/>
+        <project implementation="org.apache.maven.project.MavenProject" default-value="${project}"/>
+        <protoSourceRoot implementation="java.io.File" default-value="${basedir}/src/main/proto"/>
+        <protocExecutable implementation="java.lang.String" default-value="protoc"/>
+        <temporaryProtoFileDirectory implementation="java.io.File">${project.build.directory}/protoc-dependencies</temporaryProtoFileDirectory>
+      </configuration>
+      <requirements>
+        <requirement>
+          <role>org.apache.maven.project.MavenProjectHelper</role>
+          <field-name>projectHelper</field-name>
+        </requirement>
+      </requirements>
+    </mojo>
+    <mojo>
+      <goal>test-compile-with-dependencies</goal>
+      <description></description>
+      <requiresDependencyResolution>test</requiresDependencyResolution>
+      <requiresDirectInvocation>false</requiresDirectInvocation>
+      <requiresProject>true</requiresProject>
+      <requiresReports>false</requiresReports>
+      <aggregator>false</aggregator>
+      <requiresOnline>false</requiresOnline>
+      <inheritedByDefault>true</inheritedByDefault>
+      <phase>generate-test-sources</phase>
+      <implementation>com.google.protobuf.maven.ProtocTestCompileWithDependenciesMojo</implementation>
+      <language>java</language>
+      <instantiationStrategy>per-lookup</instantiationStrategy>
+      <executionStrategy>once-per-session</executionStrategy>
+      <threadSafe>false</threadSafe>
+      <parameters>
+        <parameter>
+          <name>additionalProtoPathElements</name>
+          <type>java.io.File[]</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description></description>
+        </parameter>
+        <parameter>
+          <name>checkStaleness</name>
+          <type>boolean</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description></description>
+        </parameter>
+        <parameter>
+          <name>excludes</name>
+          <type>java.util.Set</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description></description>
+        </parameter>
+        <parameter>
+          <name>hashDependentPaths</name>
+          <type>boolean</type>
+          <required>true</required>
+          <editable>true</editable>
+          <description>Set this to {@code false} to disable hashing of dependent jar paths.
+&lt;p/&gt;
+This plugin expands jars on the classpath looking for embedded .proto
+files. Normally these paths are hashed (MD5) to avoid issues with long
+file names on windows. However if this property is set to {@code false}
+longer paths will be used.</description>
+        </parameter>
+        <parameter>
+          <name>includes</name>
+          <type>java.util.Set</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description></description>
+        </parameter>
+        <parameter>
+          <name>languageSpecifications</name>
+          <type>java.util.List</type>
+          <required>true</required>
+          <editable>true</editable>
+          <description>This is the directory into which the {@code .java} will be created.</description>
+        </parameter>
+        <parameter>
+          <name>localRepository</name>
+          <type>org.apache.maven.artifact.repository.ArtifactRepository</type>
+          <required>true</required>
+          <editable>true</editable>
+          <description>This is the path to the local maven {@code repository}.</description>
+        </parameter>
+        <parameter>
+          <name>project</name>
+          <type>org.apache.maven.project.MavenProject</type>
+          <required>true</required>
+          <editable>false</editable>
+          <description>The current Maven project.</description>
+        </parameter>
+        <parameter>
+          <name>protoTestSourceRoot</name>
+          <type>java.io.File</type>
+          <required>true</required>
+          <editable>true</editable>
+          <description>The source directories containing the sources to be compiled.</description>
+        </parameter>
+        <parameter>
+          <name>protocExecutable</name>
+          <type>java.lang.String</type>
+          <required>true</required>
+          <editable>true</editable>
+          <description>This is the path to the {@code protoc} executable. By default it will
+search the {@code $PATH}.</description>
+        </parameter>
+        <parameter>
+          <name>staleMillis</name>
+          <type>long</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description></description>
+        </parameter>
+        <parameter>
+          <name>temporaryProtoFileDirectory</name>
+          <type>java.io.File</type>
+          <required>true</required>
+          <editable>true</editable>
+          <description>Since {@code protoc} cannot access jars, proto files in dependencies are
+extracted to this location and deleted on exit. This directory is always
+cleaned during execution.</description>
+        </parameter>
+      </parameters>
+      <configuration>
+        <hashDependentPaths implementation="boolean" default-value="true"/>
+        <localRepository implementation="org.apache.maven.artifact.repository.ArtifactRepository" default-value="${localRepository}"/>
+        <project implementation="org.apache.maven.project.MavenProject" default-value="${project}"/>
+        <protoTestSourceRoot implementation="java.io.File" default-value="${basedir}/src/test/proto"/>
+        <protocExecutable implementation="java.lang.String" default-value="protoc"/>
+        <temporaryProtoFileDirectory implementation="java.io.File">${project.build.directory}/protoc-dependencies</temporaryProtoFileDirectory>
+      </configuration>
+      <requirements>
+        <requirement>
+          <role>org.apache.maven.project.MavenProjectHelper</role>
+          <field-name>projectHelper</field-name>
+        </requirement>
+      </requirements>
+    </mojo>
+    <mojo>
+      <goal>compile</goal>
+      <description>This mojo executes the {@code protoc} compiler for generating java sources
+from protocol buffer definitions. It also adds the proto files to the project
+as resources so that they are included in the final artifact.</description>
+      <requiresDirectInvocation>false</requiresDirectInvocation>
+      <requiresProject>true</requiresProject>
+      <requiresReports>false</requiresReports>
+      <aggregator>false</aggregator>
+      <requiresOnline>false</requiresOnline>
+      <inheritedByDefault>true</inheritedByDefault>
+      <phase>generate-sources</phase>
+      <implementation>com.google.protobuf.maven.ProtocCompileMojo</implementation>
+      <language>java</language>
+      <instantiationStrategy>per-lookup</instantiationStrategy>
+      <executionStrategy>once-per-session</executionStrategy>
+      <threadSafe>false</threadSafe>
+      <parameters>
+        <parameter>
+          <name>additionalProtoPathElements</name>
+          <type>java.io.File[]</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description></description>
+        </parameter>
+        <parameter>
+          <name>checkStaleness</name>
+          <type>boolean</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description></description>
+        </parameter>
+        <parameter>
+          <name>excludes</name>
+          <type>java.util.Set</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description></description>
+        </parameter>
+        <parameter>
+          <name>hashDependentPaths</name>
+          <type>boolean</type>
+          <required>true</required>
+          <editable>true</editable>
+          <description>Set this to {@code false} to disable hashing of dependent jar paths.
+&lt;p/&gt;
+This plugin expands jars on the classpath looking for embedded .proto
+files. Normally these paths are hashed (MD5) to avoid issues with long
+file names on windows. However if this property is set to {@code false}
+longer paths will be used.</description>
+        </parameter>
+        <parameter>
+          <name>includes</name>
+          <type>java.util.Set</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description></description>
+        </parameter>
+        <parameter>
+          <name>languageSpecifications</name>
+          <type>java.util.List</type>
+          <required>true</required>
+          <editable>true</editable>
+          <description>This is the directory into which the {@code .java} will be created.</description>
+        </parameter>
+        <parameter>
+          <name>localRepository</name>
+          <type>org.apache.maven.artifact.repository.ArtifactRepository</type>
+          <required>true</required>
+          <editable>true</editable>
+          <description>This is the path to the local maven {@code repository}.</description>
+        </parameter>
+        <parameter>
+          <name>project</name>
+          <type>org.apache.maven.project.MavenProject</type>
+          <required>true</required>
+          <editable>false</editable>
+          <description>The current Maven project.</description>
+        </parameter>
+        <parameter>
+          <name>protoSourceRoot</name>
+          <type>java.io.File</type>
+          <required>true</required>
+          <editable>true</editable>
+          <description>The source directories containing the sources to be compiled.</description>
+        </parameter>
+        <parameter>
+          <name>protocExecutable</name>
+          <type>java.lang.String</type>
+          <required>true</required>
+          <editable>true</editable>
+          <description>This is the path to the {@code protoc} executable. By default it will
+search the {@code $PATH}.</description>
+        </parameter>
+        <parameter>
+          <name>staleMillis</name>
+          <type>long</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description></description>
+        </parameter>
+        <parameter>
+          <name>temporaryProtoFileDirectory</name>
+          <type>java.io.File</type>
+          <required>true</required>
+          <editable>true</editable>
+          <description>Since {@code protoc} cannot access jars, proto files in dependencies are
+extracted to this location and deleted on exit. This directory is always
+cleaned during execution.</description>
+        </parameter>
+      </parameters>
+      <configuration>
+        <hashDependentPaths implementation="boolean" default-value="true"/>
+        <localRepository implementation="org.apache.maven.artifact.repository.ArtifactRepository" default-value="${localRepository}"/>
+        <project implementation="org.apache.maven.project.MavenProject" default-value="${project}"/>
+        <protoSourceRoot implementation="java.io.File" default-value="${basedir}/src/main/proto"/>
+        <protocExecutable implementation="java.lang.String" default-value="protoc"/>
+        <temporaryProtoFileDirectory implementation="java.io.File">${project.build.directory}/protoc-dependencies</temporaryProtoFileDirectory>
+      </configuration>
+      <requirements>
+        <requirement>
+          <role>org.apache.maven.project.MavenProjectHelper</role>
+          <field-name>projectHelper</field-name>
+        </requirement>
+      </requirements>
+    </mojo>
+  </mojos>
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-plugin-api</artifactId>
+      <type>jar</type>
+      <version>2.0.9</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-project</artifactId>
+      <type>jar</type>
+      <version>2.0.9</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-settings</artifactId>
+      <type>jar</type>
+      <version>2.0.9</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-profile</artifactId>
+      <type>jar</type>
+      <version>2.0.9</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-model</artifactId>
+      <type>jar</type>
+      <version>2.0.9</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-artifact-manager</artifactId>
+      <type>jar</type>
+      <version>2.0.9</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-repository-metadata</artifactId>
+      <type>jar</type>
+      <version>2.0.9</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.wagon</groupId>
+      <artifactId>wagon-provider-api</artifactId>
+      <type>jar</type>
+      <version>1.0-beta-2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-plugin-registry</artifactId>
+      <type>jar</type>
+      <version>2.0.9</version>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-container-default</artifactId>
+      <type>jar</type>
+      <version>1.0-alpha-9-stable-1</version>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <type>jar</type>
+      <version>3.8.1</version>
+    </dependency>
+    <dependency>
+      <groupId>classworlds</groupId>
+      <artifactId>classworlds</artifactId>
+      <type>jar</type>
+      <version>1.1-alpha-2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-artifact</artifactId>
+      <type>jar</type>
+      <version>2.0.9</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.collections</groupId>
+      <artifactId>google-collections</artifactId>
+      <type>jar</type>
+      <version>0.8</version>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-utils</artifactId>
+      <type>jar</type>
+      <version>1.5.4</version>
+    </dependency>
+  </dependencies>
+</plugin>

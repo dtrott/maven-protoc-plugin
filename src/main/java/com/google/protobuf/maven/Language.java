@@ -16,5 +16,4 @@ public enum Language {
 	public void setCompileCommand(String compileCommand) {
 		this.compileCommand = compileCommand;
 	}
-
 }
