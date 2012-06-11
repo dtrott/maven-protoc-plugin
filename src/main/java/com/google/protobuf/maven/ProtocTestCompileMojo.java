@@ -1,6 +1,7 @@
 package com.google.protobuf.maven;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -11,10 +12,9 @@ import com.google.common.collect.ImmutableList;
 
 /**
  * @phase generate-test-sources
- * @goal testCompile
- * @requiresDependencyResolution test
+ * @goal test-compile
  */
-public final class ProtocTestCompileMojo extends AbstractProtocMojo {
+public class ProtocTestCompileMojo extends AbstractProtocMojo {
 
 	/**
 	 * The source directories containing the sources to be compiled.
@@ -33,18 +33,8 @@ public final class ProtocTestCompileMojo extends AbstractProtocMojo {
 	private List<LanguageSpecification> languageSpecifications;
 
 	@Override
-	protected void attachFiles(Language lang) throws MojoExecutionException {
-		this.project.addTestCompileSourceRoot(this.getOutputDirectory(lang).getAbsolutePath());
-		this.projectHelper.addTestResource(this.project, this.protoTestSourceRoot.getAbsolutePath(),
-				ImmutableList.of("**/*.proto"), ImmutableList.of());
-	}
-
-	@Override
-	protected List<Artifact> getDependencyArtifacts() {
-		// TODO(gak): maven-project needs generics
-		@SuppressWarnings("unchecked")
-		List<Artifact> testArtifacts = this.project.getTestArtifacts();
-		return testArtifacts;
+	protected File getProtoSourceRoot() {
+		return this.protoTestSourceRoot;
 	}
 
 	@Override
@@ -60,13 +50,19 @@ public final class ProtocTestCompileMojo extends AbstractProtocMojo {
 	}
 
 	@Override
-	protected File getProtoSourceRoot() {
-		return this.protoTestSourceRoot;
-	}
-
-	@Override
 	protected Collection<LanguageSpecification> getLanguages() {
 		return this.languageSpecifications;
 	}
 
+	@Override
+	protected List<Artifact> getDependencyArtifacts() {
+		return new ArrayList<Artifact>();
+	}
+
+	@Override
+	protected void attachFiles(Language lang) throws MojoExecutionException {
+		this.project.addTestCompileSourceRoot(this.getOutputDirectory(lang).getAbsolutePath());
+		this.projectHelper.addTestResource(this.project, this.protoTestSourceRoot.getAbsolutePath(),
+				ImmutableList.of("**/*.proto"), ImmutableList.of());
+	}
 }

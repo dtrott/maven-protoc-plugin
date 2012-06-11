@@ -36,5 +36,4 @@ public class LanguageSpecification {
 	public boolean equals(Object obj) {
 		return super.equals(obj) || obj.toString().equals(this.language.toString());
 	}
-
 }
