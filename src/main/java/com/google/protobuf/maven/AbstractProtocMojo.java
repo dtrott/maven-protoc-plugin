@@ -25,15 +25,11 @@ import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.base.Preconditions.*;
 import static com.google.common.collect.Sets.newHashSet;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
-import static org.codehaus.plexus.util.FileUtils.cleanDirectory;
-import static org.codehaus.plexus.util.FileUtils.copyStreamToFile;
-import static org.codehaus.plexus.util.FileUtils.getFiles;
+import static org.codehaus.plexus.util.FileUtils.*;
 
 /**
  * Abstract Mojo implementation.
@@ -162,6 +158,31 @@ abstract class AbstractProtocMojo extends AbstractMojo {
      */
     private Set<String> excludes = ImmutableSet.of();
 
+
+    /**
+     * The descriptor set file name. Only used if {@code writeDescriptorSet} is set to {@code true}.
+     * @parameter default-value="descriptorset.protobin"
+     * @required
+     */
+    private String descriptorSetFileName;
+
+    /**
+     * If set to {@code true}, the compiler will generate a binary descriptor set file for the
+     * specified {@code .proto} files.
+     *
+     * @parameter default-value="false"
+     * @required
+     */
+    private boolean writeDescriptorSet;
+
+    /**
+     * If {@code true} and {@code writeDescriptorSet} has been set, the compiler will include
+     * all dependencies in the descriptor set making it "self-contained".
+     *
+     * @parameter default-value="false"
+     */
+    private boolean includeDependenciesInDescriptorSet;
+
     /**
      * Sets the granularity in milliseconds of the last modification date
      * for testing whether source protobuf definitions need recompilation.
@@ -232,6 +253,14 @@ abstract class AbstractProtocMojo extends AbstractMojo {
 
                     // Quick fix to fix issues with two mvn installs in a row (ie no clean)
                     cleanDirectory(outputDirectory);
+
+                    if (writeDescriptorSet) {
+                        final File descriptorSetOutputDirectory = getDescriptorSetOutputDirectory();
+                        descriptorSetOutputDirectory.mkdirs();
+                        // See above
+                        cleanDirectory(descriptorSetOutputDirectory);
+                    }
+
 
                     //get toolchain from context
                     Toolchain tc = toolchainManager.getToolchainFromBuildContext("protobuf", session); //NOI18N
@@ -311,6 +340,12 @@ abstract class AbstractProtocMojo extends AbstractMojo {
      * @param protocBuilder the builder to be modified.
      */
     protected void addProtocBuilderParameters(final Protoc.Builder protocBuilder) {
+        if (writeDescriptorSet) {
+            final File descriptorSetFile = new File(getDescriptorSetOutputDirectory(), descriptorSetFileName);
+            getLog().info("Will write descriptor set:");
+            getLog().info(" " + descriptorSetFile.getAbsolutePath());
+            protocBuilder.withDescriptorSetFile(descriptorSetFile, includeDependenciesInDescriptorSet);
+        }
     }
 
     /**
@@ -365,7 +400,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
         checkNotNull(projectHelper, "projectHelper");
         final File protoSourceRoot = getProtoSourceRoot();
         checkNotNull(protoSourceRoot);
-        checkArgument(!protoSourceRoot.isFile(), "protoSourceRoot is a file, not a diretory");
+        checkArgument(!protoSourceRoot.isFile(), "protoSourceRoot is a file, not a directory");
         checkNotNull(temporaryProtoFileDirectory, "temporaryProtoFileDirectory");
         checkState(!temporaryProtoFileDirectory.isFile(), "temporaryProtoFileDirectory is a file, not a directory");
         final File outputDirectory = getOutputDirectory();
@@ -379,7 +414,19 @@ abstract class AbstractProtocMojo extends AbstractMojo {
     // TODO add filtering for proto definitions in included artifacts
     protected abstract List<Artifact> getDependencyArtifacts();
 
+    /**
+     * Returns the output directory for generated sources. Depends on build phase so must
+     * be defined in concrete implementation.
+     * @return
+     */
     protected abstract File getOutputDirectory();
+
+    /**
+     * Returns output directory for descriptor set file. Depends on build phase so must
+     * be defined in concrete implementation.
+     * @return
+     */
+    protected abstract File getDescriptorSetOutputDirectory();
 
     protected abstract void attachFiles();
 

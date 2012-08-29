@@ -12,9 +12,7 @@ import java.io.File;
 import java.util.List;
 import java.util.Set;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.base.Preconditions.*;
 import static com.google.common.collect.Lists.newLinkedList;
 import static com.google.common.collect.Sets.newHashSet;
 
@@ -36,6 +34,10 @@ final class Protoc {
 
     private final File javaOutputDirectory;
 
+    private final File descriptorSetFile;
+
+    private final boolean includeImportsInDescriptorSet;
+
     private final CommandLineUtils.StringStreamConsumer output;
 
     private final CommandLineUtils.StringStreamConsumer error;
@@ -47,13 +49,20 @@ final class Protoc {
      * @param protoPath The directories in which to search for imports.
      * @param protoFiles The proto source files to compile.
      * @param javaOutputDirectory The directory into which the java source files will be generated.
+     * @param descriptorSetFile The directory into which a descriptor set will be generated;
+     *                                     if {@code null}, no descriptor set will be written
+     * @param includeImportsInDescriptorSet If {@code true}, dependencies will be included in the descriptor
+     *                                      set.
      */
     private Protoc(String executable, ImmutableSet<File> protoPath,
-                   ImmutableSet<File> protoFiles, File javaOutputDirectory) {
+                   ImmutableSet<File> protoFiles, File javaOutputDirectory,
+                   File descriptorSetFile, boolean includeImportsInDescriptorSet) {
         this.executable = checkNotNull(executable, "executable");
         this.protoPathElements = checkNotNull(protoPath, "protoPath");
         this.protoFiles = checkNotNull(protoFiles, "protoFiles");
         this.javaOutputDirectory = checkNotNull(javaOutputDirectory, "javaOutputDirectory");
+        this.descriptorSetFile = descriptorSetFile;
+        this.includeImportsInDescriptorSet = includeImportsInDescriptorSet;
         this.error = new CommandLineUtils.StringStreamConsumer();
         this.output = new CommandLineUtils.StringStreamConsumer();
     }
@@ -88,6 +97,12 @@ final class Protoc {
         for (File protoFile : protoFiles) {
             command.add(protoFile.toString());
         }
+        if (descriptorSetFile != null) {
+            command.add("--descriptor_set_out=" + descriptorSetFile);
+            if (includeImportsInDescriptorSet) {
+                command.add("--include_imports");
+            }
+        }
         return ImmutableList.copyOf(command);
     }
 
@@ -114,6 +129,13 @@ final class Protoc {
             if (javaOutputDirectory != null) {
                 log.debug(LOG_PREFIX + "Java output directory:");
                 log.debug(LOG_PREFIX + ' ' + javaOutputDirectory);
+            }
+
+            if (descriptorSetFile != null) {
+                log.debug(LOG_PREFIX + "Descriptor set output file:");
+                log.debug(LOG_PREFIX + ' ' + descriptorSetFile);
+                log.debug(LOG_PREFIX + "Include imports:");
+                log.debug(LOG_PREFIX + ' ' + includeImportsInDescriptorSet);
             }
 
             log.debug(LOG_PREFIX + "Protobuf descriptors:");
@@ -154,6 +176,10 @@ final class Protoc {
 
         private final File javaOutputDirectory;
 
+        private File descriptorSetFile;
+
+        private boolean includeImportsInDescriptorSet;
+
         private Set<File> protopathElements;
 
         private Set<File> protoFiles;
@@ -192,6 +218,14 @@ final class Protoc {
             checkArgument(protoFile.getName().endsWith(".proto"));
             checkProtoFileIsInProtopath(protoFile);
             protoFiles.add(protoFile);
+            return this;
+        }
+
+        public Builder withDescriptorSetFile(File descriptorSetFile, boolean includeImports) {
+            checkNotNull(descriptorSetFile, "descriptorSetFile");
+            checkArgument(descriptorSetFile.getParentFile().isDirectory());
+            this.descriptorSetFile = descriptorSetFile;
+            this.includeImportsInDescriptorSet = includeImports;
             return this;
         }
 
@@ -253,7 +287,8 @@ final class Protoc {
         public Protoc build() {
             checkState(!protoFiles.isEmpty());
             return new Protoc(executable, ImmutableSet.copyOf(protopathElements),
-                    ImmutableSet.copyOf(protoFiles), javaOutputDirectory);
+                    ImmutableSet.copyOf(protoFiles), javaOutputDirectory,
+                    descriptorSetFile, includeImportsInDescriptorSet);
         }
     }
 }

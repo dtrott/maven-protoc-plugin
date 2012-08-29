@@ -6,8 +6,8 @@
     <artifactId>maven-protoc-plugin</artifactId>
     <packaging>maven-plugin</packaging>
     <name>Maven Protoc Plugin</name>
-    <version>0.2.1-SNAPSHOT</version>
-    <url>https://github.com/sergei-ivanov/maven-protoc-plugin</url>
+    <version>0.3-SNAPSHOT</version>
+    <url>https://github.com/rwicke/maven-protoc-plugin</url>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -53,14 +53,18 @@
             <name>B. K. Oxley (binkley)</name>
             <timezone>-6</timezone>
         </contributor>
+        <contributor>
+            <name>Rob Wicke</name>
+            <timezone>0</timezone>
+        </contributor>
     </contributors>
 
     <scm>
-        <connection>scm:git:git://github.com/sergei-ivanov/maven-protoc-plugin.git</connection>
+        <connection>scm:git:git://github.com/rwicke/maven-protoc-plugin.git</connection>
     </scm>
 
     <distributionManagement>
-        <downloadUrl>https://github.com/sergei-ivanov/maven-protoc-plugin/downloads</downloadUrl>
+        <downloadUrl>https://github.com/rwicke/maven-protoc-plugin/downloads</downloadUrl>
         <site>
             <id>maven-protoc-plugin-site</id>
             <url>file:../maven-protoc-plugin-site</url>
