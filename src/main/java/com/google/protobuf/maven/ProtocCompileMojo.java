@@ -32,7 +32,7 @@ public final class ProtocCompileMojo extends AbstractProtocMojo {
     /**
      * This is the directory into which the {@code .java} will be created.
      *
-     * @parameter default-value="${project.build.directory}/generated-sources/protoc"
+     * @parameter default-value="${project.build.directory}/generated-sources/protobuf/java"
      * @required
      */
     private File outputDirectory;
@@ -41,7 +41,7 @@ public final class ProtocCompileMojo extends AbstractProtocMojo {
     /**
      * This is the directory into which the (optional) descriptor set file will be created.
      *
-     * @parameter default-value="${project.build.directory}/generated-sources/protoc-descriptor-sets"
+     * @parameter default-value="${project.build.directory}/generated-resources/protobuf/descriptor-sets"
      * @required
      */
     private File descriptorSetOutputDirectory;

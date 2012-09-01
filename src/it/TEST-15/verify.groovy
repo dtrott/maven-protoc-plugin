@@ -1,8 +1,8 @@
-outputDirectory = new File(basedir, 'target/generated-sources/protoc-descriptor-sets');
+outputDirectory = new File(basedir, 'target/generated-resources/protobuf/descriptor-sets');
 assert outputDirectory.exists();
 assert outputDirectory.isDirectory();
 
-generatedJavaFile = new File(outputDirectory, 'descriptorset.protobin');
+generatedJavaFile = new File(outputDirectory, 'TEST-15-0.0.1-SNAPSHOT.protobin');
 assert generatedJavaFile.exists();
 assert generatedJavaFile.isFile();
 

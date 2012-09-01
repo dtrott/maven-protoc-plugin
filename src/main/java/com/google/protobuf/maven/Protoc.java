@@ -12,7 +12,9 @@ import java.io.File;
 import java.util.List;
 import java.util.Set;
 
-import static com.google.common.base.Preconditions.*;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newLinkedList;
 import static com.google.common.collect.Sets.newHashSet;
 
@@ -50,9 +52,8 @@ final class Protoc {
      * @param protoFiles The proto source files to compile.
      * @param javaOutputDirectory The directory into which the java source files will be generated.
      * @param descriptorSetFile The directory into which a descriptor set will be generated;
-     *                                     if {@code null}, no descriptor set will be written
-     * @param includeImportsInDescriptorSet If {@code true}, dependencies will be included in the descriptor
-     *                                      set.
+     * if {@code null}, no descriptor set will be written
+     * @param includeImportsInDescriptorSet If {@code true}, dependencies will be included in the descriptor set.
      */
     private Protoc(String executable, ImmutableSet<File> protoPath,
                    ImmutableSet<File> protoFiles, File javaOutputDirectory,

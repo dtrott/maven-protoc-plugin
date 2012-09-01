@@ -1,4 +1,4 @@
-outputDirectory = new File(basedir, 'target/generated-sources/protoc');
+outputDirectory = new File(basedir, 'target/generated-sources/protobuf/java');
 assert outputDirectory.exists();
 assert outputDirectory.isDirectory();
 

@@ -25,11 +25,15 @@ import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-import static com.google.common.base.Preconditions.*;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Sets.newHashSet;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
-import static org.codehaus.plexus.util.FileUtils.*;
+import static org.codehaus.plexus.util.FileUtils.cleanDirectory;
+import static org.codehaus.plexus.util.FileUtils.copyStreamToFile;
+import static org.codehaus.plexus.util.FileUtils.getFiles;
 
 /**
  * Abstract Mojo implementation.
@@ -161,7 +165,8 @@ abstract class AbstractProtocMojo extends AbstractMojo {
 
     /**
      * The descriptor set file name. Only used if {@code writeDescriptorSet} is set to {@code true}.
-     * @parameter default-value="descriptorset.protobin"
+     *
+     * @parameter default-value="${project.build.finalName}.protobin"
      * @required
      */
     private String descriptorSetFileName;
@@ -417,6 +422,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
     /**
      * Returns the output directory for generated sources. Depends on build phase so must
      * be defined in concrete implementation.
+     *
      * @return
      */
     protected abstract File getOutputDirectory();
@@ -424,6 +430,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
     /**
      * Returns output directory for descriptor set file. Depends on build phase so must
      * be defined in concrete implementation.
+     *
      * @return
      */
     protected abstract File getDescriptorSetOutputDirectory();

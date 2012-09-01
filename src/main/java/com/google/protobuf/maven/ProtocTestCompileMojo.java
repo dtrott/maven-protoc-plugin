@@ -31,7 +31,7 @@ public final class ProtocTestCompileMojo extends AbstractProtocMojo {
     /**
      * This is the directory into which the {@code .java} test sources will be created.
      *
-     * @parameter default-value="${project.build.directory}/generated-test-sources/protoc"
+     * @parameter default-value="${project.build.directory}/generated-test-sources/protobuf/java"
      * @required
      */
     private File outputDirectory;
@@ -39,7 +39,7 @@ public final class ProtocTestCompileMojo extends AbstractProtocMojo {
     /**
      * This is the directory into which the (optional) descriptor set file will be created.
      *
-     * @parameter default-value="${project.build.directory}/generated-test-sources/protoc-descriptor-sets"
+     * @parameter default-value="${project.build.directory}/generated-test-resources/protobuf/descriptor-sets"
      * @required
      */
     private File descriptorSetOutputDirectory;
