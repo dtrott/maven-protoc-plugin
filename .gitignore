@@ -11,3 +11,5 @@
 
 # Maven output
 target
+*.releaseBackup
+release.properties
