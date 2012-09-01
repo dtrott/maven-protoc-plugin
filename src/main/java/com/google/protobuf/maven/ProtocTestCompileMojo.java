@@ -36,6 +36,14 @@ public final class ProtocTestCompileMojo extends AbstractProtocMojo {
      */
     private File outputDirectory;
 
+    /**
+     * This is the directory into which the (optional) descriptor set file will be created.
+     *
+     * @parameter default-value="${project.build.directory}/generated-test-sources/protoc-descriptor-sets"
+     * @required
+     */
+    private File descriptorSetOutputDirectory;
+
     @Override
     protected void addProtocBuilderParameters(final Protoc.Builder protocBuilder) {
         super.addProtocBuilderParameters(protocBuilder);
@@ -65,6 +73,11 @@ public final class ProtocTestCompileMojo extends AbstractProtocMojo {
     @Override
     protected File getOutputDirectory() {
         return outputDirectory;
+    }
+
+    @Override
+    protected File getDescriptorSetOutputDirectory() {
+        return descriptorSetOutputDirectory;
     }
 
     @Override

@@ -37,6 +37,15 @@ public final class ProtocCompileMojo extends AbstractProtocMojo {
      */
     private File outputDirectory;
 
+
+    /**
+     * This is the directory into which the (optional) descriptor set file will be created.
+     *
+     * @parameter default-value="${project.build.directory}/generated-sources/protoc-descriptor-sets"
+     * @required
+     */
+    private File descriptorSetOutputDirectory;
+
     @Override
     protected List<Artifact> getDependencyArtifacts() {
         // TODO(gak): maven-project needs generics
@@ -48,6 +57,11 @@ public final class ProtocCompileMojo extends AbstractProtocMojo {
     @Override
     protected File getOutputDirectory() {
         return outputDirectory;
+    }
+
+    @Override
+    protected File getDescriptorSetOutputDirectory() {
+        return descriptorSetOutputDirectory;
     }
 
     @Override
