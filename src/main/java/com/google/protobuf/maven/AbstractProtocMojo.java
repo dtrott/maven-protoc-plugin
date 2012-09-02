@@ -496,6 +496,9 @@ abstract class AbstractProtocMojo extends AbstractMojo {
             Iterable<File> classpathElementFiles)
             throws IOException, MojoExecutionException {
         checkNotNull(classpathElementFiles, "classpathElementFiles");
+        if (!classpathElementFiles.iterator().hasNext()) {
+            return ImmutableSet.of(); // Return an empty set
+        }
         // clean the temporary directory to ensure that stale files aren't used
         if (temporaryProtoFileDirectory.exists()) {
             cleanDirectory(temporaryProtoFileDirectory);
@@ -513,7 +516,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
                     classpathJar = new JarFile(classpathElementFile);
                 } catch (IOException e) {
                     throw new IllegalArgumentException(format(
-                            "%s was not a readable artifact", classpathElementFile));
+                            "%s was not a readable artifact", classpathElementFile), e);
                 }
                 final Enumeration<JarEntry> jarEntries = classpathJar.entries();
                 while (jarEntries.hasMoreElements()) {
