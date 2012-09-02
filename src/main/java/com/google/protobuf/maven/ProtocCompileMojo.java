@@ -37,12 +37,12 @@ public final class ProtocCompileMojo extends AbstractProtocMojo {
      */
     private File outputDirectory;
 
-
     /**
      * This is the directory into which the (optional) descriptor set file will be created.
      *
      * @parameter default-value="${project.build.directory}/generated-resources/protobuf/descriptor-sets"
      * @required
+     * @since 0.3.0
      */
     private File descriptorSetOutputDirectory;
 
@@ -74,5 +74,6 @@ public final class ProtocCompileMojo extends AbstractProtocMojo {
         project.addCompileSourceRoot(outputDirectory.getAbsolutePath());
         projectHelper.addResource(project, protoSourceRoot.getAbsolutePath(),
                 ImmutableList.of("**/*.proto"), ImmutableList.of());
+        buildContext.refresh(outputDirectory);
     }
 }

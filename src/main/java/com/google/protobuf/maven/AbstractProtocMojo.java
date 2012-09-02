@@ -12,8 +12,10 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectHelper;
 import org.apache.maven.toolchain.Toolchain;
 import org.apache.maven.toolchain.ToolchainManager;
+import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.cli.CommandLineException;
 import org.codehaus.plexus.util.io.RawInputStreamFacade;
+import org.sonatype.plexus.build.incremental.BuildContext;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,6 +31,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Sets.newHashSet;
+import static java.lang.Math.max;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static org.codehaus.plexus.util.FileUtils.cleanDirectory;
@@ -70,6 +73,14 @@ abstract class AbstractProtocMojo extends AbstractMojo {
      * @since 0.2.0
      */
     private MavenSession session;
+
+    /**
+     * Build context that tracks changes to the source and target files.
+     *
+     * @component
+     * @since 0.3.0
+     */
+    protected BuildContext buildContext;
 
     /**
      * An optional tool chain manager.
@@ -162,12 +173,12 @@ abstract class AbstractProtocMojo extends AbstractMojo {
      */
     private Set<String> excludes = ImmutableSet.of();
 
-
     /**
      * The descriptor set file name. Only used if {@code writeDescriptorSet} is set to {@code true}.
      *
      * @parameter default-value="${project.build.finalName}.protobin"
      * @required
+     * @since 0.3.0
      */
     private String descriptorSetFileName;
 
@@ -177,6 +188,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
      *
      * @parameter default-value="false"
      * @required
+     * @since 0.3.0
      */
     private boolean writeDescriptorSet;
 
@@ -185,6 +197,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
      * all dependencies in the descriptor set making it "self-contained".
      *
      * @parameter default-value="false"
+     * @since 0.3.0
      */
     private boolean includeDependenciesInDescriptorSet;
 
@@ -248,20 +261,23 @@ abstract class AbstractProtocMojo extends AbstractMojo {
 
                 if (protoFiles.isEmpty()) {
                     getLog().info("No proto files to compile.");
-                } else if (checkStaleness && ((lastModified(protoFiles) + staleMillis) < lastModified(outputFiles))) {
+                } else if (!hasDelta(protoFiles)) {
+                    getLog().info("Skipping compilation because build context has no changes.");
+                    attachFiles();
+                } else if (checkStaleness && checkFilesUpToDate(protoFiles, outputFiles)) {
                     getLog().info("Skipping compilation because target directory newer than sources.");
                     attachFiles();
                 } else {
                     ImmutableSet<File> derivedProtoPathElements =
                             makeProtoPathFromJars(temporaryProtoFileDirectory, getDependencyArtifactFiles());
-                    outputDirectory.mkdirs();
+                    FileUtils.mkdir(outputDirectory.getAbsolutePath());
 
                     // Quick fix to fix issues with two mvn installs in a row (ie no clean)
                     cleanDirectory(outputDirectory);
 
                     if (writeDescriptorSet) {
                         final File descriptorSetOutputDirectory = getDescriptorSetOutputDirectory();
-                        descriptorSetOutputDirectory.mkdirs();
+                        FileUtils.mkdir(descriptorSetOutputDirectory.getAbsolutePath());
                         // See above
                         cleanDirectory(descriptorSetOutputDirectory);
                     }
@@ -384,20 +400,42 @@ abstract class AbstractProtocMojo extends AbstractMojo {
             return ImmutableSet.of();
         }
 
-        // TODO(gak): plexus-utils needs generics
-        @SuppressWarnings("unchecked")
-        List<File> javaFilesInDirectory = getFiles(directory, "**/*.java", null);
+        final List<File> javaFilesInDirectory = getFiles(directory, "**/*.java", null);
         return ImmutableSet.copyOf(javaFilesInDirectory);
     }
 
-    private long lastModified(ImmutableSet<File> files) {
+    private static long lastModified(final ImmutableSet<File> files) {
         long result = 0;
-        for (File file : files) {
-            if (file.lastModified() > result) {
-                result = file.lastModified();
-            }
+        for (final File file : files) {
+            result = max(result, file.lastModified());
         }
         return result;
+    }
+
+    /**
+     * Checks that the source files don't have modification time that is later than the target files.
+     *
+     * @param sourceFiles a set of source files.
+     * @param targetFiles a set of target files.
+     * @return {@code true}, if source files are not later than the target files; {@code false}, otherwise.
+     */
+    protected boolean checkFilesUpToDate(final ImmutableSet<File> sourceFiles, final ImmutableSet<File> targetFiles) {
+        return lastModified(sourceFiles) + staleMillis < lastModified(targetFiles);
+    }
+
+    /**
+     * Checks if the injected build context has changes in any of the specified files.
+     *
+     * @param files files to be checked for changes.
+     * @return {@code true}, if at least one file has changes; {@code false}, if no files have changes.
+     */
+    private boolean hasDelta(final ImmutableSet<File> files) {
+        for (final File file : files) {
+            if (buildContext.hasDelta(file)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void checkParameters() {
@@ -486,7 +524,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
                         final File jarDirectory =
                                 new File(temporaryProtoFileDirectory, truncatePath(classpathJar.getName()));
                         final File uncompressedCopy = new File(jarDirectory, jarEntryName);
-                        uncompressedCopy.getParentFile().mkdirs();
+                        FileUtils.mkdir(uncompressedCopy.getParentFile().getAbsolutePath());
                         copyStreamToFile(
                                 new RawInputStreamFacade(classpathJar.getInputStream(jarEntry)),
                                 uncompressedCopy);
@@ -507,9 +545,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
         checkNotNull(directory);
         checkArgument(directory.isDirectory(), "%s is not a directory", directory);
         final Joiner joiner = Joiner.on(',');
-        // TODO(gak): plexus-utils needs generics
-        @SuppressWarnings("unchecked")
-        List<File> protoFilesInDirectory =
+        final List<File> protoFilesInDirectory =
                 getFiles(directory, joiner.join(includes), joiner.join(excludes));
         return ImmutableSet.copyOf(protoFilesInDirectory);
     }

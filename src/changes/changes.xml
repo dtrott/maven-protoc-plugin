@@ -16,6 +16,9 @@
                 Updated to the latest versions of Maven plugins.
                 Updated Mojo annotations.
             </action>
+            <action dev="sergei-ivanov" type="add" due-to="Igor Petruk">
+                Integration into Eclipse lifecycle (supported by M2E 1.1 and later)
+            </action>
         </release>
 
         <release version="0.2.0" date="2011-12-12" description="Bug fixes and new features">

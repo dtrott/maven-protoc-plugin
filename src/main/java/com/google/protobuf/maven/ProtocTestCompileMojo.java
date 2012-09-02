@@ -41,6 +41,7 @@ public final class ProtocTestCompileMojo extends AbstractProtocMojo {
      *
      * @parameter default-value="${project.build.directory}/generated-test-resources/protobuf/descriptor-sets"
      * @required
+     * @since 0.3.0
      */
     private File descriptorSetOutputDirectory;
 
@@ -60,6 +61,7 @@ public final class ProtocTestCompileMojo extends AbstractProtocMojo {
         project.addTestCompileSourceRoot(outputDirectory.getAbsolutePath());
         projectHelper.addTestResource(project, protoTestSourceRoot.getAbsolutePath(),
                 ImmutableList.of("**/*.proto"), ImmutableList.of());
+        buildContext.refresh(outputDirectory);
     }
 
     @Override
