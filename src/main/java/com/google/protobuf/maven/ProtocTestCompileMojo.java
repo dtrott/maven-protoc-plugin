@@ -2,6 +2,10 @@ package com.google.protobuf.maven;
 
 import com.google.common.collect.ImmutableList;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.ResolutionScope;
 
 import java.io.File;
 import java.util.List;
@@ -12,37 +16,42 @@ import java.util.List;
  * {@code .proto} files and includes them in the {@code proto_path} so that they can be
  * referenced. Finally, it adds the {@code .proto} files to the project as test resources so
  * that they can be included in the test-jar artifact.
- *
- * @phase generate-test-sources
- * @goal testCompile
- * @requiresDependencyResolution test
- * @threadSafe
  */
+@Mojo(
+        name = "testCompile",
+        defaultPhase = LifecyclePhase.GENERATE_TEST_SOURCES,
+        requiresDependencyResolution = ResolutionScope.TEST,
+        threadSafe = true
+)
 public final class ProtocTestCompileMojo extends AbstractProtocMojo {
 
     /**
      * The source directories containing the test {@code .proto} definitions to be compiled.
-     *
-     * @parameter default-value="${basedir}/src/test/proto"
-     * @required
      */
+    @Parameter(
+            required = true,
+            defaultValue = "${basedir}/src/test/proto"
+    )
     private File protoTestSourceRoot;
 
     /**
      * This is the directory into which the {@code .java} test sources will be created.
-     *
-     * @parameter default-value="${project.build.directory}/generated-test-sources/protobuf/java"
-     * @required
      */
+    @Parameter(
+            required = true,
+            defaultValue = "${project.build.directory}/generated-test-sources/protobuf/java"
+    )
     private File outputDirectory;
 
     /**
      * This is the directory into which the (optional) descriptor set file will be created.
      *
-     * @parameter default-value="${project.build.directory}/generated-test-resources/protobuf/descriptor-sets"
-     * @required
      * @since 0.3.0
      */
+    @Parameter(
+            required = true,
+            defaultValue = "${project.build.directory}/generated-test-resources/protobuf/descriptor-sets"
+    )
     private File descriptorSetOutputDirectory;
 
     @Override

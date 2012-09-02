@@ -14,7 +14,7 @@
             </action>
             <action dev="sergei-ivanov" type="update">
                 Updated to the latest versions of Maven plugins.
-                Updated Mojo annotations.
+                Switched to using Java 5 Mojo annotations for plugin metadata.
             </action>
             <action dev="sergei-ivanov" type="add" due-to="Igor Petruk">
                 Integration into Eclipse lifecycle (supported by M2E 1.1 and later)

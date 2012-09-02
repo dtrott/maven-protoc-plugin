@@ -2,6 +2,10 @@ package com.google.protobuf.maven;
 
 import com.google.common.collect.ImmutableList;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.ResolutionScope;
 
 import java.io.File;
 import java.util.List;
@@ -12,38 +16,42 @@ import java.util.List;
  * {@code .proto} files and includes them in the {@code proto_path} so that they can be
  * referenced. Finally, it adds the {@code .proto} files to the project as resources so
  * that they are included in the final artifact.
- *
- * @phase generate-sources
- * @goal compile
- * @requiresDependencyResolution compile
- * @threadSafe
  */
-
+@Mojo(
+        name = "compile",
+        defaultPhase = LifecyclePhase.GENERATE_SOURCES,
+        requiresDependencyResolution = ResolutionScope.COMPILE,
+        threadSafe = true
+)
 public final class ProtocCompileMojo extends AbstractProtocMojo {
 
     /**
      * The source directories containing the sources to be compiled.
-     *
-     * @parameter default-value="${basedir}/src/main/proto"
-     * @required
      */
+    @Parameter(
+            required = true,
+            defaultValue = "${basedir}/src/main/proto"
+    )
     private File protoSourceRoot;
 
     /**
      * This is the directory into which the {@code .java} will be created.
-     *
-     * @parameter default-value="${project.build.directory}/generated-sources/protobuf/java"
-     * @required
      */
+    @Parameter(
+            required = true,
+            defaultValue = "${project.build.directory}/generated-sources/protobuf/java"
+    )
     private File outputDirectory;
 
     /**
      * This is the directory into which the (optional) descriptor set file will be created.
      *
-     * @parameter default-value="${project.build.directory}/generated-resources/protobuf/descriptor-sets"
-     * @required
      * @since 0.3.0
      */
+    @Parameter(
+            required = true,
+            defaultValue = "${project.build.directory}/generated-resources/protobuf/descriptor-sets"
+    )
     private File descriptorSetOutputDirectory;
 
     @Override

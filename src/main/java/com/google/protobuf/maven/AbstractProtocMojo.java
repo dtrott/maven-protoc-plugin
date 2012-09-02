@@ -8,6 +8,8 @@ import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Component;
+import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectHelper;
 import org.apache.maven.toolchain.Toolchain;
@@ -57,45 +59,38 @@ abstract class AbstractProtocMojo extends AbstractMojo {
 
     /**
      * The current Maven project.
-     *
-     * @parameter default-value="${project}"
-     * @readonly
-     * @required
      */
+    @Component
     protected MavenProject project;
 
     /**
      * The current Maven Session Object.
      *
-     * @parameter property="session" default-value="${session}"
-     * @required
-     * @readonly
      * @since 0.2.0
      */
+    @Component
     private MavenSession session;
 
     /**
      * Build context that tracks changes to the source and target files.
      *
-     * @component
      * @since 0.3.0
      */
+    @Component
     protected BuildContext buildContext;
 
     /**
      * An optional tool chain manager.
      *
-     * @component
      * @since 0.2.0
      */
+    @Component
     private ToolchainManager toolchainManager;
 
     /**
      * A helper used to add resources to the project.
-     *
-     * @component
-     * @required
      */
+    @Component
     protected MavenProjectHelper projectHelper;
 
     /**
@@ -104,34 +99,39 @@ abstract class AbstractProtocMojo extends AbstractMojo {
      * a {@code protobuf} toolchain and use it locate {@code protoc} executable.
      * If no {@code protobuf} toolchain is defined in the project,
      * the {@code protoc} executable in the {@code PATH} is used.
-     *
-     * @parameter property="protocExecutable"
      */
+    @Parameter(
+            required = false,
+            property = "protocExecutable"
+    )
     private String protocExecutable;
 
     /**
      * Additional source paths for {@code .proto} definitions.
-     *
-     * @parameter
      */
-    private File[] additionalProtoPathElements = new File[] {};
+    @Parameter(
+            required = false
+    )
+    private File[] additionalProtoPathElements = {};
 
     /**
      * Since {@code protoc} cannot access jars, proto files in dependencies are extracted to this location
      * and deleted on exit. This directory is always cleaned during execution.
-     *
-     * @parameter expression="${project.build.directory}/protoc-dependencies"
-     * @required
      */
+    @Parameter(
+            required = true,
+            defaultValue = "${project.build.directory}/protoc-dependencies"
+    )
     private File temporaryProtoFileDirectory;
 
     /**
      * This is the path to the local maven {@code repository}.
-     *
-     * @parameter property="localRepository" default-value="${localRepository}"
-     * @required
-     * @readonly
      */
+    @Parameter(
+            readonly = true,
+            required = true,
+            property = "localRepository"
+    )
     private ArtifactRepository localRepository;
 
     /**
@@ -140,10 +140,11 @@ abstract class AbstractProtocMojo extends AbstractMojo {
      * This plugin expands jars on the classpath looking for embedded {@code .proto} files.
      * Normally these paths are hashed (MD5) to avoid issues with long file names on windows.
      * However if this property is set to {@code false} longer paths will be used.
-     *
-     * @parameter default-value="true"
-     * @required
      */
+    @Parameter(
+            required = true,
+            defaultValue = "true"
+    )
     private boolean hashDependentPaths;
 
     /**
@@ -155,9 +156,10 @@ abstract class AbstractProtocMojo extends AbstractMojo {
      * &nbsp;&lt;include&gt;**&#47;*.proto&lt;/include&gt;<br/>
      * &lt;/includes&gt;<br/>
      * </code>
-     *
-     * @parameter
      */
+    @Parameter(
+            required = false
+    )
     private Set<String> includes = ImmutableSet.of(DEFAULT_INCLUDES);
 
     /**
@@ -168,37 +170,45 @@ abstract class AbstractProtocMojo extends AbstractMojo {
      * &lt;excludes&gt;<br/>
      * &lt;/excludes&gt;<br/>
      * </code>
-     *
-     * @parameter
      */
+    @Parameter(
+            required = false
+    )
     private Set<String> excludes = ImmutableSet.of();
 
     /**
      * The descriptor set file name. Only used if {@code writeDescriptorSet} is set to {@code true}.
      *
-     * @parameter default-value="${project.build.finalName}.protobin"
-     * @required
      * @since 0.3.0
      */
+    @Parameter(
+            required = true,
+            defaultValue = "${project.build.finalName}.protobin"
+    )
     private String descriptorSetFileName;
 
     /**
      * If set to {@code true}, the compiler will generate a binary descriptor set file for the
      * specified {@code .proto} files.
      *
-     * @parameter default-value="false"
-     * @required
      * @since 0.3.0
      */
+    @Parameter(
+            required = true,
+            defaultValue = "false"
+    )
     private boolean writeDescriptorSet;
 
     /**
      * If {@code true} and {@code writeDescriptorSet} has been set, the compiler will include
      * all dependencies in the descriptor set making it "self-contained".
      *
-     * @parameter default-value="false"
      * @since 0.3.0
      */
+    @Parameter(
+            required = false,
+            defaultValue = "false"
+    )
     private boolean includeDependenciesInDescriptorSet;
 
     /**
@@ -208,9 +218,11 @@ abstract class AbstractProtocMojo extends AbstractMojo {
      * <p>This parameter is only used when {@link #checkStaleness} parameter is set to {@code true}.
      *
      * <p>If the project is built on NFS it's recommended to set this parameter to {@code 10000}.
-     *
-     * @parameter default-value="0"
      */
+    @Parameter(
+            required = false,
+            defaultValue = "0"
+    )
     private long staleMillis;
 
     /**
@@ -218,17 +230,24 @@ abstract class AbstractProtocMojo extends AbstractMojo {
      * Setting this parameter to {@code true} will enable checking
      * timestamps of source protobuf definitions vs. generated sources.
      *
-     * @parameter default-value="false"
      * @see #staleMillis
      */
+    @Parameter(
+            required = false,
+            defaultValue = "false"
+    )
     private boolean checkStaleness;
 
     /**
      * When {@code true}, skip the execution.
      *
-     * @parameter property="protoc.skip" default-value="false"
      * @since 0.2.0
      */
+    @Parameter(
+            required = false,
+            property = "protoc.skip",
+            defaultValue = "false"
+    )
     private boolean skip;
 
     /**
@@ -237,10 +256,13 @@ abstract class AbstractProtocMojo extends AbstractMojo {
      * Setting this parameter to {@code true} will force
      * the execution of this mojo, even if it would usually get skipped in this case.
      *
-     * @parameter property="protoc.force" default-value="false"
-     * @required
      * @since 0.2.0
      */
+    @Parameter(
+            required = false,
+            property = "protoc.force",
+            defaultValue = "false"
+    )
     private boolean forceMojoExecution;
 
     /**
