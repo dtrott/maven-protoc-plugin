@@ -3,16 +3,22 @@
           xsi:schemaLocation="http://maven.apache.org/changes/1.0.0
                               http://maven.apache.org/xsd/changes-1.0.0.xsd">
 
-<!--
-    <properties>
-        <title>Changes Tester Project</title>
-        <author email="jruiz@exist.com">Johnny R. Ruiz III</author>
-    </properties>
--->
-
     <body>
 
-        <release version="0.2" date="2011-12-12" description="Bug fixes and new features">
+        <release version="0.3.0" date="PENDING" description="New features">
+            <action dev="sergei-ivanov" type="add" due-to="Rob Wicke">
+                Generation of binary descriptor sets.
+            </action>
+            <action dev="sergei-ivanov" type="update">
+                Upgraded required Maven version to 2.2.1.
+            </action>
+            <action dev="sergei-ivanov" type="update">
+                Updated to the latest versions of Maven plugins.
+                Updated Mojo annotations.
+            </action>
+        </release>
+
+        <release version="0.2.0" date="2011-12-12" description="Bug fixes and new features">
             <action dev="sergei-ivanov" type="add">
                 Added protobuf toolchain extension for use by maven-toolchains-plugin.
                 Integrated protobuf toolchain into plugin execution.

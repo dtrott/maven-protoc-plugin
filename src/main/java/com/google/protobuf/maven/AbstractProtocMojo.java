@@ -64,7 +64,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
     /**
      * The current Maven Session Object.
      *
-     * @parameter expression="${session}" default-value="${session}"
+     * @parameter property="session" default-value="${session}"
      * @required
      * @readonly
      * @since 0.2.0
@@ -94,7 +94,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
      * If no {@code protobuf} toolchain is defined in the project,
      * the {@code protoc} executable in the {@code PATH} is used.
      *
-     * @parameter expression="${protocExecutable}"
+     * @parameter property="protocExecutable"
      */
     private String protocExecutable;
 
@@ -117,7 +117,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
     /**
      * This is the path to the local maven {@code repository}.
      *
-     * @parameter expression="${localRepository}" default-value="${localRepository}"
+     * @parameter property="localRepository" default-value="${localRepository}"
      * @required
      * @readonly
      */
@@ -213,7 +213,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
     /**
      * When {@code true}, skip the execution.
      *
-     * @parameter expression="${protoc.skip}" default-value="false"
+     * @parameter property="protoc.skip" default-value="false"
      * @since 0.2.0
      */
     private boolean skip;
@@ -224,7 +224,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
      * Setting this parameter to {@code true} will force
      * the execution of this mojo, even if it would usually get skipped in this case.
      *
-     * @parameter expression="${protoc.force}" default-value="false"
+     * @parameter property="protoc.force" default-value="false"
      * @required
      * @since 0.2.0
      */
@@ -423,7 +423,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
      * Returns the output directory for generated sources. Depends on build phase so must
      * be defined in concrete implementation.
      *
-     * @return
+     * @return output directory for generated sources.
      */
     protected abstract File getOutputDirectory();
 
@@ -431,7 +431,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
      * Returns output directory for descriptor set file. Depends on build phase so must
      * be defined in concrete implementation.
      *
-     * @return
+     * @return output directory for generated descriptor set.
      */
     protected abstract File getDescriptorSetOutputDirectory();
 
