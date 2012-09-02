@@ -303,7 +303,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
                     }
 
                     final Protoc.Builder protocBuilder =
-                            new Protoc.Builder(protocExecutable, outputDirectory)
+                            new Protoc.Builder(protocExecutable)
                                     .addProtoPathElement(protoSourceRoot)
                                     .addProtoPathElements(derivedProtoPathElements)
                                     .addProtoPathElements(asList(additionalProtoPathElements))
@@ -333,7 +333,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
 
                     getLog().info(format("Compiling %d proto file(s) to %s", protoFiles.size(), outputDirectory));
 
-                    final int exitStatus = protoc.compile();
+                    final int exitStatus = protoc.execute();
                     if (exitStatus != 0) {
                         getLog().error("protoc failed output: " + protoc.getOutput());
                         getLog().error("protoc failed error: " + protoc.getError());
