@@ -181,6 +181,15 @@ final class Protoc {
                 log.debug(LOG_PREFIX + ' ' + javaOutputDirectory);
             }
 
+            if (cppOutputDirectory != null) {
+                log.debug(LOG_PREFIX + "C++ output directory:");
+                log.debug(LOG_PREFIX + ' ' + cppOutputDirectory);
+            }
+            if (pythonOutputDirectory != null) {
+                log.debug(LOG_PREFIX + "Python output directory:");
+                log.debug(LOG_PREFIX + ' ' + pythonOutputDirectory);
+            }
+
             if (descriptorSetFile != null) {
                 log.debug(LOG_PREFIX + "Descriptor set output file:");
                 log.debug(LOG_PREFIX + ' ' + descriptorSetFile);
