@@ -1,0 +1,49 @@
+            ------------
+            Introduction
+            ------------
+
+~~ APT Format: http://maven.apache.org/doxia/references/apt-format.html
+
+Maven Protoc Plugin
+
+  The Protoc Plugin uses the Protocol Buffer Compiler (<<<protoc>>>) tool to generate java source files
+  from <<<.proto>>> (protocol buffer definition) files for the specified project.
+  For more information about the Protocol Buffer Compiler, please refer to
+  {{{http://code.google.com/apis/protocolbuffers/docs/reference/java-generated.html}Reference Guide}}.
+
+  The Plugin automatically scans all project dependencies for bundled <<<.proto>>> files,
+  and configures <<<proto_path>>> of the Protocol Buffer Compiler to use those files as imports.
+
+  The Plugin automatically attaches the source <<<.proto>>> files to the resources of the project,
+  so that they are later packaged into the final artifact and can be referenced as imports
+  from the dependent projects or modules.
+
+* Goals Overview
+
+  The Protoc Plugin has the following goals:
+
+  * {{{./compile-mojo.html}protoc:compile}}
+    compiles main <<<.proto>>> definitions into java files and attaches the generated java sources to the project.
+
+  * {{{./testCompile-mojo.html}protoc:testCompile}}
+    compiles test <<<.proto>>> definitions into java files and attaches the generated java test sources to the project.
+
+  []
+
+* Usage
+
+  General instructions on how to use the Protoc Plugin can be found on the {{{./usage.html}usage page}}. Some more
+  specific use cases are described in the examples given below.
+
+  In case you still have questions regarding the Plugin's usage, please have a look at the {{{./faq.html}FAQ}}.
+  ~~ TODO add mailing lists / newsgroups / wiki
+  ~~ TODO add issue tracking and contribution info
+
+* Examples
+
+  To provide you with better understanding of some usages of the Protoc Plugin,
+  you can take a look into the following examples:
+
+  * {{{./examples/protobuf-toolchain.html} Using Protobuf Toolchain}}
+
+  []

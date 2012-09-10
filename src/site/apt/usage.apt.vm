@@ -1,0 +1,174 @@
+            -----
+            Usage
+            -----
+
+~~ APT Format: http://maven.apache.org/doxia/references/apt-format.html
+
+Usage
+
+  The Protoc Plugin generates java sources from <<<.proto>>> files using the <<<protoc>>> tool.
+  The following examples describe the basic usage of the Plugin.
+
+* Compiling Protobuf Sources
+
+  The following default directory structure of the project is assumed:
+
++-----+
+
+./
++- pom.xml
++- src/
+   +- main/
+      +- proto/
+         +- message.proto
+   +- test/
+      +- proto/
+         +- test_message.proto
+
++-----+
+
+  Protocol buffer definitions are looked up under <<<src/main/proto/>>> directory by default.
+  Any subdirectories under <<<src/main/proto/>>> are treated as package structure for protobuf definition imports.
+  Similarly, protobuf definitions for use in tests are looked up under <<<src/test/proto/>>> directory
+  by default.
+
+  A minimal configuration to invoke this plugin would look like:
+
++-----+
+
+<project>
+  ...
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>1.5</source>
+          <target>1.5</target>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>com.google.protobuf.tools</groupId>
+        <artifactId>maven-protoc-plugin</artifactId>
+        <version>${project.version}</version>
+        <configuration>
+          <protocExecutable>/usr/local/bin/protoc</protocExecutable>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>compile</goal>
+              <goal>testCompile</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      ...
+    </plugins>
+  </build>
+  <dependencies>
+    <dependency>
+      <groupId>com.google.protobuf</groupId>
+      <artifactId>protobuf-java</artifactId>
+      <version>2.3.0</version>
+    </dependency>
+    ...
+  </dependencies>
+  ...
+</project>
+
++-----+
+
+  The following conditions need to be met:
+
+  * Java 1.5 or newer is required due to the usage of Generics
+
+  * Either <<<protoc>>> executable has to be in the <<<PATH>>> or
+    the <<<protocExecutable>>> parameter has to be set to the correct location.
+    An alternative configuration involves toolchains (described in plugin examples).
+
+  * Plugin executions need to be defined, because the plugin is not part of the default lifecycle.
+    However, plugin goals have default bindings to appropriate phases, therefore there is typically
+    no need to specify phase bindings in plugin configuration.
+    Note: <<<testCompile>>> will only be needed if there are custom protocol buffer definitions
+    being used in your tests.
+
+  * An appropriate version of <<<com.google.protobuf:protobuf-java>>> dependency has to be declared,
+    or made available through POM inheritance: this is needed for compiling the generated source code.
+    Note: it is important to make sure that the version of protobuf compiler is compatible
+    with the version of protobuf java library (ideally they should be of the same version),
+    otherwise the generated code will fail to compile.
+
+  []
+
+  As soon as everything is set up, execute the following goals to build the project:
+
++-----+
+
+mvn clean install
+
++-----+
+
+* Running Plugin Goals On Command Line
+
+  It is possible to run Protoc Plugin goals from the command line,
+  even if the plugin is not configured in the project:
+
++-----+
+
+mvn protoc:compile     -DprotocExecutable="C:/Java/protobuf-2.4.1/bin/protoc.exe"
+mvn protoc:testCompile -DprotocExecutable="C:/Java/protobuf-2.4.1/bin/protoc.exe"
+
++-----+
+
+  If a <<<protobuf>>> toolchain is configured in the project,
+  then the toolchains plugin needs to be executed first
+  and there is no need to specify the <<<protocExecutable>>> parameter.
+
++-----+
+
+mvn toolchains:toolchain protoc:compile
+mvn toolchains:toolchain protoc:testCompile
+
++-----+
+
+* Suppressing Compilation Of Unchanged Definitions
+
+  Normally this plug-in invokes <<<protoc>>> compilation on every execution,
+  but this can be overridden by the following configuration option:
+
++-----+
+
+<plugin>
+  <groupId>com.google.protobuf.tools</groupId>
+  <artifactId>maven-protoc-plugin</artifactId>
+  <version>${project.version}</version>
+  <configuration>
+    ...
+    <checkStaleness>true</checkStaleness>
+  </configuration>
+  ...
+</plugin>
+
++-----+
+
+  If the project is built on NFS, the following setting may also be needed:
+
++-----+
+
+<plugin>
+  <groupId>com.google.protobuf.tools</groupId>
+  <artifactId>maven-protoc-plugin</artifactId>
+  <version>${project.version}</version>
+  <configuration>
+    ...
+    <checkStaleness>true</checkStaleness>
+    <staleMillis>10000</staleMillis>
+  </configuration>
+  ...
+</plugin>
+
++-----+
+
+

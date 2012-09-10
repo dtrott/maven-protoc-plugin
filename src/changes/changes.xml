@@ -1,0 +1,62 @@
+<document xmlns="http://maven.apache.org/changes/1.0.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/changes/1.0.0
+                              http://maven.apache.org/xsd/changes-1.0.0.xsd">
+
+    <body>
+
+        <release version="0.3.0" date="PENDING" description="New features">
+            <action dev="sergei-ivanov" type="add" due-to="Rob Wicke">
+                Generation of binary descriptor sets.
+            </action>
+            <action dev="sergei-ivanov" type="update">
+                Upgraded required Maven version to 2.2.1.
+            </action>
+            <action dev="sergei-ivanov" type="update">
+                Updated to the latest versions of Maven plugins.
+                Switched to using Java 5 Mojo annotations for plugin metadata.
+            </action>
+            <action dev="sergei-ivanov" type="add" due-to="Igor Petruk">
+                Integration into Eclipse lifecycle (supported by M2E 1.1 and later)
+            </action>
+        </release>
+
+        <release version="0.2.0" date="2011-12-12" description="Bug fixes and new features">
+            <action dev="sergei-ivanov" type="add">
+                Added protobuf toolchain extension for use by maven-toolchains-plugin.
+                Integrated protobuf toolchain into plugin execution.
+            </action>
+            <action dev="sergei-ivanov" type="add">
+                Additional debug logging is produced when Maven runs in verbose mode.
+            </action>
+            <action dev="sergei-ivanov" type="add">
+                Added a suite of integration tests.
+            </action>
+            <action dev="sergei-ivanov" type="add">
+                Created content for the Maven-generated web site.
+            </action>
+            <action dev="sergei-ivanov" type="fix">
+                Updated documentation in source code.
+            </action>
+            <action dev="sergei-ivanov" type="fix">
+                Updated Mojo documentation.
+            </action>
+            <action dev="sergei-ivanov" type="fix">
+                Updated Mojo annotations for Maven3 (marked plugin as thread-safe for parallel module builds).
+            </action>
+            <action dev="sergei-ivanov" type="add">
+                Allowed protoc executable to be specified when invoking plugin from command line.
+            </action>
+            <action dev="sergei-ivanov" type="add">
+                Added options to suppress plugin execution.
+            </action>
+            <action dev="sergei-ivanov" type="fix" due-to="B. K. Oxley (binkley)">
+                Enabled test protobuf definitions to import production definitions from the same module.
+            </action>
+            <action dev="sergei-ivanov" type="fix" due-to="Paul Nyheim (pnyheim)">
+                Fixed importing protobuf definitions from other projects or modules when namespaces are used.
+            </action>
+        </release>
+
+    </body>
+</document>

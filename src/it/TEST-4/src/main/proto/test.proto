@@ -1,0 +1,8 @@
+package integration_test;
+
+option java_package = "test";
+option java_outer_classname = "TestProtos";
+option optimize_for = SPEED;
+
+message TestMessage {
+}

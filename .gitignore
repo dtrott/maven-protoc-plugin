@@ -1,0 +1,15 @@
+# IDEA project files
+.idea*
+*.ipr
+*.iws
+*.iml
+
+# Eclipse project files
+.classpath
+.project
+.settings
+
+# Maven output
+target
+*.releaseBackup
+release.properties

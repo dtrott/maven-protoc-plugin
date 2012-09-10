@@ -1,7 +1,9 @@
 package com.google.protobuf.maven;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import org.apache.maven.plugin.logging.Log;
 import org.codehaus.plexus.util.cli.CommandLineException;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
 import org.codehaus.plexus.util.cli.Commandline;
@@ -17,52 +19,106 @@ import static com.google.common.collect.Lists.newLinkedList;
 import static com.google.common.collect.Sets.newHashSet;
 
 /**
- * This class represents an invokable configuration of the {@code protoc}
- * compiler. The actual executable is invoked using the plexus
- * {@link Commandline}.
- * <p/>
- * This class currently only supports generating java source files.
+ * This class represents an invokable configuration of the {@code protoc} compiler.
+ * The actual executable is invoked using the plexus {@link Commandline}.
  *
  * @author gak@google.com (Gregory Kick)
  */
 final class Protoc {
+
+    /**
+     * Prefix for logging the debug messages.
+     */
+    private static final String LOG_PREFIX = "[PROTOC] ";
+
+    /**
+     * Path to the {@code protoc} executable.
+     */
     private final String executable;
+
+    /**
+     * A set of directories in which to search for definition imports.
+     */
     private final ImmutableSet<File> protoPathElements;
+
+    /**
+     * A set of protobuf definitions to process.
+     */
     private final ImmutableSet<File> protoFiles;
+
+    /**
+     * A directory into which Java source files will be generated.
+     */
     private final File javaOutputDirectory;
+
+    /**
+     * A directory into which C++ source files will be generated.
+     */
+    private final File cppOutputDirectory;
+
+    /**
+     * A directory into which Python source files will be generated.
+     */
+    private final File pythonOutputDirectory;
+
+    private final File descriptorSetFile;
+
+    private final boolean includeImportsInDescriptorSet;
+
+    /**
+     * A buffer to consume standard output from the {@code protoc} executable.
+     */
     private final CommandLineUtils.StringStreamConsumer output;
+
+    /**
+     * A buffer to consume error output from the {@code protoc} executable.
+     */
     private final CommandLineUtils.StringStreamConsumer error;
 
     /**
      * Constructs a new instance. This should only be used by the {@link Builder}.
      *
-     * @param executable          The path to the {@code protoc} executable.
-     * @param protoPath           The directories in which to search for imports.
-     * @param protoFiles          The proto source files to compile.
-     * @param javaOutputDirectory The directory into which the java source files
-     *                            will be generated.
+     * @param executable path to the {@code protoc} executable.
+     * @param protoPath a set of directories in which to search for definition imports.
+     * @param protoFiles a set of protobuf definitions to process.
+     * @param javaOutputDirectory a directory into which Java source files will be generated.
+     * @param cppOutputDirectory a directory into which C++ source files will be generated.
+     * @param pythonOutputDirectory a directory into which Python source files will be generated.
+     * @param descriptorSetFile The directory into which a descriptor set will be generated;
+     * if {@code null}, no descriptor set will be written
+     * @param includeImportsInDescriptorSet If {@code true}, dependencies will be included in the descriptor set.
      */
-    private Protoc(String executable, ImmutableSet<File> protoPath,
-                   ImmutableSet<File> protoFiles, File javaOutputDirectory) {
+    private Protoc(
+            final String executable,
+            final ImmutableSet<File> protoPath,
+            final ImmutableSet<File> protoFiles,
+            final File javaOutputDirectory,
+            final File cppOutputDirectory,
+            final File pythonOutputDirectory,
+            final File descriptorSetFile,
+            final boolean includeImportsInDescriptorSet) {
         this.executable = checkNotNull(executable, "executable");
         this.protoPathElements = checkNotNull(protoPath, "protoPath");
         this.protoFiles = checkNotNull(protoFiles, "protoFiles");
-        this.javaOutputDirectory = checkNotNull(javaOutputDirectory, "javaOutputDirectory");
+        this.javaOutputDirectory = javaOutputDirectory;
+        this.cppOutputDirectory = cppOutputDirectory;
+        this.pythonOutputDirectory = pythonOutputDirectory;
+        this.descriptorSetFile = descriptorSetFile;
+        this.includeImportsInDescriptorSet = includeImportsInDescriptorSet;
         this.error = new CommandLineUtils.StringStreamConsumer();
         this.output = new CommandLineUtils.StringStreamConsumer();
     }
 
     /**
-     * Invokes the {@code protoc} compiler using the configuration specified at
-     * construction.
+     * Invokes the {@code protoc} compiler using the configuration specified at construction.
      *
      * @return The exit status of {@code protoc}.
      * @throws CommandLineException
      */
-    public int compile() throws CommandLineException {
+    public int execute() throws CommandLineException {
         Commandline cl = new Commandline();
         cl.setExecutable(executable);
-        cl.addArguments(buildProtocCommand().toArray(new String[]{}));
+        cl.addArguments(buildProtocCommand().toArray(new String[] {}));
         return CommandLineUtils.executeCommandLine(cl, null, output, error);
     }
 
@@ -73,17 +129,85 @@ final class Protoc {
      *
      * @return A list consisting of the executable followed by any arguments.
      */
-    ImmutableList<String> buildProtocCommand() {
+    public ImmutableList<String> buildProtocCommand() {
         final List<String> command = newLinkedList();
         // add the executable
-        for (File protoPathElement : protoPathElements) {
+        for (final File protoPathElement : protoPathElements) {
             command.add("--proto_path=" + protoPathElement);
         }
-        command.add("--java_out=" + javaOutputDirectory);
-        for (File protoFile : protoFiles) {
+        if (javaOutputDirectory != null) {
+            command.add("--java_out=" + javaOutputDirectory);
+        }
+        if (cppOutputDirectory != null) {
+            command.add("--cpp_out=" + cppOutputDirectory);
+        }
+        if (pythonOutputDirectory != null) {
+            command.add("--python_out=" + pythonOutputDirectory);
+        }
+        for (final File protoFile : protoFiles) {
             command.add(protoFile.toString());
         }
+        if (descriptorSetFile != null) {
+            command.add("--descriptor_set_out=" + descriptorSetFile);
+            if (includeImportsInDescriptorSet) {
+                command.add("--include_imports");
+            }
+        }
         return ImmutableList.copyOf(command);
+    }
+
+    /**
+     * Logs execution parameters on debug level to the specified logger.
+     * All log messages will be prefixed with "{@value #LOG_PREFIX}".
+     *
+     * @param log a logger.
+     */
+    public void logExecutionParameters(final Log log) {
+        if (log.isDebugEnabled()) {
+            if (log.isDebugEnabled()) {
+                log.debug(LOG_PREFIX + "Executable: ");
+                log.debug(LOG_PREFIX + ' ' + executable);
+            }
+
+            if (protoPathElements != null && !protoPathElements.isEmpty()) {
+                log.debug(LOG_PREFIX + "Protobuf import paths:");
+                for (final File protoPathElement : protoPathElements) {
+                    log.debug(LOG_PREFIX + ' ' + protoPathElement);
+                }
+            }
+
+            if (javaOutputDirectory != null) {
+                log.debug(LOG_PREFIX + "Java output directory:");
+                log.debug(LOG_PREFIX + ' ' + javaOutputDirectory);
+            }
+
+            if (cppOutputDirectory != null) {
+                log.debug(LOG_PREFIX + "C++ output directory:");
+                log.debug(LOG_PREFIX + ' ' + cppOutputDirectory);
+            }
+            if (pythonOutputDirectory != null) {
+                log.debug(LOG_PREFIX + "Python output directory:");
+                log.debug(LOG_PREFIX + ' ' + pythonOutputDirectory);
+            }
+
+            if (descriptorSetFile != null) {
+                log.debug(LOG_PREFIX + "Descriptor set output file:");
+                log.debug(LOG_PREFIX + ' ' + descriptorSetFile);
+                log.debug(LOG_PREFIX + "Include imports:");
+                log.debug(LOG_PREFIX + ' ' + includeImportsInDescriptorSet);
+            }
+
+            log.debug(LOG_PREFIX + "Protobuf descriptors:");
+            for (final File protoFile : protoFiles) {
+                log.debug(LOG_PREFIX + ' ' + protoFile);
+            }
+
+            final List<String> cl = buildProtocCommand();
+            if (cl != null && !cl.isEmpty()) {
+                log.debug(LOG_PREFIX + "Command line options:");
+                log.debug(LOG_PREFIX + Joiner.on(' ').join(cl));
+            }
+        }
     }
 
     /**
@@ -106,28 +230,93 @@ final class Protoc {
      * @author gak@google.com (Gregory Kick)
      */
     static final class Builder {
-        private final String executable;
-        private final File javaOutputDirectory;
-        private Set<File> protopathElements;
-        private Set<File> protoFiles;
 
         /**
-         * Constructs a new builder. The two parameters are present as they are
-         * required for all {@link Protoc} instances.
-         *
-         * @param executable          The path to the {@code protoc} executable.
-         * @param javaOutputDirectory The directory into which the java source files
-         *                            will be generated.
-         * @throws NullPointerException     If either of the arguments are {@code null}.
-         * @throws IllegalArgumentException If the {@code javaOutputDirectory} is
-         *                                  not a directory.
+         * Path to the {@code protoc} executable.
          */
-        public Builder(String executable, File javaOutputDirectory) {
+        private final String executable;
+
+        private final Set<File> protopathElements;
+
+        private final Set<File> protoFiles;
+
+        /**
+         * A directory into which Java source files will be generated.
+         */
+        private File javaOutputDirectory;
+
+        /**
+         * A directory into which C++ source files will be generated.
+         */
+        private File cppOutputDirectory;
+
+        /**
+         * A directory into which Python source files will be generated.
+         */
+        private File pythonOutputDirectory;
+
+        private File descriptorSetFile;
+
+        private boolean includeImportsInDescriptorSet;
+
+        /**
+         * Constructs a new builder.
+         *
+         * @param executable The path to the {@code protoc} executable.
+         * @throws NullPointerException if {@code executable} is {@code null}.
+         */
+        Builder(final String executable) {
             this.executable = checkNotNull(executable, "executable");
-            this.javaOutputDirectory = checkNotNull(javaOutputDirectory);
-            checkArgument(javaOutputDirectory.isDirectory());
             this.protoFiles = newHashSet();
             this.protopathElements = newHashSet();
+        }
+
+        /**
+         * Sets the directory into which Java source files will be generated.
+         *
+         * @param javaOutputDirectory a directory into which Java source files will be generated.
+         * @return this builder instance.
+         * @throws NullPointerException if {@code javaOutputDirectory} is {@code null}.
+         * @throws IllegalArgumentException if {@code javaOutputDirectory} is not a directory.
+         */
+        public Builder setJavaOutputDirectory(final File javaOutputDirectory) {
+            this.javaOutputDirectory = checkNotNull(javaOutputDirectory, "'javaOutputDirectory' is null");
+            checkArgument(
+                    javaOutputDirectory.isDirectory(),
+                    "'javaOutputDirectory' is not a directory: " + javaOutputDirectory);
+            return this;
+        }
+
+        /**
+         * Sets the directory into which C++ source files will be generated.
+         *
+         * @param cppOutputDirectory a directory into which C++ source files will be generated.
+         * @return this builder instance.
+         * @throws NullPointerException if {@code cppOutputDirectory} is {@code null}.
+         * @throws IllegalArgumentException if {@code cppOutputDirectory} is not a directory.
+         */
+        public Builder setCppOutputDirectory(final File cppOutputDirectory) {
+            this.cppOutputDirectory = checkNotNull(cppOutputDirectory, "'cppOutputDirectory' is null");
+            checkArgument(
+                    cppOutputDirectory.isDirectory(),
+                    "'cppOutputDirectory' is not a directory: " + cppOutputDirectory);
+            return this;
+        }
+
+        /**
+         * Sets the directory into which Python source files will be generated.
+         *
+         * @param pythonOutputDirectory a directory into which Python source files will be generated.
+         * @return this builder instance.
+         * @throws NullPointerException if {@code pythonOutputDirectory} is {@code null}.
+         * @throws IllegalArgumentException if {@code pythonOutputDirectory} is not a directory.
+         */
+        public Builder setPythonOutputDirectory(final File pythonOutputDirectory) {
+            this.pythonOutputDirectory = checkNotNull(pythonOutputDirectory, "'pythonOutputDirectory' is null");
+            checkArgument(
+                    pythonOutputDirectory.isDirectory(),
+                    "'pythonOutputDirectory' is not a directory: " + pythonOutputDirectory);
+            return this;
         }
 
         /**
@@ -138,8 +327,8 @@ final class Protoc {
          * @param protoFile
          * @return The builder.
          * @throws IllegalStateException If a proto file is added without first
-         *                               adding a parent directory to the protopath.
-         * @throws NullPointerException  If {@code protoFile} is {@code null}.
+         * adding a parent directory to the protopath.
+         * @throws NullPointerException If {@code protoFile} is {@code null}.
          */
         public Builder addProtoFile(File protoFile) {
             checkNotNull(protoFile);
@@ -147,6 +336,14 @@ final class Protoc {
             checkArgument(protoFile.getName().endsWith(".proto"));
             checkProtoFileIsInProtopath(protoFile);
             protoFiles.add(protoFile);
+            return this;
+        }
+
+        public Builder withDescriptorSetFile(File descriptorSetFile, boolean includeImports) {
+            checkNotNull(descriptorSetFile, "descriptorSetFile");
+            checkArgument(descriptorSetFile.getParentFile().isDirectory());
+            this.descriptorSetFile = descriptorSetFile;
+            this.includeImportsInDescriptorSet = includeImports;
             return this;
         }
 
@@ -161,8 +358,7 @@ final class Protoc {
                 return true;
             } else {
                 final File parentDirectory = directory.getParentFile();
-                return (parentDirectory == null) ? false
-                        : checkProtoFileIsInProtopathHelper(parentDirectory);
+                return parentDirectory != null && checkProtoFileIsInProtopathHelper(parentDirectory);
             }
         }
 
@@ -179,12 +375,11 @@ final class Protoc {
         /**
          * Adds the {@code protopathElement} to the protopath.
          *
-         * @param protopathElement A directory to be searched for imported protocol
-         *                         buffer definitions.
+         * @param protopathElement A directory to be searched for imported protocol buffer definitions.
          * @return The builder.
-         * @throws NullPointerException     If {@code protopathElement} is {@code null}.
+         * @throws NullPointerException If {@code protopathElement} is {@code null}.
          * @throws IllegalArgumentException If {@code protpathElement} is not a
-         *                                  directory.
+         * directory.
          */
         public Builder addProtoPathElement(File protopathElement) {
             checkNotNull(protopathElement);
@@ -204,13 +399,32 @@ final class Protoc {
         }
 
         /**
-         * @return A configured {@link Protoc} instance.
-         * @throws IllegalStateException If no proto files have been added.
+         * Validates the internal state for consistency and completeness.
+         */
+        private void validateState() {
+            checkState(!protoFiles.isEmpty());
+            checkState(javaOutputDirectory != null || cppOutputDirectory != null || pythonOutputDirectory != null,
+                    "At least one of these properties must be set: " +
+                            "'javaOutputDirectory', 'cppOutputDirectory' or 'pythonOutputDirectory'");
+        }
+
+        /**
+         * Builds and returns a fully configured instance of {@link Protoc} wrapper.
+         *
+         * @return a configured {@link Protoc} instance.
+         * @throws IllegalStateException if builder state is incomplete or inconsistent.
          */
         public Protoc build() {
-            checkState(!protoFiles.isEmpty());
-            return new Protoc(executable, ImmutableSet.copyOf(protopathElements),
-                    ImmutableSet.copyOf(protoFiles), javaOutputDirectory);
+            validateState();
+            return new Protoc(
+                    executable,
+                    ImmutableSet.copyOf(protopathElements),
+                    ImmutableSet.copyOf(protoFiles),
+                    javaOutputDirectory,
+                    cppOutputDirectory,
+                    pythonOutputDirectory,
+                    descriptorSetFile,
+                    includeImportsInDescriptorSet);
         }
     }
 }
