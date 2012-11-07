@@ -10,7 +10,6 @@ import org.codehaus.plexus.util.cli.Commandline;
 
 import java.io.File;
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 
 import static com.google.common.base.Preconditions.*;
@@ -124,15 +123,6 @@ final class Protoc {
      */
     public int execute() throws CommandLineException {
         Commandline cl = new Commandline();
-        if (pluginDirectory != null) {
-            try {
-                Properties envVars = cl.getSystemEnvVars();
-                String path = envVars.getProperty("PATH");
-                cl.addEnvironment("PATH", pluginDirectory + File.pathSeparator + path);
-            } catch (Exception e) {
-                throw new CommandLineException("Could not obtain system environment variables", e);
-            }
-        }
         cl.setExecutable(executable);
         cl.addArguments(buildProtocCommand().toArray(new String[] {}));
         return CommandLineUtils.executeCommandLine(cl, null, output, error);
@@ -171,6 +161,12 @@ final class Protoc {
             command.add("--descriptor_set_out=" + descriptorSetFile);
             if (includeImportsInDescriptorSet) {
                 command.add("--include_imports");
+            }
+        }
+        if (pluginDirectory != null) {
+            for (String javaPluginName : javaPluginNames) {
+                File pluginPath = new File(pluginDirectory, "protoc-gen-" + javaPluginName);
+                command.add("--plugin=" + pluginPath.getAbsolutePath());
             }
         }
         return ImmutableList.copyOf(command);
