@@ -10,11 +10,10 @@ import org.codehaus.plexus.util.cli.Commandline;
 
 import java.io.File;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.base.Preconditions.*;
 import static com.google.common.collect.Lists.newLinkedList;
 import static com.google.common.collect.Sets.newHashSet;
 
@@ -50,6 +49,10 @@ final class Protoc {
      * A directory into which Java source files will be generated.
      */
     private final File javaOutputDirectory;
+
+    private final ImmutableSet<String> javaPluginNames;
+
+    private final File pluginDirectory;
 
     /**
      * A directory into which C++ source files will be generated.
@@ -96,7 +99,9 @@ final class Protoc {
             final File cppOutputDirectory,
             final File pythonOutputDirectory,
             final File descriptorSetFile,
-            final boolean includeImportsInDescriptorSet) {
+            final boolean includeImportsInDescriptorSet,
+            final ImmutableSet<String> javaPluginNames,
+            final File pluginDirectory) {
         this.executable = checkNotNull(executable, "executable");
         this.protoPathElements = checkNotNull(protoPath, "protoPath");
         this.protoFiles = checkNotNull(protoFiles, "protoFiles");
@@ -105,6 +110,8 @@ final class Protoc {
         this.pythonOutputDirectory = pythonOutputDirectory;
         this.descriptorSetFile = descriptorSetFile;
         this.includeImportsInDescriptorSet = includeImportsInDescriptorSet;
+        this.javaPluginNames = javaPluginNames;
+        this.pluginDirectory = pluginDirectory;
         this.error = new CommandLineUtils.StringStreamConsumer();
         this.output = new CommandLineUtils.StringStreamConsumer();
     }
@@ -117,6 +124,15 @@ final class Protoc {
      */
     public int execute() throws CommandLineException {
         Commandline cl = new Commandline();
+        if (pluginDirectory != null) {
+            try {
+                Properties envVars = cl.getSystemEnvVars();
+                String path = envVars.getProperty("PATH");
+                cl.addEnvironment("PATH", pluginDirectory + File.pathSeparator + path);
+            } catch (Exception e) {
+                throw new CommandLineException("Could not obtain system environment variables", e);
+            }
+        }
         cl.setExecutable(executable);
         cl.addArguments(buildProtocCommand().toArray(new String[] {}));
         return CommandLineUtils.executeCommandLine(cl, null, output, error);
@@ -137,6 +153,10 @@ final class Protoc {
         }
         if (javaOutputDirectory != null) {
             command.add("--java_out=" + javaOutputDirectory);
+
+            for (String name : javaPluginNames) {
+                command.add("--" + name + "_out=" + javaOutputDirectory);
+            }
         }
         if (cppOutputDirectory != null) {
             command.add("--cpp_out=" + cppOutputDirectory);
@@ -179,6 +199,18 @@ final class Protoc {
             if (javaOutputDirectory != null) {
                 log.debug(LOG_PREFIX + "Java output directory:");
                 log.debug(LOG_PREFIX + ' ' + javaOutputDirectory);
+
+                if (javaPluginNames.size() > 0) {
+                    log.debug(LOG_PREFIX + "Plugins for Java output:");
+                    for (String name : javaPluginNames) {
+                        log.debug(LOG_PREFIX + name);
+                    }
+                }
+            }
+
+            if (pluginDirectory != null) {
+                log.debug(LOG_PREFIX + "Plugin directory:");
+                log.debug(LOG_PREFIX + ' ' + pluginDirectory);
             }
 
             if (cppOutputDirectory != null) {
@@ -240,6 +272,10 @@ final class Protoc {
 
         private final Set<File> protoFiles;
 
+        private final Set<String> javaPluginNames;
+
+        private File pluginDirectory;
+
         /**
          * A directory into which Java source files will be generated.
          */
@@ -269,6 +305,7 @@ final class Protoc {
             this.executable = checkNotNull(executable, "executable");
             this.protoFiles = newHashSet();
             this.protopathElements = newHashSet();
+            this.javaPluginNames = newHashSet();
         }
 
         /**
@@ -336,6 +373,24 @@ final class Protoc {
             checkArgument(protoFile.getName().endsWith(".proto"));
             checkProtoFileIsInProtopath(protoFile);
             protoFiles.add(protoFile);
+            return this;
+        }
+
+        /**
+         * Adds the name of a {@code protoc} plugin for Java class generation.
+         * @param name
+         * @return
+         */
+        public Builder addJavaPluginName(String name) {
+            checkNotNull(name);
+            javaPluginNames.add(name);
+            return this;
+        }
+
+        public Builder setPluginDirectory(File directory) {
+            checkNotNull(directory);
+            checkArgument(directory.isDirectory(), "Plugin directory " + directory + "does not exist");
+            pluginDirectory = directory;
             return this;
         }
 
@@ -424,7 +479,9 @@ final class Protoc {
                     cppOutputDirectory,
                     pythonOutputDirectory,
                     descriptorSetFile,
-                    includeImportsInDescriptorSet);
+                    includeImportsInDescriptorSet,
+                    ImmutableSet.copyOf(javaPluginNames),
+                    pluginDirectory);
         }
     }
 }

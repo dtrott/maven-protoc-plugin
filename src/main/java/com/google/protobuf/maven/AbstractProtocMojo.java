@@ -2,6 +2,7 @@ package com.google.protobuf.maven;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableSet;
+import com.google.protobuf.maven.toolchain.ProtobufToolchain;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.execution.MavenSession;
@@ -29,16 +30,12 @@ import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.base.Preconditions.*;
 import static com.google.common.collect.Sets.newHashSet;
 import static java.lang.Math.max;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
-import static org.codehaus.plexus.util.FileUtils.cleanDirectory;
-import static org.codehaus.plexus.util.FileUtils.copyStreamToFile;
-import static org.codehaus.plexus.util.FileUtils.getFiles;
+import static org.codehaus.plexus.util.FileUtils.*;
 
 /**
  * Abstract Mojo implementation.
@@ -212,6 +209,24 @@ abstract class AbstractProtocMojo extends AbstractMojo {
     private boolean includeDependenciesInDescriptorSet;
 
     /**
+     * Set of {@code protoc} plugins to execute. It is expected that these
+     * plugins generate Java code. The output directory is the same as for
+     * {@code protoc}'s generated Java classes.
+     */
+    @Parameter(
+            required = false
+    )
+    private Set<String> javaPluginNames = ImmutableSet.of();
+
+    /**
+     * Directory where {@code protoc} plugin executables are located.
+     */
+    @Parameter(
+            required = false
+    )
+    private File pluginDirectory;
+
+    /**
      * Sets the granularity in milliseconds of the last modification date
      * for testing whether source protobuf definitions need recompilation.
      *
@@ -317,6 +332,13 @@ abstract class AbstractProtocMojo extends AbstractMojo {
                             //assign the path to executable from toolchains
                             protocExecutable = tc.findTool("protoc"); //NOI18N
                         }
+
+                        if (pluginDirectory != null) {
+                            getLog().warn(
+                                    "Toolchains are ignored, 'pluginDirectory' parameter is set to " + pluginDirectory);
+                        } else {
+                            pluginDirectory = ((ProtobufToolchain) tc).getPluginDirectory();
+                        }
                     }
                     if (protocExecutable == null) {
                         // Try to fall back to 'protoc' in $PATH
@@ -383,6 +405,12 @@ abstract class AbstractProtocMojo extends AbstractMojo {
      * @param protocBuilder the builder to be modified.
      */
     protected void addProtocBuilderParameters(final Protoc.Builder protocBuilder) {
+        for (String javaPluginName : javaPluginNames) {
+            protocBuilder.addJavaPluginName(javaPluginName);
+        }
+        if (pluginDirectory != null) {
+            protocBuilder.setPluginDirectory(pluginDirectory);
+        }
         if (writeDescriptorSet) {
             final File descriptorSetFile = new File(getDescriptorSetOutputDirectory(), descriptorSetFileName);
             getLog().info("Will write descriptor set:");

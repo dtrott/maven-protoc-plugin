@@ -48,6 +48,17 @@ public class DefaultProtobufToolchainFactory implements ToolchainFactory, LogEna
                     "Non-existing protoc executable at " + normal.getAbsolutePath());
         }
 
+        Xpp3Dom pluginDirectory = dom.getChild(DefaultProtobufToolchain.KEY_PLUGIN_DIRECTORY);
+        if (pluginDirectory != null) {
+            File normalPluginDirectory = new File(FileUtils.normalize(pluginDirectory.getValue()));
+            if (normalPluginDirectory.isDirectory()) {
+                toolchain.setPluginDirectory(normalPluginDirectory);
+            } else {
+                throw new MisconfiguredToolchainException(
+                        "Non-existing plugin directory at " + normalPluginDirectory.getAbsolutePath());
+            }
+        }
+
         //now populate the provides section.
         dom = (Xpp3Dom) model.getProvides();
         Xpp3Dom[] provides = dom.getChildren();
