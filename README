@@ -60,7 +60,7 @@ You must:
 + Include the dependency on protobuf-java or your compile will fail.
 
 
-Once this is all done add your *.protoc files to the directory: src/main/proto
+Once this is all done add your *.proto files to the directory: src/main/proto
 
 Everything should then build with a: mvn clean install
 
