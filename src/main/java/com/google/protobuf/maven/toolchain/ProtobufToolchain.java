@@ -2,8 +2,6 @@ package com.google.protobuf.maven.toolchain;
 
 import org.apache.maven.toolchain.Toolchain;
 
-import java.io.File;
-
 /**
  * A tool chain for protobuf compiler (protoc).
  *
@@ -15,8 +13,4 @@ public interface ProtobufToolchain extends Toolchain {
     String getProtocExecutable();
 
     void setProtocExecutable(String protocExecutable);
-
-    File getPluginDirectory();
-
-    void setPluginDirectory(File pluginDirectory);
 }

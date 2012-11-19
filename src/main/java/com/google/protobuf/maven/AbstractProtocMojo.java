@@ -2,7 +2,6 @@ package com.google.protobuf.maven;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableSet;
-import com.google.protobuf.maven.toolchain.ProtobufToolchain;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.execution.MavenSession;
@@ -18,6 +17,9 @@ import org.apache.maven.toolchain.ToolchainManager;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.cli.CommandLineException;
 import org.codehaus.plexus.util.io.RawInputStreamFacade;
+import org.sonatype.aether.RepositorySystem;
+import org.sonatype.aether.RepositorySystemSession;
+import org.sonatype.aether.repository.RemoteRepository;
 import org.sonatype.plexus.build.incremental.BuildContext;
 
 import java.io.File;
@@ -89,6 +91,28 @@ abstract class AbstractProtocMojo extends AbstractMojo {
      */
     @Component
     protected MavenProjectHelper projectHelper;
+
+
+    @Component
+    protected RepositorySystem repoSystem;
+
+    @Parameter(
+            defaultValue = "${repositorySystemSession}",
+            readonly = true
+    )
+    protected RepositorySystemSession repoSystemSession;
+
+    @Parameter(
+            defaultValue = "${project.remotePluginRepositories}",
+            readonly = true
+    )
+    protected List<RemoteRepository> remoteRepos;
+
+    @Parameter(
+            defaultValue = "${project.build.directory}/protoc-plugins",
+            required = false
+    )
+    protected File pprotocPluginDirectory;
 
     /**
      * This is the path to the {@code protoc} executable.
@@ -209,22 +233,15 @@ abstract class AbstractProtocMojo extends AbstractMojo {
     private boolean includeDependenciesInDescriptorSet;
 
     /**
-     * Set of {@code protoc} plugins to execute. It is expected that these
-     * plugins generate Java code. The output directory is the same as for
-     * {@code protoc}'s generated Java classes.
+     * Specifies one of more custom protoc plugins, written in Java
+     * and available as Maven artifacts. An executable plugin will be created
+     * at execution time. On UNIX the executable is a shell script and on
+     * Windows it is a WinRun4J .exe and .ini.
      */
     @Parameter(
             required = false
     )
-    private Set<String> javaPluginNames = ImmutableSet.of();
-
-    /**
-     * Directory where {@code protoc} plugin executables are located.
-     */
-    @Parameter(
-            required = false
-    )
-    private File pluginDirectory;
+    private List<ProtocPlugin> protocPlugins;
 
     /**
      * Sets the granularity in milliseconds of the last modification date
@@ -284,6 +301,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
      * Executes the mojo.
      */
     public void execute() throws MojoExecutionException, MojoFailureException {
+
         if (skipMojo()) {
             return;
         }
@@ -319,6 +337,9 @@ abstract class AbstractProtocMojo extends AbstractMojo {
                         cleanDirectory(descriptorSetOutputDirectory);
                     }
 
+                    if (protocPlugins != null) {
+                        createProtocPlugins();
+                    }
 
                     //get toolchain from context
                     Toolchain tc = toolchainManager.getToolchainFromBuildContext("protobuf", session); //NOI18N
@@ -331,13 +352,6 @@ abstract class AbstractProtocMojo extends AbstractMojo {
                         } else {
                             //assign the path to executable from toolchains
                             protocExecutable = tc.findTool("protoc"); //NOI18N
-                        }
-
-                        if (pluginDirectory != null) {
-                            getLog().warn(
-                                    "Toolchains are ignored, 'pluginDirectory' parameter is set to " + pluginDirectory);
-                        } else {
-                            pluginDirectory = ((ProtobufToolchain) tc).getPluginDirectory();
                         }
                     }
                     if (protocExecutable == null) {
@@ -399,17 +413,30 @@ abstract class AbstractProtocMojo extends AbstractMojo {
         }
     }
 
+    private void createProtocPlugins() throws MojoExecutionException {
+        for (ProtocPlugin plugin : protocPlugins) {
+            getLog().info("building protoc plugin: " + plugin.getId());
+            final ProtocPluginAssembler assembler = new ProtocPluginAssembler(
+                    plugin,
+                    repoSystem,
+                    repoSystemSession,
+                    remoteRepos, protocPluginDirectory);
+            assembler.execute();
+        }
+    }
+
     /**
      * Adds mojo-specific parameters to the protoc builder.
      *
      * @param protocBuilder the builder to be modified.
      */
     protected void addProtocBuilderParameters(final Protoc.Builder protocBuilder) {
-        for (String javaPluginName : javaPluginNames) {
-            protocBuilder.addJavaPluginName(javaPluginName);
-        }
-        if (pluginDirectory != null) {
-            protocBuilder.setPluginDirectory(pluginDirectory);
+        if (protocPlugins != null) {
+            for (ProtocPlugin plugin : protocPlugins) {
+                protocBuilder.addPlugin(plugin);
+            }
+            protocPluginDirectory.mkdirs();
+            protocBuilder.setPluginDirectory(protocPluginDirectory);
         }
         if (writeDescriptorSet) {
             final File descriptorSetFile = new File(getDescriptorSetOutputDirectory(), descriptorSetFileName);

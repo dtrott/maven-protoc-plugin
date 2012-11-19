@@ -10,6 +10,7 @@ import org.codehaus.plexus.util.cli.Commandline;
 
 import java.io.File;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 
 import static com.google.common.base.Preconditions.*;
@@ -49,7 +50,7 @@ final class Protoc {
      */
     private final File javaOutputDirectory;
 
-    private final ImmutableSet<String> javaPluginNames;
+    private final ImmutableSet<ProtocPlugin> plugins;
 
     private final File pluginDirectory;
 
@@ -99,7 +100,7 @@ final class Protoc {
             final File pythonOutputDirectory,
             final File descriptorSetFile,
             final boolean includeImportsInDescriptorSet,
-            final ImmutableSet<String> javaPluginNames,
+            final ImmutableSet<ProtocPlugin> plugins,
             final File pluginDirectory) {
         this.executable = checkNotNull(executable, "executable");
         this.protoPathElements = checkNotNull(protoPath, "protoPath");
@@ -109,7 +110,7 @@ final class Protoc {
         this.pythonOutputDirectory = pythonOutputDirectory;
         this.descriptorSetFile = descriptorSetFile;
         this.includeImportsInDescriptorSet = includeImportsInDescriptorSet;
-        this.javaPluginNames = javaPluginNames;
+        this.plugins = plugins;
         this.pluginDirectory = pluginDirectory;
         this.error = new CommandLineUtils.StringStreamConsumer();
         this.output = new CommandLineUtils.StringStreamConsumer();
@@ -123,6 +124,19 @@ final class Protoc {
      */
     public int execute() throws CommandLineException {
         Commandline cl = new Commandline();
+
+        // Prepend plugin directory to PATH so protoc can find our custom plugins.
+        // A cleaner way to do this would be to use the --plugin but this doesn't
+        // seem to work on Windows, even when .exe is included in the executable path.
+        if (pluginDirectory != null) {
+            try {
+                Properties envVars = cl.getSystemEnvVars();
+                String path = envVars.getProperty("PATH");
+                cl.addEnvironment("PATH", pluginDirectory + File.pathSeparator + path);
+            } catch (Exception e) {
+                throw new CommandLineException("could not get environment variables", e);
+            }
+        }
         cl.setExecutable(executable);
         cl.addArguments(buildProtocCommand().toArray(new String[] {}));
         return CommandLineUtils.executeCommandLine(cl, null, output, error);
@@ -144,8 +158,9 @@ final class Protoc {
         if (javaOutputDirectory != null) {
             command.add("--java_out=" + javaOutputDirectory);
 
-            for (String name : javaPluginNames) {
-                command.add("--" + name + "_out=" + javaOutputDirectory);
+            // For now we assume all custom plugins produce Java output
+            for (ProtocPlugin plugin : plugins) {
+                command.add("--" + plugin.getId() + "_out=" + javaOutputDirectory);
             }
         }
         if (cppOutputDirectory != null) {
@@ -161,12 +176,6 @@ final class Protoc {
             command.add("--descriptor_set_out=" + descriptorSetFile);
             if (includeImportsInDescriptorSet) {
                 command.add("--include_imports");
-            }
-        }
-        if (pluginDirectory != null) {
-            for (String javaPluginName : javaPluginNames) {
-                File pluginPath = new File(pluginDirectory, "protoc-gen-" + javaPluginName);
-                command.add("--plugin=" + pluginPath.getAbsolutePath());
             }
         }
         return ImmutableList.copyOf(command);
@@ -196,10 +205,10 @@ final class Protoc {
                 log.debug(LOG_PREFIX + "Java output directory:");
                 log.debug(LOG_PREFIX + ' ' + javaOutputDirectory);
 
-                if (javaPluginNames.size() > 0) {
+                if (plugins.size() > 0) {
                     log.debug(LOG_PREFIX + "Plugins for Java output:");
-                    for (String name : javaPluginNames) {
-                        log.debug(LOG_PREFIX + name);
+                    for (ProtocPlugin plugin : plugins) {
+                        log.debug(LOG_PREFIX + plugin.getId());
                     }
                 }
             }
@@ -268,7 +277,7 @@ final class Protoc {
 
         private final Set<File> protoFiles;
 
-        private final Set<String> javaPluginNames;
+        private final Set<ProtocPlugin> plugins;
 
         private File pluginDirectory;
 
@@ -301,7 +310,7 @@ final class Protoc {
             this.executable = checkNotNull(executable, "executable");
             this.protoFiles = newHashSet();
             this.protopathElements = newHashSet();
-            this.javaPluginNames = newHashSet();
+            this.plugins = newHashSet();
         }
 
         /**
@@ -373,13 +382,13 @@ final class Protoc {
         }
 
         /**
-         * Adds the name of a {@code protoc} plugin for Java class generation.
-         * @param name
+         * Adds a protoc plugin definition for custom code generation.
+         * @param plugin plugin definition
          * @return
          */
-        public Builder addJavaPluginName(String name) {
-            checkNotNull(name);
-            javaPluginNames.add(name);
+        public Builder addPlugin(ProtocPlugin plugin) {
+            checkNotNull(plugin);
+            plugins.add(plugin);
             return this;
         }
 
@@ -476,7 +485,7 @@ final class Protoc {
                     pythonOutputDirectory,
                     descriptorSetFile,
                     includeImportsInDescriptorSet,
-                    ImmutableSet.copyOf(javaPluginNames),
+                    ImmutableSet.copyOf(plugins),
                     pluginDirectory);
         }
     }
