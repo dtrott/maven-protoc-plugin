@@ -112,7 +112,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
             defaultValue = "${project.build.directory}/protoc-plugins",
             required = false
     )
-    protected File pprotocPluginDirectory;
+    protected File protocPluginDirectory;
 
     /**
      * This is the path to the {@code protoc} executable.
