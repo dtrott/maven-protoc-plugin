@@ -5,6 +5,8 @@ import org.sonatype.aether.graph.Dependency;
 import org.sonatype.aether.util.artifact.DefaultArtifact;
 
 import java.io.File;
+import java.util.Collections;
+import java.util.List;
 
 import static com.google.common.base.Preconditions.checkState;
 
@@ -29,6 +31,10 @@ public class ProtocPlugin {
 
     private String javaHome = System.getProperty("java.home");
 
+    private List<String> args;
+
+    private List<String> jvmArgs;
+
     public String getId() {
         return id;
     }
@@ -51,6 +57,14 @@ public class ProtocPlugin {
 
     public String getMainClass() {
         return mainClass;
+    }
+
+    public List<String> getArgs() {
+        return (args != null) ? args : Collections.<String>emptyList();
+    }
+
+    public List<String> getJvmArgs() {
+        return (jvmArgs != null) ? jvmArgs : Collections.<String>emptyList();
     }
 
     public String getJavaHome() {

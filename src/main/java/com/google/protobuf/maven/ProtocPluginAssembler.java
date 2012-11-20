@@ -96,11 +96,27 @@ public class ProtocPluginAssembler {
             if (jvmLocation != null) {
                 out.println("vm.location=" + jvmLocation.getAbsolutePath());
             }
-            for (int i = 0; i < resolvedJars.size(); i++) {
-                int index = i + 1;
-                out.println("classpath." + index + "=" + resolvedJars.get(i).getAbsolutePath());
+            int index = 1;
+            for (File resolvedJar : resolvedJars) {
+                out.println("classpath." + index + "=" + resolvedJar.getAbsolutePath());
+                index++;
             }
             out.println("main.class=" + pluginDefinition.getMainClass());
+
+            index = 1;
+            for (String arg : pluginDefinition.getArgs()) {
+                out.println("arg." + index + "=" + arg);
+                index++;
+            }
+
+            index = 1;
+            for (String jvmArg : pluginDefinition.getJvmArgs()) {
+                out.println("vmarg." + index + "=" + jvmArg);
+                index++;
+            }
+
+            out.println("vm.version.min=1.6");
+
             // keep from logging to stdout (the default)
             out.println("log.level=none");
         } catch (IOException e) {
@@ -144,8 +160,19 @@ public class ProtocPluginAssembler {
                 out.print("\"" + resolvedJars.get(i).getAbsolutePath() + "\"");
             }
             out.println();
+            out.print("ARGS=\"");
+            for (String arg : pluginDefinition.getArgs()) {
+                out.print(arg + " ");
+            }
+            out.println("\"");
+            out.print("JVMARGS=\"");
+            for (String jvmArg : pluginDefinition.getJvmArgs()) {
+                out.print(jvmArg + " ");
+            }
+            out.println("\"");
             out.println();
-            out.println("\"" + javaLocation.getAbsolutePath() + "\" -cp $CP " + pluginDefinition.getMainClass());
+            out.println("\"" + javaLocation.getAbsolutePath() + "\" $JVMARGS -cp $CP "
+                    + pluginDefinition.getMainClass() + " $ARGS");
             out.println();
         } catch (IOException e) {
             throw new MojoExecutionException("Could not write plugin script file: " + pluginExecutableFile);
