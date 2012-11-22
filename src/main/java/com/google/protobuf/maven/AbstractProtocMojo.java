@@ -14,6 +14,7 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectHelper;
 import org.apache.maven.toolchain.Toolchain;
 import org.apache.maven.toolchain.ToolchainManager;
+import org.apache.maven.toolchain.java.DefaultJavaToolChain;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.cli.CommandLineException;
 import org.codehaus.plexus.util.io.RawInputStreamFacade;
@@ -414,7 +415,45 @@ abstract class AbstractProtocMojo extends AbstractMojo {
     }
 
     private void createProtocPlugins() throws MojoExecutionException {
+
+
+        // Default location is the current JVM's JAVA_HOME.
+        String javaHome = System.getProperty("java.home");
+
+        // Try to infer JAVA_HOME from location of 'java' tool in toolchain, if available.
+        // We don't use 'java' directly because for Windows we need to find the path to
+        // jvm.dll instead, which the assembler tries to figure out relative to JAVA_HOME.
+
+        final Toolchain tc = toolchainManager.getToolchainFromBuildContext("jdk", session);
+        if (tc != null) {
+            if (tc instanceof DefaultJavaToolChain) {
+                javaHome = ((DefaultJavaToolChain) tc).getJavaHome();
+                getLog().info("Set javaHome from toolchain: " + javaHome);
+            } else {
+                String javaExecutable = tc.findTool("java");
+                if (javaExecutable != null) {
+                    File parent = new File(javaExecutable).getParentFile();
+                    if (parent != null) {
+                        parent = parent.getParentFile();
+                        if (parent != null && parent.isDirectory()) {
+                            javaHome = parent.getAbsolutePath();
+                            getLog().info("Set javaHome based on 'java' location returned by toolchain: " + javaHome);
+                        }
+                    }
+                }
+            }
+        } else {
+            getLog().info("Set javaHome from java.home system property");
+        }
+
         for (ProtocPlugin plugin : protocPlugins) {
+
+            if (plugin.getJavaHome() != null) {
+                getLog().info("Using javaHome defined in plugin definition: " + javaHome);
+            } else {
+                plugin.setJavaHome(javaHome);
+            }
+
             getLog().info("building protoc plugin: " + plugin.getId());
             final ProtocPluginAssembler assembler = new ProtocPluginAssembler(
                     plugin,

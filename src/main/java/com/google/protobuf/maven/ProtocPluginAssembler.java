@@ -4,7 +4,6 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.Os;
-import org.codehaus.plexus.util.cli.Commandline;
 import org.codehaus.plexus.util.io.URLInputStreamFacade;
 import org.sonatype.aether.RepositorySystem;
 import org.sonatype.aether.RepositorySystemSession;
@@ -66,7 +65,7 @@ public class ProtocPluginAssembler {
             copyWinRun4JExecutable();
         } else {
             buildUnixPlugin();
-            chmod("u+x", pluginExecutableFile);
+            pluginExecutableFile.setExecutable(true);
         }
     }
 
@@ -208,23 +207,6 @@ public class ProtocPluginAssembler {
             resolvedJars.addAll(nlg.getFiles());
         } catch (Exception e) {
             throw new MojoExecutionException(e.getMessage(), e);
-        }
-    }
-
-    private int chmod(String mode, File file) throws MojoExecutionException {
-        Commandline cl = new Commandline();
-        cl.setExecutable("/bin/chmod");
-        Commandline.Argument arg = new Commandline.Argument();
-        arg.setValue(mode);
-        cl.addArg(arg);
-        arg = new Commandline.Argument();
-        arg.setFile(file);
-        cl.addArg(arg);
-        try {
-            return cl.execute().waitFor();
-        } catch (Exception e) {
-            throw new MojoExecutionException("could not set file permissions for file '"
-                    + file.getAbsolutePath() + "'");
         }
     }
 }

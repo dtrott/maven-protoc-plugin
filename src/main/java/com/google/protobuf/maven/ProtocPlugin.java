@@ -29,7 +29,7 @@ public class ProtocPlugin {
 
     private String mainClass;
 
-    private String javaHome = System.getProperty("java.home");
+    private String javaHome;
 
     private List<String> args;
 
@@ -69,6 +69,10 @@ public class ProtocPlugin {
 
     public String getJavaHome() {
         return javaHome;
+    }
+
+    public void setJavaHome(String javaHome) {
+        this.javaHome = javaHome;
     }
 
     public String getPluginName() {
