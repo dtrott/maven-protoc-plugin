@@ -428,7 +428,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
         if (tc != null) {
             if (tc instanceof DefaultJavaToolChain) {
                 javaHome = ((DefaultJavaToolChain) tc).getJavaHome();
-                getLog().info("Set javaHome from toolchain: " + javaHome);
+                getLog().info("javaHome from toolchain: " + javaHome);
             } else {
                 String javaExecutable = tc.findTool("java");
                 if (javaExecutable != null) {
@@ -437,13 +437,13 @@ abstract class AbstractProtocMojo extends AbstractMojo {
                         parent = parent.getParentFile();
                         if (parent != null && parent.isDirectory()) {
                             javaHome = parent.getAbsolutePath();
-                            getLog().info("Set javaHome based on 'java' location returned by toolchain: " + javaHome);
+                            getLog().info("javaHome based on 'java' location returned by toolchain: " + javaHome);
                         }
                     }
                 }
             }
         } else {
-            getLog().info("Set javaHome from java.home system property");
+            getLog().info("javaHome from java.home system property");
         }
 
         for (ProtocPlugin plugin : protocPlugins) {
@@ -452,6 +452,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
                 getLog().info("Using javaHome defined in plugin definition: " + javaHome);
             } else {
                 plugin.setJavaHome(javaHome);
+                getLog().info("Setting javaHome for plugin");
             }
 
             getLog().info("building protoc plugin: " + plugin.getId());
