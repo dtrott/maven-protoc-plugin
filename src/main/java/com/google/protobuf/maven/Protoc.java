@@ -10,11 +10,10 @@ import org.codehaus.plexus.util.cli.Commandline;
 
 import java.io.File;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.base.Preconditions.*;
 import static com.google.common.collect.Lists.newLinkedList;
 import static com.google.common.collect.Sets.newHashSet;
 
@@ -50,6 +49,10 @@ final class Protoc {
      * A directory into which Java source files will be generated.
      */
     private final File javaOutputDirectory;
+
+    private final ImmutableSet<ProtocPlugin> plugins;
+
+    private final File pluginDirectory;
 
     /**
      * A directory into which C++ source files will be generated.
@@ -96,7 +99,9 @@ final class Protoc {
             final File cppOutputDirectory,
             final File pythonOutputDirectory,
             final File descriptorSetFile,
-            final boolean includeImportsInDescriptorSet) {
+            final boolean includeImportsInDescriptorSet,
+            final ImmutableSet<ProtocPlugin> plugins,
+            final File pluginDirectory) {
         this.executable = checkNotNull(executable, "executable");
         this.protoPathElements = checkNotNull(protoPath, "protoPath");
         this.protoFiles = checkNotNull(protoFiles, "protoFiles");
@@ -105,6 +110,8 @@ final class Protoc {
         this.pythonOutputDirectory = pythonOutputDirectory;
         this.descriptorSetFile = descriptorSetFile;
         this.includeImportsInDescriptorSet = includeImportsInDescriptorSet;
+        this.plugins = plugins;
+        this.pluginDirectory = pluginDirectory;
         this.error = new CommandLineUtils.StringStreamConsumer();
         this.output = new CommandLineUtils.StringStreamConsumer();
     }
@@ -117,6 +124,19 @@ final class Protoc {
      */
     public int execute() throws CommandLineException {
         Commandline cl = new Commandline();
+
+        // Prepend plugin directory to PATH so protoc can find our custom plugins.
+        // A cleaner way to do this would be to use the --plugin but this doesn't
+        // seem to work on Windows, even when .exe is included in the executable path.
+        if (pluginDirectory != null) {
+            try {
+                Properties envVars = cl.getSystemEnvVars();
+                String path = envVars.getProperty("PATH");
+                cl.addEnvironment("PATH", pluginDirectory + File.pathSeparator + path);
+            } catch (Exception e) {
+                throw new CommandLineException("could not get environment variables", e);
+            }
+        }
         cl.setExecutable(executable);
         cl.addArguments(buildProtocCommand().toArray(new String[] {}));
         return CommandLineUtils.executeCommandLine(cl, null, output, error);
@@ -137,6 +157,11 @@ final class Protoc {
         }
         if (javaOutputDirectory != null) {
             command.add("--java_out=" + javaOutputDirectory);
+
+            // For now we assume all custom plugins produce Java output
+            for (ProtocPlugin plugin : plugins) {
+                command.add("--" + plugin.getId() + "_out=" + javaOutputDirectory);
+            }
         }
         if (cppOutputDirectory != null) {
             command.add("--cpp_out=" + cppOutputDirectory);
@@ -179,6 +204,18 @@ final class Protoc {
             if (javaOutputDirectory != null) {
                 log.debug(LOG_PREFIX + "Java output directory:");
                 log.debug(LOG_PREFIX + ' ' + javaOutputDirectory);
+
+                if (plugins.size() > 0) {
+                    log.debug(LOG_PREFIX + "Plugins for Java output:");
+                    for (ProtocPlugin plugin : plugins) {
+                        log.debug(LOG_PREFIX + plugin.getId());
+                    }
+                }
+            }
+
+            if (pluginDirectory != null) {
+                log.debug(LOG_PREFIX + "Plugin directory:");
+                log.debug(LOG_PREFIX + ' ' + pluginDirectory);
             }
 
             if (cppOutputDirectory != null) {
@@ -240,6 +277,10 @@ final class Protoc {
 
         private final Set<File> protoFiles;
 
+        private final Set<ProtocPlugin> plugins;
+
+        private File pluginDirectory;
+
         /**
          * A directory into which Java source files will be generated.
          */
@@ -269,6 +310,7 @@ final class Protoc {
             this.executable = checkNotNull(executable, "executable");
             this.protoFiles = newHashSet();
             this.protopathElements = newHashSet();
+            this.plugins = newHashSet();
         }
 
         /**
@@ -336,6 +378,24 @@ final class Protoc {
             checkArgument(protoFile.getName().endsWith(".proto"));
             checkProtoFileIsInProtopath(protoFile);
             protoFiles.add(protoFile);
+            return this;
+        }
+
+        /**
+         * Adds a protoc plugin definition for custom code generation.
+         * @param plugin plugin definition
+         * @return
+         */
+        public Builder addPlugin(ProtocPlugin plugin) {
+            checkNotNull(plugin);
+            plugins.add(plugin);
+            return this;
+        }
+
+        public Builder setPluginDirectory(File directory) {
+            checkNotNull(directory);
+            checkArgument(directory.isDirectory(), "Plugin directory " + directory + "does not exist");
+            pluginDirectory = directory;
             return this;
         }
 
@@ -424,7 +484,9 @@ final class Protoc {
                     cppOutputDirectory,
                     pythonOutputDirectory,
                     descriptorSetFile,
-                    includeImportsInDescriptorSet);
+                    includeImportsInDescriptorSet,
+                    ImmutableSet.copyOf(plugins),
+                    pluginDirectory);
         }
     }
 }

@@ -171,4 +171,22 @@ mvn toolchains:toolchain protoc:testCompile
 
 +-----+
 
+* Output Of Binary File Descriptor Sets
 
+  It is possible to output binary <<<FileDescriptorSet>>> files containing all the descriptor
+  metadata for generated classes. Descriptor sets are written by passing the <<<--descriptor_set_out>>>
+  and <<<--include_imports>>> arguments to <<<protoc>>>.
+
+  The following plugin options configure descriptor set output:
+
+  * <<<writeDescriptorSet>>> - determines if a descriptor set is written; default is <<<false>>>.
+
+  * <<<includeDependenciesInDescriptorSet>>> - if <<<true>>>, all imports are included in the descriptor set; default
+    is <<<false>>>.
+
+  * <<<descriptorSetFileName>>> - the file name of the descriptor set; default is the artifact name with
+    the <<<.protobin>>> extension.
+
+  * <<<descriptorSetOutputDirectory>>> - the directory where the descriptor set file will be created
+
+  []

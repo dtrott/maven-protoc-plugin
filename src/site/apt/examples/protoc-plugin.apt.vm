@@ -1,0 +1,107 @@
+            ---------------------------
+            Using Custom Protoc Plugins
+            ---------------------------
+
+~~ APT Format: http://maven.apache.org/doxia/references/apt-format.html
+
+Using Custom Protoc Plugins
+
+  It is possible to customize <<<protoc>>>'s output with plugins. This is done by
+  adding adding a <<<protocPlugins>>> element containing one of more <<<protocPlugin>>> elements
+  to the <<<configuration>>> section. Protoc plugins are executables that are invoked by <<<protoc>>>.
+  They read code generator requests from <<<stdin>>> and output results to <<<stdout>>>.
+
+  In the current version only plugins written in Java (or any other JVM
+  language) and resolvable as Maven artifacts are supported. Also, the output
+  directory for generated files is the same as the Java output directory. 
+
+  In future versions support for other types of executables will be added as well.
+
+* Using a <<<protoc>>> plugin
+
+  The following example includes uses a single plugin to generate Java code in addition
+  to <<<protoc>>>'s regular output.
+
++-----+
+
+<plugin>
+  <groupId>com.google.protobuf.tools</groupId>
+  <artifactId>maven-protoc-plugin</artifactId>
+  <version>0.3.5-SNAPSHOT</version>
+  <extensions>true</extensions>
+  <executions>
+    <execution>
+      <goals>
+          <goal>compile</goal>
+      </goals>
+      <configuration>
+        <protocPlugins>
+          <protocPlugin>
+            <id>myproto</id>
+            <groupId>myproto</groupId>
+            <artifactId>myproto-protoc-plugin</artifactId>
+            <version>1.2</version>
+            <mainClass>myproto.MyProtocPlugin</mainClass>
+          </protocPlugin>
+        </protocPlugins>
+      </configuration>
+    </execution>
+  </executions>
+</plugin>
+
++-----+
+
+  This will resolve the Maven artifact <<<myproto:myproto-protoc-plugin:1.2>>> and its dependencies, create
+  a plugin executable on the fly and then invoke <<<protoc>>> with the argument <<<--myproto_out=JAVAOUT>>>
+  where <<<JAVAOUT>>> is same directory used for the <<<--java_out>>> argument.
+
+* <<<protocPlugin>>> Options
+
+  The following options can be  included in the <<<protocPlugin>>> element:
+
+  * <<<id>>> - (required) unique id for this plugin
+
+  * <<<groupId>>> - (required) group id for dependency resolution
+
+  * <<<artifactId>>> - (required) artifact id for dependency resolution
+
+  * <<<version>>> - (required) version for dependency resolution
+
+  * <<<scope>>> - (optional) resolution scope; default is <<<runtime>>>
+
+  * <<<mainClass>>> - (required) Java main class to execute
+
+  * <<<javaHome>>> - (optional) location of the JDK used for executing the plugin;
+    uses the JDK specified in <<<toolchains.xml>>> or the value of the <<<java.home>>> system property as default
+
+  * <<<args>>> - (optional) argument to pass to the <<<main>>> method
+
+  * <<<jvmArgs>>> - (optional) JVM arguments
+
+  []
+
+  The location of the <<<java>>> command (on UNIX) or <<<jvm.dll>> on Windows is determined as follows. First, the
+  <<<javaHome>>> option in <<<protocPlugin>>> is used, if present. Otherwise, the <<<jdkHome>>> location of the
+  <<<jdk>>> toolchain in <<<toolchains.xml>>> is used. If no toolchain has been set up, the JDK that's running
+  Maven is used (the value of the <<<java.home>>> system property).
+
+* Java plugin generation
+
+  An Java-based executable is assembled on the fly from the specified artifact and its dependencies and executed by
+  <<<protoc>>>. The way this is done is platform-dependent.
+
+  On UNIX, a shell script is created in <<<target/protoc-plugins>>> that builds a classpath from local repository
+  paths of all resolved artifacts and then runs the configured <<<java>>> command.
+
+  On Windows, a WinRun4J executable (bundled inside the Maven plugin jar) is copied into <<<target/protoc-plugins>>>
+  and an <<<.ini>>> is generated with the required classpath, <<<jvm.dll>>> location, main class and arguments.
+  Please note that at the moment only 32-bit JVMs are supported on Windows.
+
+  The <<<target/protoc-plugins>>> directory is prepended to the <<<PATH>>> in <<<protoc>>>'s runtime environment.
+
+
+* References
+
+  * {{{https://developers.google.com/protocol-buffers/docs/reference/cpp/google.protobuf.compiler.plugin.pb} protoc plugin API}}
+
+  []

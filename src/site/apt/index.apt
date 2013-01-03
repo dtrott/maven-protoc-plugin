@@ -46,4 +46,6 @@ Maven Protoc Plugin
 
   * {{{./examples/protobuf-toolchain.html} Using Protobuf Toolchain}}
 
+  * {{{./examples/protoc-plugin.html} Using custom protoc plugins}}
+
   []
