@@ -6,7 +6,10 @@
     <body>
 
         <release version="0.3.0" date="PENDING" description="New features">
-            <action dev="sergei-ivanov" type="add" due-to="Rob Wicke">
+            <action dev="rwicke" type="add">
+                Support for java-based plugins for protoc compiler.
+            </action>
+            <action dev="rwicke" type="add">
                 Generation of binary descriptor sets.
             </action>
             <action dev="sergei-ivanov" type="update">

@@ -44,6 +44,11 @@
             <name>Sergei Ivanov</name>
             <timezone>0</timezone>
         </developer>
+        <developer>
+            <id>rwicke</id>
+            <name>Robert Wicke</name>
+            <timezone>0</timezone>
+        </developer>
     </developers>
 
     <contributors>
@@ -54,10 +59,6 @@
         <contributor>
             <name>B. K. Oxley (binkley)</name>
             <timezone>-6</timezone>
-        </contributor>
-        <contributor>
-            <name>Rob Wicke</name>
-            <timezone>0</timezone>
         </contributor>
     </contributors>
 
