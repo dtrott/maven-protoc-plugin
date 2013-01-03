@@ -14,6 +14,8 @@ import static com.google.common.base.Preconditions.checkState;
  * Describes a {@code protoc} plugin that is written in Java and
  * assembled from resolved artifacts at runtime.
  * The state is populated from the Maven plugin's configuration.
+ *
+ * @since 0.3.0
  */
 public class ProtocPlugin {
 
@@ -71,7 +73,7 @@ public class ProtocPlugin {
         return javaHome;
     }
 
-    public void setJavaHome(String javaHome) {
+    public void setJavaHome(final String javaHome) {
         this.javaHome = javaHome;
     }
 
@@ -94,10 +96,11 @@ public class ProtocPlugin {
 
     /**
      * Returns the generated plugin executable path.
+     *
      * @param pluginDirectory directory where plugins will be created
-     * @return
+     * @return file handle for the plugin executable.
      */
-    public File getPluginExecutableFile(File pluginDirectory) {
+    public File getPluginExecutableFile(final File pluginDirectory) {
         if (Os.isFamily(Os.FAMILY_WINDOWS)) {
             return new File(pluginDirectory, getPluginName() + ".exe");
         } else {
@@ -108,5 +111,4 @@ public class ProtocPlugin {
     public Dependency asDependency() {
         return new Dependency(new DefaultArtifact(groupId, artifactId, "jar", version), scope);
     }
-
 }

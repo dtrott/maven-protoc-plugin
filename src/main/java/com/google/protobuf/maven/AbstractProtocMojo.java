@@ -33,12 +33,16 @@ import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-import static com.google.common.base.Preconditions.*;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Sets.newHashSet;
 import static java.lang.Math.max;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
-import static org.codehaus.plexus.util.FileUtils.*;
+import static org.codehaus.plexus.util.FileUtils.cleanDirectory;
+import static org.codehaus.plexus.util.FileUtils.copyStreamToFile;
+import static org.codehaus.plexus.util.FileUtils.getFiles;
 
 /**
  * Abstract Mojo implementation.
@@ -93,22 +97,41 @@ abstract class AbstractProtocMojo extends AbstractMojo {
     @Component
     protected MavenProjectHelper projectHelper;
 
-
+    /**
+     * Repository system for artifact resolution.
+     *
+     * @since 0.3.0
+     */
     @Component
     protected RepositorySystem repoSystem;
 
+    /**
+     * Repository system session for artifact resolution.
+     *
+     * @since 0.3.0
+     */
     @Parameter(
             defaultValue = "${repositorySystemSession}",
             readonly = true
     )
     protected RepositorySystemSession repoSystemSession;
 
+    /**
+     * Remote repositories for artifact resolution.
+     *
+     * @since 0.3.0
+     */
     @Parameter(
             defaultValue = "${project.remotePluginRepositories}",
             readonly = true
     )
     protected List<RemoteRepository> remoteRepos;
 
+    /**
+     * A directory where native launchers for java protoc plugins will be generated.
+     *
+     * @since 0.3.0
+     */
     @Parameter(
             defaultValue = "${project.build.directory}/protoc-plugins",
             required = false
@@ -311,9 +334,9 @@ abstract class AbstractProtocMojo extends AbstractMojo {
         final File protoSourceRoot = getProtoSourceRoot();
         if (protoSourceRoot.exists()) {
             try {
-                ImmutableSet<File> protoFiles = findProtoFilesInDirectory(protoSourceRoot);
+                final ImmutableSet<File> protoFiles = findProtoFilesInDirectory(protoSourceRoot);
                 final File outputDirectory = getOutputDirectory();
-                ImmutableSet<File> outputFiles = findGeneratedFilesInDirectory(getOutputDirectory());
+                final ImmutableSet<File> outputFiles = findGeneratedFilesInDirectory(getOutputDirectory());
 
                 if (protoFiles.isEmpty()) {
                     getLog().info("No proto files to compile.");
@@ -324,7 +347,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
                     getLog().info("Skipping compilation because target directory newer than sources.");
                     attachFiles();
                 } else {
-                    ImmutableSet<File> derivedProtoPathElements =
+                    final ImmutableSet<File> derivedProtoPathElements =
                             makeProtoPathFromJars(temporaryProtoFileDirectory, getDependencyArtifactFiles());
                     FileUtils.mkdir(outputDirectory.getAbsolutePath());
 
@@ -343,7 +366,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
                     }
 
                     //get toolchain from context
-                    Toolchain tc = toolchainManager.getToolchainFromBuildContext("protobuf", session); //NOI18N
+                    final Toolchain tc = toolchainManager.getToolchainFromBuildContext("protobuf", session); //NOI18N
                     if (tc != null) {
                         getLog().info("Toolchain in protoc-plugin: " + tc);
                         //when the executable to use is explicitly set by user in mojo's parameter, ignore toolchains.
@@ -414,6 +437,14 @@ abstract class AbstractProtocMojo extends AbstractMojo {
         }
     }
 
+    /**
+     * Generates native launchers for java protoc plugins.
+     * These launchers will later be added as parameters for protoc compiler.
+     *
+     * @throws MojoExecutionException if plugins launchers could not be created.
+     *
+     * @since 0.3.0
+     */
     private void createProtocPlugins() throws MojoExecutionException {
 
 
@@ -430,7 +461,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
                 javaHome = ((DefaultJavaToolChain) tc).getJavaHome();
                 getLog().info("javaHome from toolchain: " + javaHome);
             } else {
-                String javaExecutable = tc.findTool("java");
+                final String javaExecutable = tc.findTool("java");
                 if (javaExecutable != null) {
                     File parent = new File(javaExecutable).getParentFile();
                     if (parent != null) {
@@ -446,7 +477,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
             getLog().info("javaHome from java.home system property");
         }
 
-        for (ProtocPlugin plugin : protocPlugins) {
+        for (final ProtocPlugin plugin : protocPlugins) {
 
             if (plugin.getJavaHome() != null) {
                 getLog().info("Using javaHome defined in plugin definition: " + javaHome);
@@ -472,7 +503,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
      */
     protected void addProtocBuilderParameters(final Protoc.Builder protocBuilder) {
         if (protocPlugins != null) {
-            for (ProtocPlugin plugin : protocPlugins) {
+            for (final ProtocPlugin plugin : protocPlugins) {
                 protocBuilder.addPlugin(plugin);
             }
             protocPluginDirectory.mkdirs();
@@ -496,6 +527,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
      * </ul>
      *
      * @return <code>true</code> if the mojo execution should be skipped.
+     *
      * @since 0.2.0
      */
     protected boolean skipMojo() {
@@ -512,7 +544,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
         return false;
     }
 
-    protected ImmutableSet<File> findGeneratedFilesInDirectory(File directory) throws IOException {
+    protected ImmutableSet<File> findGeneratedFilesInDirectory(final File directory) throws IOException {
         if (directory == null || !directory.isDirectory()) {
             return ImmutableSet.of();
         }
@@ -545,6 +577,8 @@ abstract class AbstractProtocMojo extends AbstractMojo {
      *
      * @param files files to be checked for changes.
      * @return {@code true}, if at least one file has changes; {@code false}, if no files have changes.
+     *
+     * @since 0.3.0
      */
     private boolean hasDelta(final ImmutableSet<File> files) {
         for (final File file : files) {
@@ -587,6 +621,8 @@ abstract class AbstractProtocMojo extends AbstractMojo {
      * be defined in concrete implementation.
      *
      * @return output directory for generated descriptor set.
+     *
+     * @since 0.3.0
      */
     protected abstract File getDescriptorSetOutputDirectory();
 
@@ -598,8 +634,8 @@ abstract class AbstractProtocMojo extends AbstractMojo {
      * @return A set of all dependency artifacts.
      */
     private ImmutableSet<File> getDependencyArtifactFiles() {
-        Set<File> dependencyArtifactFiles = newHashSet();
-        for (Artifact artifact : getDependencyArtifacts()) {
+        final Set<File> dependencyArtifactFiles = newHashSet();
+        for (final Artifact artifact : getDependencyArtifacts()) {
             dependencyArtifactFiles.add(artifact.getFile());
         }
         return ImmutableSet.copyOf(dependencyArtifactFiles);
@@ -609,8 +645,8 @@ abstract class AbstractProtocMojo extends AbstractMojo {
      * @throws IOException
      */
     protected ImmutableSet<File> makeProtoPathFromJars(
-            File temporaryProtoFileDirectory,
-            Iterable<File> classpathElementFiles)
+            final File temporaryProtoFileDirectory,
+            final Iterable<File> classpathElementFiles)
             throws IOException, MojoExecutionException {
         checkNotNull(classpathElementFiles, "classpathElementFiles");
         if (!classpathElementFiles.iterator().hasNext()) {
@@ -620,15 +656,15 @@ abstract class AbstractProtocMojo extends AbstractMojo {
         if (temporaryProtoFileDirectory.exists()) {
             cleanDirectory(temporaryProtoFileDirectory);
         }
-        Set<File> protoDirectories = newHashSet();
-        for (File classpathElementFile : classpathElementFiles) {
+        final Set<File> protoDirectories = newHashSet();
+        for (final File classpathElementFile : classpathElementFiles) {
             // for some reason under IAM, we receive poms as dependent files
             // I am excluding .xml rather than including .jar as there may be other extensions in use (sar, har, zip)
             if (classpathElementFile.isFile() && classpathElementFile.canRead() &&
                     !classpathElementFile.getName().endsWith(".xml")) {
 
                 // create the jar file. the constructor validates.
-                JarFile classpathJar;
+                final JarFile classpathJar;
                 try {
                     classpathJar = new JarFile(classpathElementFile);
                 } catch (IOException e) {
@@ -661,7 +697,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
         return ImmutableSet.copyOf(protoDirectories);
     }
 
-    protected ImmutableSet<File> findProtoFilesInDirectory(File directory) throws IOException {
+    protected ImmutableSet<File> findProtoFilesInDirectory(final File directory) throws IOException {
         checkNotNull(directory);
         checkArgument(directory.isDirectory(), "%s is not a directory", directory);
         final Joiner joiner = Joiner.on(',');
@@ -670,10 +706,10 @@ abstract class AbstractProtocMojo extends AbstractMojo {
         return ImmutableSet.copyOf(protoFilesInDirectory);
     }
 
-    protected ImmutableSet<File> findProtoFilesInDirectories(Iterable<File> directories) throws IOException {
+    protected ImmutableSet<File> findProtoFilesInDirectories(final Iterable<File> directories) throws IOException {
         checkNotNull(directories);
-        Set<File> protoFiles = newHashSet();
-        for (File directory : directories) {
+        final Set<File> protoFiles = newHashSet();
+        for (final File directory : directories) {
             protoFiles.addAll(findProtoFilesInDirectory(directory));
         }
         return ImmutableSet.copyOf(protoFiles);
@@ -701,13 +737,13 @@ abstract class AbstractProtocMojo extends AbstractMojo {
         }
 
         String path = jarPath.replace('\\', '/');
-        int repositoryIndex = path.indexOf(repository);
+        final int repositoryIndex = path.indexOf(repository);
         if (repositoryIndex != -1) {
             path = path.substring(repositoryIndex + repository.length());
         }
 
         // By now the path should be good, but do a final check to fix windows machines.
-        int colonIndex = path.indexOf(':');
+        final int colonIndex = path.indexOf(':');
         if (colonIndex != -1) {
             // 2 = :\ in C:\
             path = path.substring(colonIndex + 2);
@@ -718,7 +754,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
 
     private static final char[] HEX_CHARS = "0123456789abcdef".toCharArray();
 
-    public static String toHexString(byte[] byteArray) {
+    public static String toHexString(final byte[] byteArray) {
         final StringBuilder hexString = new StringBuilder(2 * byteArray.length);
         for (final byte b : byteArray) {
             hexString.append(HEX_CHARS[(b & 0xF0) >> 4]).append(HEX_CHARS[b & 0x0F]);

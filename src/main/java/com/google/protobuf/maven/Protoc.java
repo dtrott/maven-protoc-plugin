@@ -13,7 +13,9 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import static com.google.common.base.Preconditions.*;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newLinkedList;
 import static com.google.common.collect.Sets.newHashSet;
 
@@ -123,15 +125,15 @@ final class Protoc {
      * @throws CommandLineException
      */
     public int execute() throws CommandLineException {
-        Commandline cl = new Commandline();
+        final Commandline cl = new Commandline();
 
         // Prepend plugin directory to PATH so protoc can find our custom plugins.
         // A cleaner way to do this would be to use the --plugin but this doesn't
         // seem to work on Windows, even when .exe is included in the executable path.
         if (pluginDirectory != null) {
             try {
-                Properties envVars = cl.getSystemEnvVars();
-                String path = envVars.getProperty("PATH");
+                final Properties envVars = cl.getSystemEnvVars();
+                final String path = envVars.getProperty("PATH");
                 cl.addEnvironment("PATH", pluginDirectory + File.pathSeparator + path);
             } catch (Exception e) {
                 throw new CommandLineException("could not get environment variables", e);
@@ -159,7 +161,7 @@ final class Protoc {
             command.add("--java_out=" + javaOutputDirectory);
 
             // For now we assume all custom plugins produce Java output
-            for (ProtocPlugin plugin : plugins) {
+            for (final ProtocPlugin plugin : plugins) {
                 command.add("--" + plugin.getId() + "_out=" + javaOutputDirectory);
             }
         }
@@ -207,7 +209,7 @@ final class Protoc {
 
                 if (plugins.size() > 0) {
                     log.debug(LOG_PREFIX + "Plugins for Java output:");
-                    for (ProtocPlugin plugin : plugins) {
+                    for (final ProtocPlugin plugin : plugins) {
                         log.debug(LOG_PREFIX + plugin.getId());
                     }
                 }
@@ -372,7 +374,7 @@ final class Protoc {
          * adding a parent directory to the protopath.
          * @throws NullPointerException If {@code protoFile} is {@code null}.
          */
-        public Builder addProtoFile(File protoFile) {
+        public Builder addProtoFile(final File protoFile) {
             checkNotNull(protoFile);
             checkArgument(protoFile.isFile());
             checkArgument(protoFile.getName().endsWith(".proto"));
@@ -386,20 +388,20 @@ final class Protoc {
          * @param plugin plugin definition
          * @return
          */
-        public Builder addPlugin(ProtocPlugin plugin) {
+        public Builder addPlugin(final ProtocPlugin plugin) {
             checkNotNull(plugin);
             plugins.add(plugin);
             return this;
         }
 
-        public Builder setPluginDirectory(File directory) {
+        public Builder setPluginDirectory(final File directory) {
             checkNotNull(directory);
             checkArgument(directory.isDirectory(), "Plugin directory " + directory + "does not exist");
             pluginDirectory = directory;
             return this;
         }
 
-        public Builder withDescriptorSetFile(File descriptorSetFile, boolean includeImports) {
+        public Builder withDescriptorSetFile(final File descriptorSetFile, final boolean includeImports) {
             checkNotNull(descriptorSetFile, "descriptorSetFile");
             checkArgument(descriptorSetFile.getParentFile().isDirectory());
             this.descriptorSetFile = descriptorSetFile;
@@ -407,12 +409,12 @@ final class Protoc {
             return this;
         }
 
-        private void checkProtoFileIsInProtopath(File protoFile) {
+        private void checkProtoFileIsInProtopath(final File protoFile) {
             assert protoFile.isFile();
             checkState(checkProtoFileIsInProtopathHelper(protoFile.getParentFile()));
         }
 
-        private boolean checkProtoFileIsInProtopathHelper(File directory) {
+        private boolean checkProtoFileIsInProtopathHelper(final File directory) {
             assert directory.isDirectory();
             if (protopathElements.contains(directory)) {
                 return true;
@@ -425,8 +427,8 @@ final class Protoc {
         /**
          * @see #addProtoFile(File)
          */
-        public Builder addProtoFiles(Iterable<File> protoFiles) {
-            for (File protoFile : protoFiles) {
+        public Builder addProtoFiles(final Iterable<File> protoFiles) {
+            for (final File protoFile : protoFiles) {
                 addProtoFile(protoFile);
             }
             return this;
@@ -441,7 +443,7 @@ final class Protoc {
          * @throws IllegalArgumentException If {@code protpathElement} is not a
          * directory.
          */
-        public Builder addProtoPathElement(File protopathElement) {
+        public Builder addProtoPathElement(final File protopathElement) {
             checkNotNull(protopathElement);
             checkArgument(protopathElement.isDirectory());
             protopathElements.add(protopathElement);
@@ -451,8 +453,8 @@ final class Protoc {
         /**
          * @see #addProtoPathElement(File)
          */
-        public Builder addProtoPathElements(Iterable<File> protopathElements) {
-            for (File protopathElement : protopathElements) {
+        public Builder addProtoPathElements(final Iterable<File> protopathElements) {
+            for (final File protopathElement : protopathElements) {
                 addProtoPathElement(protopathElement);
             }
             return this;

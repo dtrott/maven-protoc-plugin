@@ -1,7 +1,6 @@
 package com.google.protobuf.maven;
 
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.Os;
 import org.codehaus.plexus.util.io.URLInputStreamFacade;
@@ -23,26 +22,33 @@ import java.util.List;
 
 /**
  * Creates an executable {@code protoc} plugin (written in Java) from a {@link ProtocPlugin} specification.
+ *
+ * @since 0.3.0
  */
 public class ProtocPluginAssembler {
 
     private static final String WINRUN4J_EXECUTABLE_PATH = "winrun4j/WinRun4J.exe";
 
     private final RepositorySystem repoSystem;
+
     private final RepositorySystemSession repoSystemSession;
+
     private final List<RemoteRepository> remoteRepos = new ArrayList<RemoteRepository>();
+
     private final ProtocPlugin pluginDefinition;
+
     private final File pluginDirectory;
 
     private final List<File> resolvedJars = new ArrayList<File>();
+
     private final File pluginExecutableFile;
 
     public ProtocPluginAssembler(
-            ProtocPlugin pluginDefinition,
-            RepositorySystem repoSystem,
-            RepositorySystemSession repoSystemSession,
-            List<RemoteRepository> remoteRepos,
-            File pluginDirectory) {
+            final ProtocPlugin pluginDefinition,
+            final RepositorySystem repoSystem,
+            final RepositorySystemSession repoSystemSession,
+            final List<RemoteRepository> remoteRepos,
+            final File pluginDirectory) {
         this.repoSystem = repoSystem;
         this.repoSystemSession = repoSystemSession;
         this.remoteRepos.addAll(remoteRepos);
@@ -52,9 +58,9 @@ public class ProtocPluginAssembler {
     }
 
     /**
-     * Resolves the plugin's dependencies to the local Maven repo and builds the plugin executbable.
-     * @throws MojoExecutionException
-     * @throws MojoFailureException
+     * Resolves the plugin's dependencies to the local Maven repository and builds the plugin executable.
+     *
+     * @throws MojoExecutionException if plugin executable could not be built.
      */
     public void execute() throws MojoExecutionException {
         pluginDefinition.validate();
@@ -96,20 +102,20 @@ public class ProtocPluginAssembler {
                 out.println("vm.location=" + jvmLocation.getAbsolutePath());
             }
             int index = 1;
-            for (File resolvedJar : resolvedJars) {
+            for (final File resolvedJar : resolvedJars) {
                 out.println("classpath." + index + "=" + resolvedJar.getAbsolutePath());
                 index++;
             }
             out.println("main.class=" + pluginDefinition.getMainClass());
 
             index = 1;
-            for (String arg : pluginDefinition.getArgs()) {
+            for (final String arg : pluginDefinition.getArgs()) {
                 out.println("arg." + index + "=" + arg);
                 index++;
             }
 
             index = 1;
-            for (String jvmArg : pluginDefinition.getJvmArgs()) {
+            for (final String jvmArg : pluginDefinition.getJvmArgs()) {
                 out.println("vmarg." + index + "=" + jvmArg);
                 index++;
             }
@@ -119,7 +125,8 @@ public class ProtocPluginAssembler {
             // keep from logging to stdout (the default)
             out.println("log.level=none");
         } catch (IOException e) {
-            throw new MojoExecutionException("Could not write WinRun4J ini file: " + winRun4JIniFile.getAbsolutePath());
+            throw new MojoExecutionException(
+                    "Could not write WinRun4J ini file: " + winRun4JIniFile.getAbsolutePath(), e);
         } finally {
             if (out != null) {
                 out.close();
@@ -128,23 +135,23 @@ public class ProtocPluginAssembler {
     }
 
     private void copyWinRun4JExecutable() throws MojoExecutionException {
-        URL url = Thread.currentThread().getContextClassLoader().getResource(WINRUN4J_EXECUTABLE_PATH);
+        final URL url = Thread.currentThread().getContextClassLoader().getResource(WINRUN4J_EXECUTABLE_PATH);
         if (url == null) {
-            throw new MojoExecutionException("could not locate WinRun4J executable at path '"
-                    + WINRUN4J_EXECUTABLE_PATH + "'");
+            throw new MojoExecutionException(
+                    "Could not locate WinRun4J executable at path: " + WINRUN4J_EXECUTABLE_PATH);
         }
         try {
             FileUtils.copyStreamToFile(new URLInputStreamFacade(url), pluginExecutableFile);
         } catch (IOException e) {
-            throw new MojoExecutionException("Could not copy WinRun4J executable to '"
-                    + pluginExecutableFile.getAbsolutePath() + "'");
+            throw new MojoExecutionException(
+                    "Could not copy WinRun4J executable to: " + pluginExecutableFile.getAbsolutePath(), e);
         }
     }
 
     private void buildUnixPlugin() throws MojoExecutionException {
         createPluginDirectory();
 
-        File javaLocation = new File(pluginDefinition.getJavaHome(), "bin/java");
+        final File javaLocation = new File(pluginDefinition.getJavaHome(), "bin/java");
 
         PrintWriter out = null;
         try {
@@ -160,12 +167,12 @@ public class ProtocPluginAssembler {
             }
             out.println();
             out.print("ARGS=\"");
-            for (String arg : pluginDefinition.getArgs()) {
+            for (final String arg : pluginDefinition.getArgs()) {
                 out.print(arg + " ");
             }
             out.println("\"");
             out.print("JVMARGS=\"");
-            for (String jvmArg : pluginDefinition.getJvmArgs()) {
+            for (final String jvmArg : pluginDefinition.getJvmArgs()) {
                 out.print(jvmArg + " ");
             }
             out.println("\"");
@@ -174,7 +181,7 @@ public class ProtocPluginAssembler {
                     + pluginDefinition.getMainClass() + " $ARGS");
             out.println();
         } catch (IOException e) {
-            throw new MojoExecutionException("Could not write plugin script file: " + pluginExecutableFile);
+            throw new MojoExecutionException("Could not write plugin script file: " + pluginExecutableFile, e);
         } finally {
             if (out != null) {
                 out.close();
@@ -191,17 +198,17 @@ public class ProtocPluginAssembler {
     }
 
     private void resolvePluginDependencies() throws MojoExecutionException {
-        CollectRequest collectRequest = new CollectRequest();
+        final CollectRequest collectRequest = new CollectRequest();
         collectRequest.setRoot(pluginDefinition.asDependency());
-        for (RemoteRepository remoteRepo : remoteRepos) {
+        for (final RemoteRepository remoteRepo : remoteRepos) {
             collectRequest.addRepository(remoteRepo);
         }
 
         try {
-            DependencyNode node = repoSystem.collectDependencies(repoSystemSession, collectRequest).getRoot();
-            DependencyRequest request = new DependencyRequest(node, null);
+            final DependencyNode node = repoSystem.collectDependencies(repoSystemSession, collectRequest).getRoot();
+            final DependencyRequest request = new DependencyRequest(node, null);
             repoSystem.resolveDependencies(repoSystemSession, request);
-            PreorderNodeListGenerator nlg = new PreorderNodeListGenerator();
+            final PreorderNodeListGenerator nlg = new PreorderNodeListGenerator();
             node.accept(nlg);
 
             resolvedJars.addAll(nlg.getFiles());
