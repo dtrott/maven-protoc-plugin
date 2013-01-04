@@ -103,7 +103,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
      * @since 0.3.0
      */
     @Component
-    protected RepositorySystem repoSystem;
+    private RepositorySystem repoSystem;
 
     /**
      * Repository system session for artifact resolution.
@@ -114,7 +114,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
             defaultValue = "${repositorySystemSession}",
             readonly = true
     )
-    protected RepositorySystemSession repoSystemSession;
+    private RepositorySystemSession repoSystemSession;
 
     /**
      * Remote repositories for artifact resolution.
@@ -125,7 +125,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
             defaultValue = "${project.remotePluginRepositories}",
             readonly = true
     )
-    protected List<RemoteRepository> remoteRepos;
+    private List<RemoteRepository> remoteRepos;
 
     /**
      * A directory where native launchers for java protoc plugins will be generated.
@@ -136,7 +136,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
             defaultValue = "${project.build.directory}/protoc-plugins",
             required = false
     )
-    protected File protocPluginDirectory;
+    private File protocPluginDirectory;
 
     /**
      * This is the path to the {@code protoc} executable.
@@ -445,22 +445,51 @@ abstract class AbstractProtocMojo extends AbstractMojo {
      *
      * @since 0.3.0
      */
-    private void createProtocPlugins() throws MojoExecutionException {
+    protected void createProtocPlugins() throws MojoExecutionException {
+        final String javaHome = detectJavaHome();
 
+        for (final ProtocPlugin plugin : protocPlugins) {
 
-        // Default location is the current JVM's JAVA_HOME.
-        String javaHome = System.getProperty("java.home");
+            if (plugin.getJavaHome() != null) {
+                getLog().debug("Using javaHome defined in plugin definition: " + javaHome);
+            } else {
+                getLog().debug("Setting javaHome for plugin: " + javaHome);
+                plugin.setJavaHome(javaHome);
+            }
 
-        // Try to infer JAVA_HOME from location of 'java' tool in toolchain, if available.
-        // We don't use 'java' directly because for Windows we need to find the path to
-        // jvm.dll instead, which the assembler tries to figure out relative to JAVA_HOME.
+            getLog().info("Building protoc plugin: " + plugin.getId());
+            final ProtocPluginAssembler assembler = new ProtocPluginAssembler(
+                    plugin,
+                    repoSystem,
+                    repoSystemSession,
+                    remoteRepos,
+                    protocPluginDirectory);
+            assembler.execute();
+        }
+    }
+
+    /**
+     * Attempts to detect java home directory, using {@code jdk} toolchain if available,
+     * with a fallback to {@code java.home} system property.
+     *
+     * @return path to java home directory.
+     *
+     * @since 0.3.0
+     */
+    protected String detectJavaHome() {
+        String javaHome = null;
 
         final Toolchain tc = toolchainManager.getToolchainFromBuildContext("jdk", session);
         if (tc != null) {
             if (tc instanceof DefaultJavaToolChain) {
                 javaHome = ((DefaultJavaToolChain) tc).getJavaHome();
-                getLog().info("javaHome from toolchain: " + javaHome);
+                if (javaHome != null) {
+                    getLog().debug("Using javaHome from toolchain: " + javaHome);
+                }
             } else {
+                // Try to infer JAVA_HOME from location of 'java' tool in toolchain, if available.
+                // We don't use 'java' directly because for Windows we need to find the path to
+                // jvm.dll instead, which the assembler tries to figure out relative to JAVA_HOME.
                 final String javaExecutable = tc.findTool("java");
                 if (javaExecutable != null) {
                     File parent = new File(javaExecutable).getParentFile();
@@ -468,32 +497,19 @@ abstract class AbstractProtocMojo extends AbstractMojo {
                         parent = parent.getParentFile();
                         if (parent != null && parent.isDirectory()) {
                             javaHome = parent.getAbsolutePath();
-                            getLog().info("javaHome based on 'java' location returned by toolchain: " + javaHome);
+                            getLog().debug(
+                                    "Using javaHome based on 'java' location returned by toolchain: " + javaHome);
                         }
                     }
                 }
             }
-        } else {
-            getLog().info("javaHome from java.home system property");
         }
-
-        for (final ProtocPlugin plugin : protocPlugins) {
-
-            if (plugin.getJavaHome() != null) {
-                getLog().info("Using javaHome defined in plugin definition: " + javaHome);
-            } else {
-                plugin.setJavaHome(javaHome);
-                getLog().info("Setting javaHome for plugin");
-            }
-
-            getLog().info("building protoc plugin: " + plugin.getId());
-            final ProtocPluginAssembler assembler = new ProtocPluginAssembler(
-                    plugin,
-                    repoSystem,
-                    repoSystemSession,
-                    remoteRepos, protocPluginDirectory);
-            assembler.execute();
+        if (javaHome == null) {
+            // Default location is the current JVM's JAVA_HOME.
+            javaHome = System.getProperty("java.home");
+            getLog().debug("Using javaHome from java.home system property: " + javaHome);
         }
+        return javaHome;
     }
 
     /**
@@ -553,7 +569,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
         return ImmutableSet.copyOf(javaFilesInDirectory);
     }
 
-    private static long lastModified(final ImmutableSet<File> files) {
+    protected static long lastModified(final ImmutableSet<File> files) {
         long result = 0;
         for (final File file : files) {
             result = max(result, file.lastModified());
@@ -580,7 +596,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
      *
      * @since 0.3.0
      */
-    private boolean hasDelta(final ImmutableSet<File> files) {
+    protected boolean hasDelta(final ImmutableSet<File> files) {
         for (final File file : files) {
             if (buildContext.hasDelta(file)) {
                 return true;
@@ -589,7 +605,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
         return false;
     }
 
-    private void checkParameters() {
+    protected void checkParameters() {
         checkNotNull(project, "project");
         checkNotNull(projectHelper, "projectHelper");
         final File protoSourceRoot = getProtoSourceRoot();
@@ -633,7 +649,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
      *
      * @return A set of all dependency artifacts.
      */
-    private ImmutableSet<File> getDependencyArtifactFiles() {
+    protected ImmutableSet<File> getDependencyArtifactFiles() {
         final Set<File> dependencyArtifactFiles = newHashSet();
         for (final Artifact artifact : getDependencyArtifacts()) {
             dependencyArtifactFiles.add(artifact.getFile());
@@ -754,7 +770,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
 
     private static final char[] HEX_CHARS = "0123456789abcdef".toCharArray();
 
-    public static String toHexString(final byte[] byteArray) {
+    protected static String toHexString(final byte[] byteArray) {
         final StringBuilder hexString = new StringBuilder(2 * byteArray.length);
         for (final byte b : byteArray) {
             hexString.append(HEX_CHARS[(b & 0xF0) >> 4]).append(HEX_CHARS[b & 0x0F]);
