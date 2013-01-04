@@ -3,7 +3,6 @@ package com.google.protobuf.maven;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.Os;
-import org.codehaus.plexus.util.io.URLInputStreamFacade;
 import org.sonatype.aether.RepositorySystem;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.collection.CollectRequest;
@@ -141,7 +140,7 @@ public class ProtocPluginAssembler {
                     "Could not locate WinRun4J executable at path: " + WINRUN4J_EXECUTABLE_PATH);
         }
         try {
-            FileUtils.copyStreamToFile(new URLInputStreamFacade(url), pluginExecutableFile);
+            FileUtils.copyURLToFile(url, pluginExecutableFile);
         } catch (IOException e) {
             throw new MojoExecutionException(
                     "Could not copy WinRun4J executable to: " + pluginExecutableFile.getAbsolutePath(), e);
