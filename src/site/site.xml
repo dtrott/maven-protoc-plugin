@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<project xmlns="http://maven.apache.org/DECORATION/1.0.0"
+<project xmlns="http://maven.apache.org/DECORATION/1.3.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/DECORATION/1.0.0 http://maven.apache.org/xsd/decoration-1.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/DECORATION/1.3.0 http://maven.apache.org/xsd/decoration-1.3.0.xsd">
 
     <body>
 
@@ -20,6 +20,7 @@
         <menu name="Examples">
             <!-- TODO -->
             <item name="Protobuf Toolchain" href="examples/protobuf-toolchain.html"/>
+            <item name="Custom Protoc Plugins" href="examples/protoc-plugin.html"/>
         </menu>
 
         <menu ref="reports"/>

@@ -5,7 +5,7 @@
 
     <body>
 
-        <release version="0.3.0" date="PENDING" description="New features">
+        <release version="0.3.0" date="2013-01-04" description="New features">
             <action dev="rwicke" type="add">
                 Support for java-based plugins for protoc compiler.
             </action>
