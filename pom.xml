@@ -13,7 +13,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <mavenVersion>2.2.1</mavenVersion>
         <plexusVersion>1.5.5</plexusVersion>
-        <plexusUtilsVersion>3.0.10</plexusUtilsVersion>
+        <plexusUtilsVersion>2.1</plexusUtilsVersion>
         <aetherVersion>1.13.1</aetherVersion>
         <pluginToolsVersion>3.2</pluginToolsVersion>
     </properties>
