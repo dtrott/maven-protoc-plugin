@@ -26,8 +26,6 @@ import java.util.List;
  */
 public class ProtocPluginAssembler {
 
-    private static final String WINRUN4J_EXECUTABLE_PATH = "winrun4j/WinRun4J.exe";
-
     private final RepositorySystem repoSystem;
 
     private final RepositorySystemSession repoSystemSession;
@@ -134,10 +132,11 @@ public class ProtocPluginAssembler {
     }
 
     private void copyWinRun4JExecutable() throws MojoExecutionException {
-        final URL url = Thread.currentThread().getContextClassLoader().getResource(WINRUN4J_EXECUTABLE_PATH);
+        final String executablePath = getWinrun4jExecutablePath();
+        final URL url = Thread.currentThread().getContextClassLoader().getResource(executablePath);
         if (url == null) {
             throw new MojoExecutionException(
-                    "Could not locate WinRun4J executable at path: " + WINRUN4J_EXECUTABLE_PATH);
+                    "Could not locate WinRun4J executable at path: " + executablePath);
         }
         try {
             FileUtils.copyURLToFile(url, pluginExecutableFile);
@@ -214,5 +213,8 @@ public class ProtocPluginAssembler {
         } catch (Exception e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }
+    }
+    private String getWinrun4jExecutablePath() {
+        return "winrun4j/WinRun4J" + pluginDefinition.getWinJvmDataModel() + ".exe";
     }
 }

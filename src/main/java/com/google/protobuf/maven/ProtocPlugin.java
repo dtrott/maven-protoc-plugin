@@ -19,6 +19,10 @@ import static com.google.common.base.Preconditions.checkState;
  */
 public class ProtocPlugin {
 
+    private static String WIN_JVM_DATA_MODEL_32 = "32";
+    private static String WIN_JVM_DATA_MODEL_64 = "64";
+
+
     private String id;
 
     private String groupId;
@@ -32,6 +36,11 @@ public class ProtocPlugin {
     private String mainClass;
 
     private String javaHome;
+
+    // Assuming we're running a HotSpot JVM, use the data model of the
+    // current JVM as the default. This property is only relevant on
+    // Windows where we need to pick the right version of the WinRun4J executable.
+    private String winJvmDataModel = System.getProperty("sun.arch.data.model", WIN_JVM_DATA_MODEL_32);
 
     private List<String> args;
 
@@ -77,6 +86,10 @@ public class ProtocPlugin {
         this.javaHome = javaHome;
     }
 
+    public String getWinJvmDataModel() {
+        return winJvmDataModel;
+    }
+
     public String getPluginName() {
         return "protoc-gen-" + id;
     }
@@ -92,6 +105,11 @@ public class ProtocPlugin {
         checkState(version != null, "version must be set in protocPlugin definition");
         checkState(mainClass != null, "mainClass must be set in protocPlugin definition");
         checkState(javaHome != null && new File(javaHome).isDirectory(), "javaHome must is invalid: " + javaHome);
+        if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+            checkState(winJvmDataModel != null
+                    && (winJvmDataModel.equals(WIN_JVM_DATA_MODEL_32) || winJvmDataModel.equals(WIN_JVM_DATA_MODEL_64)),
+                    "winJvmDataModel must be '32' or '64'");
+        }
     }
 
     /**
