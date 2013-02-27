@@ -40,7 +40,7 @@ public class ProtocPlugin {
     // Assuming we're running a HotSpot JVM, use the data model of the
     // current JVM as the default. This property is only relevant on
     // Windows where we need to pick the right version of the WinRun4J executable.
-    private String winJvmDataModel = System.getProperty("sun.arch.data.model", WIN_JVM_DATA_MODEL_32);
+    private String winJvmDataModel;
 
     private List<String> args;
 
@@ -106,10 +106,28 @@ public class ProtocPlugin {
         checkState(mainClass != null, "mainClass must be set in protocPlugin definition");
         checkState(javaHome != null && new File(javaHome).isDirectory(), "javaHome must is invalid: " + javaHome);
         if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-            checkState(winJvmDataModel != null
-                    && (winJvmDataModel.equals(WIN_JVM_DATA_MODEL_32) || winJvmDataModel.equals(WIN_JVM_DATA_MODEL_64)),
-                    "winJvmDataModel must be '32' or '64'");
+
+            // If winJvmDataModel isn't set explicitly, try to guess the architecture
+            // by looking at the directories in the JDK/JRE javaHome points at.
+            // If that fails, try to figure out from the currently running JVM.
+
+            if (winJvmDataModel != null) {
+                checkState(winJvmDataModel.equals(WIN_JVM_DATA_MODEL_32) || winJvmDataModel.equals(WIN_JVM_DATA_MODEL_64),
+                        "winJvmDataModel must be '32' or '64'");
+            } else if (archDirectoryExists("amd64")) {
+                winJvmDataModel = WIN_JVM_DATA_MODEL_64;
+            } else if (archDirectoryExists("i386")) {
+                winJvmDataModel = WIN_JVM_DATA_MODEL_32;
+            } else {
+                winJvmDataModel = System.getProperty("sun.arch.data.model", WIN_JVM_DATA_MODEL_32);
+            }
         }
+    }
+
+    private boolean archDirectoryExists(String arch) {
+        return javaHome != null
+                && (new File(javaHome, "jre/lib/" + arch).isDirectory()
+                    || new File(javaHome, "lib/" + arch).isDirectory());
     }
 
     /**

@@ -77,19 +77,11 @@ public class ProtocPluginAssembler {
 
         // Try to locate jvm.dll based on pluginDefinition's javaHome property
         final File javaHome = new File(pluginDefinition.getJavaHome());
-
-        // Try JDK location first...
-        File jvmLocation = new File(javaHome, "jre/bin/client/jvm.dll");
-
-        // ... then JRE.
-        if (!jvmLocation.isFile()) {
-            jvmLocation = new File(javaHome, "bin/client/jvm.dll");
-        }
-        // If still not found, give up and don't set vm.location
-        if (!jvmLocation.isFile()) {
-            jvmLocation = null;
-        }
-
+        final File jvmLocation = findJvmLocation(javaHome,
+                "jre/bin/server/jvm.dll",
+                "bin/server/jvm.dll",
+                "jre/bin/client/jvm.dll",
+                "bin/client/jvm.dll");
         final File winRun4JIniFile = new File(pluginDirectory, pluginDefinition.getPluginName() + ".ini");
 
         PrintWriter out = null;
@@ -129,6 +121,16 @@ public class ProtocPluginAssembler {
                 out.close();
             }
         }
+    }
+
+    private File findJvmLocation(File javaHome, String... paths) {
+        for (String path : paths) {
+            File jvmLocation = new File(javaHome, path);
+            if (jvmLocation.isFile()) {
+                return jvmLocation;
+            }
+        }
+        return null;
     }
 
     private void copyWinRun4JExecutable() throws MojoExecutionException {
