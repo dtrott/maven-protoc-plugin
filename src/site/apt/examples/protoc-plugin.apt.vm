@@ -74,16 +74,26 @@ Using Custom Protoc Plugins
   * <<<javaHome>>> - (optional) location of the JDK used for executing the plugin;
     uses the JDK specified in <<<toolchains.xml>>> or the value of the <<<java.home>>> system property as default
 
+  * <<<winJvmDataModel>>> - (optional; Windows only) data model of the JVM under <<<javaHome>>>. Possible values
+    are '32' or '64'.
+
   * <<<args>>> - (optional) argument to pass to the <<<main>>> method
 
   * <<<jvmArgs>>> - (optional) JVM arguments
 
   []
 
-  The location of the <<<java>>> command (on UNIX) or <<<jvm.dll>> on Windows is determined as follows. First, the
+  The location of the <<<java>>> command (on UNIX) or <<<jvm.dll>>> on Windows is determined as follows. First, the
   <<<javaHome>>> option in <<<protocPlugin>>> is used, if present. Otherwise, the <<<jdkHome>>> location of the
   <<<jdk>>> toolchain in <<<toolchains.xml>>> is used. If no toolchain has been set up, the JDK that's running
   Maven is used (the value of the <<<java.home>>> system property).
+
+  When running on Windows the plugin will try to determine whether <<<javaHome>>> is pointing to a 32-bit or
+  64-bit JDK/JRE. If it cannot determine the data model from directories under <<<javaHome>>> it will use the
+  value of the <<<sun.arch.data.model>>> system property in the JVM that is running the plugin code. If that
+  system property does not exist it will default to 32-bit. The value can be overridden by setting the
+  <<<winJvmDataModel>>> option.
+
 
 * Java plugin generation
 
