@@ -1,5 +1,6 @@
 package com.google.protobuf.maven;
 
+import org.apache.maven.plugin.logging.Log;
 import org.codehaus.plexus.util.Os;
 import org.sonatype.aether.graph.Dependency;
 import org.sonatype.aether.util.artifact.DefaultArtifact;
@@ -19,8 +20,9 @@ import static com.google.common.base.Preconditions.checkState;
  */
 public class ProtocPlugin {
 
-    private static String WIN_JVM_DATA_MODEL_32 = "32";
-    private static String WIN_JVM_DATA_MODEL_64 = "64";
+    private static final String DATA_MODEL_SYSPROP = "sun.arch.data.model";
+    private static final String WIN_JVM_DATA_MODEL_32 = "32";
+    private static final String WIN_JVM_DATA_MODEL_64 = "64";
 
 
     private String id;
@@ -98,13 +100,13 @@ public class ProtocPlugin {
      * Validate the state of this plugin specification.
      * @throws IllegalStateException if properties are incorrect or are missing
      */
-    public void validate() {
+    public void validate(final Log log) {
         checkState(id != null, "id must be set in protocPlugin definition");
         checkState(groupId != null, "groupId must be set in protocPlugin definition");
         checkState(artifactId != null, "artifactId must be set in protocPlugin definition");
         checkState(version != null, "version must be set in protocPlugin definition");
         checkState(mainClass != null, "mainClass must be set in protocPlugin definition");
-        checkState(javaHome != null && new File(javaHome).isDirectory(), "javaHome must is invalid: " + javaHome);
+        checkState(javaHome != null && new File(javaHome).isDirectory(), "javaHome is invalid: " + javaHome);
         if (Os.isFamily(Os.FAMILY_WINDOWS)) {
 
             // If winJvmDataModel isn't set explicitly, try to guess the architecture
@@ -116,10 +118,24 @@ public class ProtocPlugin {
                         "winJvmDataModel must be '32' or '64'");
             } else if (archDirectoryExists("amd64")) {
                 winJvmDataModel = WIN_JVM_DATA_MODEL_64;
+                if (log.isDebugEnabled()) {
+                    log.debug("detected 64-bit JVM from directory structure");
+                }
             } else if (archDirectoryExists("i386")) {
                 winJvmDataModel = WIN_JVM_DATA_MODEL_32;
+                if (log.isDebugEnabled()) {
+                    log.debug("detected 32-bit JVM from directory structure");
+                }
+            } else if (System.getProperty(DATA_MODEL_SYSPROP) != null){
+                winJvmDataModel = System.getProperty(DATA_MODEL_SYSPROP);
+                if (log.isDebugEnabled()) {
+                    log.debug("detected " + winJvmDataModel + "-bit JVM from system property " + DATA_MODEL_SYSPROP);
+                }
             } else {
-                winJvmDataModel = System.getProperty("sun.arch.data.model", WIN_JVM_DATA_MODEL_32);
+                winJvmDataModel = WIN_JVM_DATA_MODEL_32;
+                if (log.isDebugEnabled()) {
+                    log.debug("defaulting to 32-bit JVM");
+                }
             }
         }
     }
@@ -146,5 +162,21 @@ public class ProtocPlugin {
 
     public Dependency asDependency() {
         return new Dependency(new DefaultArtifact(groupId, artifactId, "jar", version), scope);
+    }
+
+    @Override
+    public String toString() {
+        return "ProtocPlugin{" +
+                "id='" + id + '\'' +
+                ", groupId='" + groupId + '\'' +
+                ", artifactId='" + artifactId + '\'' +
+                ", version='" + version + '\'' +
+                ", scope='" + scope + '\'' +
+                ", mainClass='" + mainClass + '\'' +
+                ", javaHome='" + javaHome + '\'' +
+                ", winJvmDataModel='" + winJvmDataModel + '\'' +
+                ", args=" + args +
+                ", jvmArgs=" + jvmArgs +
+                '}';
     }
 }

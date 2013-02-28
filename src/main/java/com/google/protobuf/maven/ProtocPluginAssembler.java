@@ -1,6 +1,7 @@
 package com.google.protobuf.maven;
 
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.logging.Log;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.Os;
 import org.sonatype.aether.RepositorySystem;
@@ -40,18 +41,22 @@ public class ProtocPluginAssembler {
 
     private final File pluginExecutableFile;
 
+    private final Log log;
+
     public ProtocPluginAssembler(
             final ProtocPlugin pluginDefinition,
             final RepositorySystem repoSystem,
             final RepositorySystemSession repoSystemSession,
             final List<RemoteRepository> remoteRepos,
-            final File pluginDirectory) {
+            final File pluginDirectory,
+            final Log log) {
         this.repoSystem = repoSystem;
         this.repoSystemSession = repoSystemSession;
         this.remoteRepos.addAll(remoteRepos);
         this.pluginDefinition = pluginDefinition;
         this.pluginDirectory = pluginDirectory;
         this.pluginExecutableFile = pluginDefinition.getPluginExecutableFile(pluginDirectory);
+        this.log = log;
     }
 
     /**
@@ -60,7 +65,12 @@ public class ProtocPluginAssembler {
      * @throws MojoExecutionException if plugin executable could not be built.
      */
     public void execute() throws MojoExecutionException {
-        pluginDefinition.validate();
+        pluginDefinition.validate(log);
+
+        if (log.isDebugEnabled()) {
+            log.debug("plugin definition: " + pluginDefinition);
+        }
+
         resolvePluginDependencies();
 
         if (Os.isFamily(Os.FAMILY_WINDOWS)) {
@@ -83,6 +93,13 @@ public class ProtocPluginAssembler {
                 "jre/bin/client/jvm.dll",
                 "bin/client/jvm.dll");
         final File winRun4JIniFile = new File(pluginDirectory, pluginDefinition.getPluginName() + ".ini");
+
+        if (log.isDebugEnabled()) {
+            log.debug("javaHome=" + javaHome.getAbsolutePath());
+            log.debug("jvmLocation=" + (jvmLocation != null ? jvmLocation.getAbsolutePath() : "(none)"));
+            log.debug("winRun4JIniFile=" + winRun4JIniFile.getAbsolutePath());
+            log.debug("winJvmDataModel=" + pluginDefinition.getWinJvmDataModel());
+        }
 
         PrintWriter out = null;
         try {
@@ -113,6 +130,8 @@ public class ProtocPluginAssembler {
 
             // keep from logging to stdout (the default)
             out.println("log.level=none");
+            out.println("[ErrorMessages]");
+            out.println("show.popup=false");
         } catch (IOException e) {
             throw new MojoExecutionException(
                     "Could not write WinRun4J ini file: " + winRun4JIniFile.getAbsolutePath(), e);
@@ -152,6 +171,10 @@ public class ProtocPluginAssembler {
         createPluginDirectory();
 
         final File javaLocation = new File(pluginDefinition.getJavaHome(), "bin/java");
+
+        if (log.isDebugEnabled()) {
+            log.debug("javaLocation=" + javaLocation.getAbsolutePath());
+        }
 
         PrintWriter out = null;
         try {
@@ -212,6 +235,10 @@ public class ProtocPluginAssembler {
             node.accept(nlg);
 
             resolvedJars.addAll(nlg.getFiles());
+
+            if (log.isDebugEnabled()) {
+                log.debug("resolved jars: " + resolvedJars);
+            }
         } catch (Exception e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }
