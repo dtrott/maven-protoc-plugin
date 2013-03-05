@@ -21,7 +21,9 @@ import static com.google.common.base.Preconditions.checkState;
 public class ProtocPlugin {
 
     private static final String DATA_MODEL_SYSPROP = "sun.arch.data.model";
+
     private static final String WIN_JVM_DATA_MODEL_32 = "32";
+
     private static final String WIN_JVM_DATA_MODEL_64 = "64";
 
 
@@ -114,7 +116,8 @@ public class ProtocPlugin {
             // If that fails, try to figure out from the currently running JVM.
 
             if (winJvmDataModel != null) {
-                checkState(winJvmDataModel.equals(WIN_JVM_DATA_MODEL_32) || winJvmDataModel.equals(WIN_JVM_DATA_MODEL_64),
+                checkState(
+                        winJvmDataModel.equals(WIN_JVM_DATA_MODEL_32) || winJvmDataModel.equals(WIN_JVM_DATA_MODEL_64),
                         "winJvmDataModel must be '32' or '64'");
             } else if (archDirectoryExists("amd64")) {
                 winJvmDataModel = WIN_JVM_DATA_MODEL_64;
@@ -126,7 +129,7 @@ public class ProtocPlugin {
                 if (log.isDebugEnabled()) {
                     log.debug("detected 32-bit JVM from directory structure");
                 }
-            } else if (System.getProperty(DATA_MODEL_SYSPROP) != null){
+            } else if (System.getProperty(DATA_MODEL_SYSPROP) != null) {
                 winJvmDataModel = System.getProperty(DATA_MODEL_SYSPROP);
                 if (log.isDebugEnabled()) {
                     log.debug("detected " + winJvmDataModel + "-bit JVM from system property " + DATA_MODEL_SYSPROP);
@@ -143,7 +146,7 @@ public class ProtocPlugin {
     private boolean archDirectoryExists(String arch) {
         return javaHome != null
                 && (new File(javaHome, "jre/lib/" + arch).isDirectory()
-                    || new File(javaHome, "lib/" + arch).isDirectory());
+                || new File(javaHome, "lib/" + arch).isDirectory());
     }
 
     /**

@@ -5,6 +5,18 @@
 
     <body>
 
+        <release version="0.3.1" date="2013-03-05" description="Functional updates">
+            <action dev="rwicke" type="add">
+                Integration tests for java protoc plugins.
+            </action>
+            <action dev="rwicke" type="update">
+                Support for running java protoc plugins on 64-bit Windows platform.
+            </action>
+            <action dev="sergei-ivanov" type="update" due-to="jsilland">
+                Fixed integration into Eclipse lifecycle (library version conflict)
+            </action>
+        </release>
+
         <release version="0.3.0" date="2013-01-04" description="New features">
             <action dev="rwicke" type="add">
                 Support for java-based plugins for protoc compiler.

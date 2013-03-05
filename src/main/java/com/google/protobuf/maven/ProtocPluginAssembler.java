@@ -243,6 +243,7 @@ public class ProtocPluginAssembler {
             throw new MojoExecutionException(e.getMessage(), e);
         }
     }
+
     private String getWinrun4jExecutablePath() {
         return "winrun4j/WinRun4J" + pluginDefinition.getWinJvmDataModel() + ".exe";
     }
