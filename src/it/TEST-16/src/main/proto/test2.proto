@@ -1,0 +1,20 @@
+package integration_test;
+
+option java_package = "test2";
+option java_outer_classname = "Test2Protos";
+option optimize_for = SPEED;
+
+message TestMessage2 {
+  message NestedMessage {
+    optional int32 bb = 1;
+  }
+
+  enum NestedEnum {
+    FOO = 1;
+    BAR = 2;
+    BAZ = 3;
+  }
+
+  // Singular
+  optional    int32 optional_int32    =  1;
+}
