@@ -122,6 +122,11 @@ abstract class AbstractProtocMojo extends AbstractMojo {
     /**
      * @parameter
      */
+    private Set<PluginDefinition> plugins = ImmutableSet.of();
+
+    /**
+     * @parameter
+     */
     private long staleMillis = 0;
 
     /**
@@ -154,11 +159,18 @@ abstract class AbstractProtocMojo extends AbstractMojo {
                     // Quick fix to fix issues with two mvn installs in a row (ie no clean)
                     cleanDirectory(outputDirectory);
 
+                    for (PluginDefinition plugin : plugins) {
+                        File outDir = plugin.getOutputDirectory();
+                        outDir.mkdirs();
+                        cleanDirectory(outDir);
+                    }
+
                     Protoc protoc = new Protoc.Builder(protocExecutable, outputDirectory)
                             .addProtoPathElement(protoSourceRoot)
                             .addProtoPathElements(derivedProtoPathElements)
                             .addProtoPathElements(asList(additionalProtoPathElements))
                             .addProtoFiles(protoFiles)
+                            .addPluginDefinitions(plugins)
                             .build();
                     final int exitStatus = protoc.compile();
                     if (exitStatus != 0) {
@@ -168,6 +180,11 @@ abstract class AbstractProtocMojo extends AbstractMojo {
                                 "protoc did not exit cleanly. Review output for more information.");
                     }
                     attachFiles();
+                    for (PluginDefinition plugin : plugins) {
+                         if (plugin.isProjectSource()) {
+                            attachPluginFiles(plugin.getOutputDirectory());
+                         }
+                    }
                 }
             } catch (IOException e) {
                 throw new MojoExecutionException("An IO error occured", e);
@@ -213,6 +230,10 @@ abstract class AbstractProtocMojo extends AbstractMojo {
         final File outputDirectory = getOutputDirectory();
         checkNotNull(outputDirectory);
         checkState(!outputDirectory.isFile(), "the outputDirectory is a file, not a directory");
+        for (PluginDefinition pluginDefinition : plugins) {
+            checkNotNull(pluginDefinition.getName());
+            checkNotNull(pluginDefinition.getOutputDirectory());
+        }
     }
 
     protected abstract File getProtoSourceRoot();
@@ -222,6 +243,8 @@ abstract class AbstractProtocMojo extends AbstractMojo {
     protected abstract File getOutputDirectory();
 
     protected abstract void attachFiles();
+
+    protected abstract void attachPluginFiles(File pluginOutputDirectory);
 
     /**
      * Gets the {@link File} for each dependency artifact.
