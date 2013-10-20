@@ -5,6 +5,22 @@
 
     <body>
 
+        <release version="0.3.2" date="2013-10-21" description="Compatibility with Maven 3.1.x">
+            <action dev="sergei-ivanov" type="fix">
+                Removed direct dependency on Aether library, and used injected Maven components for artifact resolution.
+            </action>
+            <action dev="sergei-ivanov" type="add">
+                Allowed to specify classifier in java protoc plugin definition.
+            </action>
+            <action dev="sergei-ivanov" type="add">
+                Allowed to use version range specifications in java protoc plugin definition.
+            </action>
+            <action dev="sergei-ivanov" type="remove">
+                Removed 'scope' parameter from java protoc plugin definition.
+                It has never been used, and any scope other than "runtime" is unlikely to work correctly.
+            </action>
+        </release>
+
         <release version="0.3.1" date="2013-03-05" description="Functional updates">
             <action dev="rwicke" type="add">
                 Integration tests for java protoc plugins.

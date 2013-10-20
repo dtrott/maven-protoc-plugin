@@ -3,7 +3,10 @@ package com.google.protobuf.maven;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableSet;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.factory.ArtifactFactory;
+import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
 import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.artifact.resolver.ArtifactResolver;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -18,9 +21,6 @@ import org.apache.maven.toolchain.java.DefaultJavaToolChain;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.cli.CommandLineException;
 import org.codehaus.plexus.util.io.RawInputStreamFacade;
-import org.sonatype.aether.RepositorySystem;
-import org.sonatype.aether.RepositorySystemSession;
-import org.sonatype.aether.repository.RemoteRepository;
 import org.sonatype.plexus.build.incremental.BuildContext;
 
 import java.io.File;
@@ -47,8 +47,8 @@ import static org.codehaus.plexus.util.FileUtils.getFiles;
 /**
  * Abstract Mojo implementation.
  * <p/>
- * This class is extended by {@link com.google.protobuf.maven.ProtocCompileMojo} and
- * {@link com.google.protobuf.maven.ProtocTestCompileMojo} in order to override the specific configuration for
+ * This class is extended by {@link ProtocCompileMojo} and
+ * {@link ProtocTestCompileMojo} in order to override the specific configuration for
  * compiling the main or test classes respectively.
  *
  * @author Gregory Kick
@@ -98,23 +98,38 @@ abstract class AbstractProtocMojo extends AbstractMojo {
     protected MavenProjectHelper projectHelper;
 
     /**
-     * Repository system for artifact resolution.
+     * A factory for Maven artifact definitions.
      *
-     * @since 0.3.0
+     * @since 0.3.1
      */
     @Component
-    private RepositorySystem repoSystem;
+    private ArtifactFactory artifactFactory;
 
     /**
-     * Repository system session for artifact resolution.
+     * A component that implements resolution of Maven artifacts from repositories.
      *
-     * @since 0.3.0
+     * @since 0.3.1
+     */
+    @Component
+    private ArtifactResolver artifactResolver;
+
+    /**
+     * A component that provides metadata information for Maven artifacts.
+     *
+     * @since 0.3.1
+     */
+    @Component
+    private ArtifactMetadataSource artifactMetadataSource;
+
+    /**
+     * This is the path to the local maven {@code repository}.
      */
     @Parameter(
-            defaultValue = "${repositorySystemSession}",
-            readonly = true
+            required = true,
+            readonly = true,
+            property = "localRepository"
     )
-    private RepositorySystemSession repoSystemSession;
+    private ArtifactRepository localRepository;
 
     /**
      * Remote repositories for artifact resolution.
@@ -122,10 +137,11 @@ abstract class AbstractProtocMojo extends AbstractMojo {
      * @since 0.3.0
      */
     @Parameter(
-            defaultValue = "${project.remotePluginRepositories}",
-            readonly = true
+            required = true,
+            readonly = true,
+            defaultValue = "${project.remoteArtifactRepositories}"
     )
-    private List<RemoteRepository> remoteRepos;
+    private List<ArtifactRepository> remoteRepositories;
 
     /**
      * A directory where native launchers for java protoc plugins will be generated.
@@ -133,8 +149,8 @@ abstract class AbstractProtocMojo extends AbstractMojo {
      * @since 0.3.0
      */
     @Parameter(
-            defaultValue = "${project.build.directory}/protoc-plugins",
-            required = false
+            required = false,
+            defaultValue = "${project.build.directory}/protoc-plugins"
     )
     private File protocPluginDirectory;
 
@@ -168,16 +184,6 @@ abstract class AbstractProtocMojo extends AbstractMojo {
             defaultValue = "${project.build.directory}/protoc-dependencies"
     )
     private File temporaryProtoFileDirectory;
-
-    /**
-     * This is the path to the local maven {@code repository}.
-     */
-    @Parameter(
-            readonly = true,
-            required = true,
-            property = "localRepository"
-    )
-    private ArtifactRepository localRepository;
 
     /**
      * Set this to {@code false} to disable hashing of dependent jar paths.
@@ -460,9 +466,12 @@ abstract class AbstractProtocMojo extends AbstractMojo {
             getLog().info("Building protoc plugin: " + plugin.getId());
             final ProtocPluginAssembler assembler = new ProtocPluginAssembler(
                     plugin,
-                    repoSystem,
-                    repoSystemSession,
-                    remoteRepos,
+                    project.getArtifact(),
+                    artifactFactory,
+                    artifactResolver,
+                    artifactMetadataSource,
+                    localRepository,
+                    remoteRepositories,
                     protocPluginDirectory,
                     getLog());
             assembler.execute();
@@ -561,15 +570,22 @@ abstract class AbstractProtocMojo extends AbstractMojo {
         return false;
     }
 
-    protected ImmutableSet<File> findGeneratedFilesInDirectory(final File directory) throws IOException {
+    protected static ImmutableSet<File> findGeneratedFilesInDirectory(final File directory) throws IOException {
         if (directory == null || !directory.isDirectory()) {
             return ImmutableSet.of();
         }
 
+        @SuppressWarnings({"unchecked"})
         final List<File> javaFilesInDirectory = getFiles(directory, "**/*.java", null);
         return ImmutableSet.copyOf(javaFilesInDirectory);
     }
 
+    /**
+     * Returns timestamp for the most recently modified file in the given set.
+     *
+     * @param files a set of file descriptors.
+     * @return timestamp of the most recently modified file.
+     */
     protected static long lastModified(final ImmutableSet<File> files) {
         long result = 0;
         for (final File file : files) {

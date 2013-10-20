@@ -210,7 +210,7 @@ final class Protoc {
                 if (plugins.size() > 0) {
                     log.debug(LOG_PREFIX + "Plugins for Java output:");
                     for (final ProtocPlugin plugin : plugins) {
-                        log.debug(LOG_PREFIX + plugin.getId());
+                        log.debug(LOG_PREFIX + ' ' + plugin.getId());
                     }
                 }
             }

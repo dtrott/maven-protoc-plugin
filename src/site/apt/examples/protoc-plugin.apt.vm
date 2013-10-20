@@ -65,9 +65,10 @@ Using Custom Protoc Plugins
 
   * <<<artifactId>>> - (required) artifact id for dependency resolution
 
-  * <<<version>>> - (required) version for dependency resolution
+  * <<<version>>> - (required) version specification for dependency resolution,
+        can be either a single version (e.g. <<<1.2>>>) or a version range (e.g. <<<[1.2,1.3)>>>)
 
-  * <<<scope>>> - (optional) resolution scope; default is <<<runtime>>>
+  * <<<classifier>>> - (optional) artifact classifier for dependency resolution
 
   * <<<mainClass>>> - (required) Java main class to execute
 

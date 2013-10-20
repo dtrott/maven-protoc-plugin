@@ -1,16 +1,19 @@
 package com.google.protobuf.maven;
 
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.factory.ArtifactFactory;
+import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
+import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
+import org.apache.maven.artifact.resolver.ArtifactResolutionException;
+import org.apache.maven.artifact.resolver.ArtifactResolutionResult;
+import org.apache.maven.artifact.resolver.ArtifactResolver;
+import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
+import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.Os;
-import org.sonatype.aether.RepositorySystem;
-import org.sonatype.aether.RepositorySystemSession;
-import org.sonatype.aether.collection.CollectRequest;
-import org.sonatype.aether.graph.DependencyNode;
-import org.sonatype.aether.repository.RemoteRepository;
-import org.sonatype.aether.resolution.DependencyRequest;
-import org.sonatype.aether.util.graph.PreorderNodeListGenerator;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -18,7 +21,9 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Creates an executable {@code protoc} plugin (written in Java) from a {@link ProtocPlugin} specification.
@@ -27,13 +32,19 @@ import java.util.List;
  */
 public class ProtocPluginAssembler {
 
-    private final RepositorySystem repoSystem;
-
-    private final RepositorySystemSession repoSystemSession;
-
-    private final List<RemoteRepository> remoteRepos = new ArrayList<RemoteRepository>();
-
     private final ProtocPlugin pluginDefinition;
+
+    private final Artifact rootResolutionArtifact;
+
+    private final ArtifactFactory artifactFactory;
+
+    private final ArtifactResolver artifactResolver;
+
+    private final ArtifactMetadataSource artifactMetadataSource;
+
+    private final ArtifactRepository localRepository;
+
+    private final List<ArtifactRepository> remoteRepositories;
 
     private final File pluginDirectory;
 
@@ -45,15 +56,21 @@ public class ProtocPluginAssembler {
 
     public ProtocPluginAssembler(
             final ProtocPlugin pluginDefinition,
-            final RepositorySystem repoSystem,
-            final RepositorySystemSession repoSystemSession,
-            final List<RemoteRepository> remoteRepos,
+            final Artifact rootResolutionArtifact,
+            final ArtifactFactory artifactFactory,
+            final ArtifactResolver artifactResolver,
+            final ArtifactMetadataSource artifactMetadataSource,
+            final ArtifactRepository localRepository,
+            final List<ArtifactRepository> remoteRepositories,
             final File pluginDirectory,
             final Log log) {
-        this.repoSystem = repoSystem;
-        this.repoSystemSession = repoSystemSession;
-        this.remoteRepos.addAll(remoteRepos);
         this.pluginDefinition = pluginDefinition;
+        this.rootResolutionArtifact = rootResolutionArtifact;
+        this.artifactFactory = artifactFactory;
+        this.artifactResolver = artifactResolver;
+        this.artifactMetadataSource = artifactMetadataSource;
+        this.localRepository = localRepository;
+        this.remoteRepositories = remoteRepositories;
         this.pluginDirectory = pluginDirectory;
         this.pluginExecutableFile = pluginDefinition.getPluginExecutableFile(pluginDirectory);
         this.log = log;
@@ -142,9 +159,9 @@ public class ProtocPluginAssembler {
         }
     }
 
-    private File findJvmLocation(File javaHome, String... paths) {
-        for (String path : paths) {
-            File jvmLocation = new File(javaHome, path);
+    private static File findJvmLocation(final File javaHome, final String... paths) {
+        for (final String path : paths) {
+            final File jvmLocation = new File(javaHome, path);
             if (jvmLocation.isFile()) {
                 return jvmLocation;
             }
@@ -221,25 +238,49 @@ public class ProtocPluginAssembler {
     }
 
     private void resolvePluginDependencies() throws MojoExecutionException {
-        final CollectRequest collectRequest = new CollectRequest();
-        collectRequest.setRoot(pluginDefinition.asDependency());
-        for (final RemoteRepository remoteRepo : remoteRepos) {
-            collectRequest.addRepository(remoteRepo);
+
+        final VersionRange versionSpec;
+        try {
+            versionSpec = VersionRange.createFromVersionSpec(pluginDefinition.getVersion());
+        } catch (InvalidVersionSpecificationException e) {
+            throw new MojoExecutionException("Invalid plugin version specification", e);
         }
+        final Artifact protocPluginArtifact =
+                artifactFactory.createDependencyArtifact(
+                        pluginDefinition.getGroupId(),
+                        pluginDefinition.getArtifactId(),
+                        versionSpec,
+                        "jar",
+                        pluginDefinition.getClassifier(),
+                        Artifact.SCOPE_RUNTIME);
 
         try {
-            final DependencyNode node = repoSystem.collectDependencies(repoSystemSession, collectRequest).getRoot();
-            final DependencyRequest request = new DependencyRequest(node, null);
-            repoSystem.resolveDependencies(repoSystemSession, request);
-            final PreorderNodeListGenerator nlg = new PreorderNodeListGenerator();
-            node.accept(nlg);
+            final ArtifactResolutionResult artifactResolutionResult =
+                    artifactResolver.resolveTransitively(
+                            Collections.singleton(protocPluginArtifact),
+                            rootResolutionArtifact,
+                            localRepository,
+                            remoteRepositories,
+                            artifactMetadataSource,
+                            null);
 
-            resolvedJars.addAll(nlg.getFiles());
+            @SuppressWarnings({"unchecked"})
+            final Set<Artifact> artifacts = artifactResolutionResult.getArtifacts();
+
+            if (artifacts == null || artifacts.isEmpty()) {
+                throw new MojoExecutionException("Unable to resolve plugin artifact");
+            }
+
+            for (final Artifact artifact : artifacts) {
+                resolvedJars.add(artifact.getFile());
+            }
 
             if (log.isDebugEnabled()) {
-                log.debug("resolved jars: " + resolvedJars);
+                log.debug("Resolved jars: " + resolvedJars);
             }
-        } catch (Exception e) {
+        } catch (ArtifactResolutionException e) {
+            throw new MojoExecutionException(e.getMessage(), e);
+        } catch (ArtifactNotFoundException e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }
     }

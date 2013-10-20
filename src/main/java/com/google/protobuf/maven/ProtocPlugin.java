@@ -2,8 +2,6 @@ package com.google.protobuf.maven;
 
 import org.apache.maven.plugin.logging.Log;
 import org.codehaus.plexus.util.Os;
-import org.sonatype.aether.graph.Dependency;
-import org.sonatype.aether.util.artifact.DefaultArtifact;
 
 import java.io.File;
 import java.util.Collections;
@@ -35,7 +33,7 @@ public class ProtocPlugin {
 
     private String version;
 
-    private String scope = "runtime";
+    private String classifier;
 
     private String mainClass;
 
@@ -50,34 +48,75 @@ public class ProtocPlugin {
 
     private List<String> jvmArgs;
 
+    /**
+     * Returns the unique id for this plugin.
+     *
+     * @return the plugin's unique id.
+     */
     public String getId() {
         return id;
     }
 
+    /**
+     * Returns group id of the plugin's artifact for dependency resolution.
+     *
+     * @return the plugin's group id.
+     */
     public String getGroupId() {
         return groupId;
     }
 
+    /**
+     * Returns the plugin's artifact id for dependency resolution.
+     *
+     * @return the plugin's artifact id.
+     */
     public String getArtifactId() {
         return artifactId;
     }
 
+    /**
+     * Returns the plugin's version specification for dependency resolution.
+     * This can be specified as either a single version or a version range.
+     *
+     * @return the plugin's version or version range.
+     */
     public String getVersion() {
         return version;
     }
 
-    public String getScope() {
-        return scope;
+    /**
+     * Returns an optional classifier of the plugin's artifact for dependency resolution.
+     *
+     * @return the plugin's artifact classifier.
+     */
+    public String getClassifier() {
+        return classifier;
     }
 
+    /**
+     * Returns the plugin's Java main class to be execute by protoc.
+     *
+     * @return fully qualified name for the main class.
+     */
     public String getMainClass() {
         return mainClass;
     }
 
+    /**
+     * Returns optional command line arguments to pass to the {@code main()} method.
+     *
+     * @return a list of command-line arguments.
+     */
     public List<String> getArgs() {
         return (args != null) ? args : Collections.<String>emptyList();
     }
 
+    /**
+     * Returns optional JVM options for plugin execution.
+     *
+     * @return a list of JVM options.
+     */
     public List<String> getJvmArgs() {
         return (jvmArgs != null) ? jvmArgs : Collections.<String>emptyList();
     }
@@ -163,10 +202,6 @@ public class ProtocPlugin {
         }
     }
 
-    public Dependency asDependency() {
-        return new Dependency(new DefaultArtifact(groupId, artifactId, "jar", version), scope);
-    }
-
     @Override
     public String toString() {
         return "ProtocPlugin{" +
@@ -174,7 +209,7 @@ public class ProtocPlugin {
                 ", groupId='" + groupId + '\'' +
                 ", artifactId='" + artifactId + '\'' +
                 ", version='" + version + '\'' +
-                ", scope='" + scope + '\'' +
+                ", classifier='" + classifier + '\'' +
                 ", mainClass='" + mainClass + '\'' +
                 ", javaHome='" + javaHome + '\'' +
                 ", winJvmDataModel='" + winJvmDataModel + '\'' +
