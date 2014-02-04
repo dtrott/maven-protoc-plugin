@@ -12,7 +12,6 @@ A minimal configuration to invoke this plugin would be:
     <packaging>jar</packaging>
     <version>1.0-SNAPSHOT</version>
     <name>protoc-example</name>
-
     <build>
         <plugins>
             <plugin>
