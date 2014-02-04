@@ -5,27 +5,28 @@
     <artifactId>maven-protoc-plugin</artifactId>
     <packaging>maven-plugin</packaging>
     <name>Maven Protoc Plugin</name>
-    <version>0.1.11-SNAPSHOT</version>
+    <version>0.1.11-descriptor_set_out-SNAPSHOT</version>
 
     <prerequisites>
         <maven>2.0.6</maven>
     </prerequisites>
 
     <scm>
-        <connection>scm:git:git://github.com/dtrott/maven-protoc-plugin.git</connection>
+        <connection>scm:git:git://github.com/binkley/maven-protoc-plugin.git</connection>
     </scm>
 
+    <!-- mvn -DaltDeploymentRepository=snapshot-repo::default::file:../binkley-maven-repo/snapshots clean deploy -->
     <distributionManagement>
         <downloadUrl>http://maven.davidtrott.com/repository</downloadUrl>
         <repository>
-            <id>dtrott-public</id>
-            <name>David Trott's Public Repository</name>
-            <url>file:///repositories/maven.davidtrott.com/release</url>
+            <id>binkley-releases</id>
+            <name>binkley's Release Repository</name>
+            <url>https://github.com/binkley/binkley-maven-repo/raw/master/releases</url>
         </repository>
         <snapshotRepository>
-            <id>dtrott-public</id>
-            <name>David Trott's Public Snapshot Repository</name>
-            <url>file:///repositories/maven.davidtrott.com/snapshot</url>
+            <id>binkley-snapshots</id>
+            <name>binkley's Snapshot Repository</name>
+            <url>https://github.com/binkley/binkley-maven-repo/raw/master/snapshots</url>
         </snapshotRepository>
     </distributionManagement>
 

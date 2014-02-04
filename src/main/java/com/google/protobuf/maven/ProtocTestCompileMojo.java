@@ -29,11 +29,21 @@ public final class ProtocTestCompileMojo extends AbstractProtocMojo {
      */
     private File outputDirectory;
 
+    /**
+     * This is the directory into which the descriptor set will be created.
+     *
+     * @parameter default-value="${project.build.directory}/generated-test-resources/protoc"
+     * @required
+     */
+    private File resourceDirectory;
+
     @Override
     protected void attachFiles() {
         project.addTestCompileSourceRoot(outputDirectory.getAbsolutePath());
         projectHelper.addTestResource(project, protoTestSourceRoot.getAbsolutePath(),
                 ImmutableList.of("**/*.proto"), ImmutableList.of());
+        projectHelper.addTestResource(project, resourceDirectory.getAbsolutePath(),
+                ImmutableList.of("**/*.proto.bin"), ImmutableList.of());
     }
 
     @Override
@@ -47,6 +57,11 @@ public final class ProtocTestCompileMojo extends AbstractProtocMojo {
     @Override
     protected File getOutputDirectory() {
         return outputDirectory;
+    }
+
+    @Override
+    protected File getResourceDirectory() {
+        return resourceDirectory;
     }
 
     @Override

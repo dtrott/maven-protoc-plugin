@@ -36,6 +36,14 @@ public final class ProtocCompileMojo extends AbstractProtocMojo {
      */
     private File outputDirectory;
 
+    /**
+     * This is the directory into which the descriptor set will be created.
+     *
+     * @parameter default-value="${project.build.directory}/generated-resources/protoc"
+     * @required
+     */
+    private File resourcesDirectory;
+
     @Override
     protected List<Artifact> getDependencyArtifacts() {
         // TODO(gak): maven-project needs generics
@@ -50,6 +58,11 @@ public final class ProtocCompileMojo extends AbstractProtocMojo {
     }
 
     @Override
+    protected File getResourceDirectory() {
+        return resourcesDirectory;
+    }
+
+    @Override
     protected File getProtoSourceRoot() {
         return protoSourceRoot;
     }
@@ -59,5 +72,7 @@ public final class ProtocCompileMojo extends AbstractProtocMojo {
         project.addCompileSourceRoot(outputDirectory.getAbsolutePath());
         projectHelper.addResource(project, protoSourceRoot.getAbsolutePath(),
                 ImmutableList.of("**/*.proto"), ImmutableList.of());
+        projectHelper.addResource(project, resourcesDirectory.getAbsolutePath(),
+                ImmutableList.of("**/*.proto.bin"), ImmutableList.of());
     }
 }

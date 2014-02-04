@@ -68,6 +68,15 @@ abstract class AbstractProtocMojo extends AbstractMojo {
     protected MavenProjectHelper projectHelper;
 
     /**
+     * This is the directory into which project protos are copied before test protos.
+     *
+     * @parameter default-value="${project.build.outputDirectory}"
+     * @required
+     */
+    private File classesDirectory;
+
+
+    /**
      * This is the path to the {@code protoc} executable. By default it will search the {@code $PATH}.
      *
      * @parameter default-value="protoc"
@@ -130,6 +139,22 @@ abstract class AbstractProtocMojo extends AbstractMojo {
     private boolean checkStaleness = false;
 
     /**
+     * @parameter default-value="${project.artifactId}-${project.version}.proto.bin"
+     * @optional
+     */
+    private String descriptorSetOut;
+
+    /**
+     * @parameter
+     */
+    private boolean includeImports = false;
+
+    /**
+     * @parameter
+     */
+    private boolean verbose = false;
+
+    /**
      * Executes the mojo.
      */
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -140,6 +165,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
                 ImmutableSet<File> protoFiles = findProtoFilesInDirectory(protoSourceRoot);
                 final File outputDirectory = getOutputDirectory();
                 ImmutableSet<File> outputFiles = findGeneratedFilesInDirectory(getOutputDirectory());
+                final File resourceDirectory = getResourceDirectory();
 
                 if (protoFiles.isEmpty()) {
                     getLog().info("No proto files to compile.");
@@ -147,19 +173,26 @@ abstract class AbstractProtocMojo extends AbstractMojo {
                     getLog().info("Skipping compilation because target directory newer than sources.");
                     attachFiles();
                 } else {
+                    classesDirectory.mkdirs();
                     ImmutableSet<File> derivedProtoPathElements =
                             makeProtoPathFromJars(temporaryProtoFileDirectory, getDependencyArtifactFiles());
                     outputDirectory.mkdirs();
+                    resourceDirectory.mkdirs();
 
                     // Quick fix to fix issues with two mvn installs in a row (ie no clean)
                     cleanDirectory(outputDirectory);
+                    cleanDirectory(resourceDirectory);
 
-                    Protoc protoc = new Protoc.Builder(protocExecutable, outputDirectory)
+                    Protoc.Builder builder = new Protoc.Builder(protocExecutable, outputDirectory, resourceDirectory)
+                            .addProtoPathElement(classesDirectory)
                             .addProtoPathElement(protoSourceRoot)
                             .addProtoPathElements(derivedProtoPathElements)
                             .addProtoPathElements(asList(additionalProtoPathElements))
-                            .addProtoFiles(protoFiles)
-                            .build();
+                            .setDescriptorSetOut(descriptorSetOut, includeImports)
+                            .addProtoFiles(protoFiles);
+                    if (verbose)
+                            builder.withLogger(getLog());
+                    Protoc protoc = builder.build();
                     final int exitStatus = protoc.compile();
                     if (exitStatus != 0) {
                         getLog().error("protoc failed output: " + protoc.getOutput());
@@ -220,6 +253,8 @@ abstract class AbstractProtocMojo extends AbstractMojo {
     protected abstract List<Artifact> getDependencyArtifacts();
 
     protected abstract File getOutputDirectory();
+
+    protected abstract File getResourceDirectory();
 
     protected abstract void attachFiles();
 

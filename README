@@ -1,3 +1,17 @@
+Changes by binkley from dtrott:
+
+* Include target/classes as a proto path to aid test protos which include production protos.
+* Support --descriptor_set_out and --include_imports options to protoc.
+* Binary descriptor set writes to ${project.build.directory}/generated-resources/protoc and ${project.build.directory}/generated-test-resources/protoc.
+* The default descriptor set file name is ${project.artifactId}-${project.version}.proto.bin.
+* Change the descriptor set file name with <descriptorSetOut>...</descriptorSetOut>.
+* For the project to include the generated resources, the descriptor set file name must end with .proto.bin.  Please contact me if this is overly onerous.
+* Enable --include_imports with <includeImports/>.
+* Print protoc command line with <verbose>true</verbose>.
+* Maven repo at http://github.com/binkley/binkley-maven-repo (instruction there).
+
+====================
+
 **********************************************
 *** Maven Protocol Buffers (protoc) Plugin ***
 **********************************************
@@ -83,4 +97,3 @@ this can be overriden by setting:
 
 If you build on NFS you may also need the following setting:
                   <staleMillis>10000</staleMillis>
-
