@@ -42,6 +42,7 @@ import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static org.codehaus.plexus.util.FileUtils.cleanDirectory;
 import static org.codehaus.plexus.util.FileUtils.copyStreamToFile;
+import static org.codehaus.plexus.util.FileUtils.getDefaultExcludesAsString;
 import static org.codehaus.plexus.util.FileUtils.getFiles;
 
 /**
@@ -576,8 +577,8 @@ abstract class AbstractProtocMojo extends AbstractMojo {
         }
 
         @SuppressWarnings({"unchecked"})
-        final List<File> javaFilesInDirectory = getFiles(directory, "**/*.java", null);
-        return ImmutableSet.copyOf(javaFilesInDirectory);
+        final List<File> generatedFilesInDirectory = getFiles(directory, "**/*", getDefaultExcludesAsString());
+        return ImmutableSet.copyOf(generatedFilesInDirectory);
     }
 
     /**

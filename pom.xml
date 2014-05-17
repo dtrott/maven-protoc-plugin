@@ -63,7 +63,9 @@
     </contributors>
 
     <scm>
+        <url>https://github.com/sergei-ivanov/maven-protoc-plugin</url>
         <connection>scm:git:git://github.com/sergei-ivanov/maven-protoc-plugin.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/sergei-ivanov/maven-protoc-plugin.git</developerConnection>
         <tag>HEAD</tag>
     </scm>
 
@@ -84,6 +86,11 @@
             <url>file:../maven-protoc-plugin-site/repo/snapshots</url>
         </snapshotRepository>
     </distributionManagement>
+
+    <issueManagement>
+        <system>Github</system>
+        <url>https://github.com/sergei-ivanov/maven-protoc-plugin/issues</url>
+    </issueManagement>
 
     <build>
         <pluginManagement>
