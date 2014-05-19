@@ -21,7 +21,7 @@
                 <executions>
                     <execution>
                         <goals>
-                            <goal>testCompile</goal>
+                            <goal>test-compile</goal>
                         </goals>
                     </execution>
                 </executions>

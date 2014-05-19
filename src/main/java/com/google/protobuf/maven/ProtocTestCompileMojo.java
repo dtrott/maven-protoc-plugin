@@ -8,19 +8,21 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import java.io.File;
 
 /**
- * This mojo executes the {@code protoc} compiler for generating test java sources
+ * This mojo executes the {@code protoc} compiler for generating test Java sources
  * from protocol buffer definitions. It also searches dependency artifacts in the test scope for
  * {@code .proto} files and includes them in the {@code proto_path} so that they can be
  * referenced. Finally, it adds the {@code .proto} files to the project as test resources so
  * that they can be included in the test-jar artifact.
+ *
+ * @since 0.3.3
  */
 @Mojo(
-        name = "testCompile",
+        name = "test-compile",
         defaultPhase = LifecyclePhase.GENERATE_TEST_SOURCES,
         requiresDependencyResolution = ResolutionScope.TEST,
         threadSafe = true
 )
-public final class ProtocTestCompileMojo extends AbstractProtocTestCompileMojo {
+public class ProtocTestCompileMojo extends AbstractProtocTestCompileMojo {
 
     /**
      * This is the directory into which the {@code .java} test sources will be created.
