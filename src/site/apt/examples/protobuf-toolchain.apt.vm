@@ -76,7 +76,7 @@ Using Protobuf Toolchain
           <execution>
             <goals>
               <goal>compile</goal>
-              <goal>testCompile</goal>
+              <goal>test-compile</goal>
             </goals>
           </execution>
         </executions>
@@ -174,7 +174,7 @@ Using Protobuf Toolchain
           <execution>
             <goals>
               <goal>compile</goal>
-              <goal>testCompile</goal>
+              <goal>test-compile</goal>
             </goals>
           </execution>
         </executions>

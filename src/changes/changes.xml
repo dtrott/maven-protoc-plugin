@@ -5,6 +5,16 @@
 
     <body>
 
+        <release version="0.3.3" date="In progress" description="Support for C++ and Python">
+            <action dev="sergei-ivanov" type="add">
+                Added new goals to generate C++ and Python sources from protobuf definitions.
+            </action>
+            <action dev="sergei-ivanov" type="update">
+                Goal 'testCompile' has been renamed into 'test-compile'
+                (the old goal still remains for backward compatibility).
+            </action>
+        </release>
+
         <release version="0.3.2" date="2013-10-21" description="Compatibility with Maven 3.1.x">
             <action dev="sergei-ivanov" type="fix">
                 Removed direct dependency on Aether library, and used injected Maven components for artifact resolution.

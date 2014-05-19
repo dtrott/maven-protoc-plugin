@@ -1,0 +1,23 @@
+            -------------
+            Contributions
+            -------------
+
+~~ APT Format: http://maven.apache.org/doxia/references/apt-format.html
+
+Contributor's Guide
+
+  Patches and pull requests are very welcome as long as they adhere to the following simple rules:
+
+  * the existing coding style is preserved;
+
+  * the patch does not needlessly introduce major code refactorings;
+
+  * the patch preserves backwards compatibility;
+
+  * code and site documentation is updated, all new goals and parameters are marked with <<<@since \<version\>>>> tag;
+
+  * ideally, integration tests are provided.
+
+  []
+
+  Thank you in advance.

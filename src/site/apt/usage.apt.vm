@@ -6,10 +6,10 @@
 
 Usage
 
-  The Protoc Plugin generates java sources from <<<.proto>>> files using the <<<protoc>>> tool.
+  The Protoc Plugin generates Java, C++ or Python sources from <<<.proto>>> files using the <<<protoc>>> tool.
   The following examples describe the basic usage of the Plugin.
 
-* Compiling Protobuf Sources
+* Compiling Protobuf Sources into Java
 
   The following default directory structure of the project is assumed:
 
@@ -59,7 +59,7 @@ Usage
           <execution>
             <goals>
               <goal>compile</goal>
-              <goal>testCompile</goal>
+              <goal>test-compile</goal>
             </goals>
           </execution>
         </executions>
@@ -90,9 +90,9 @@ Usage
 
   * Plugin executions need to be defined, because the plugin is not part of the default lifecycle.
     However, plugin goals have default bindings to appropriate phases, therefore there is typically
-    no need to specify phase bindings in plugin configuration.
-    Note: <<<testCompile>>> will only be needed if there are custom protocol buffer definitions
-    being used in your tests.
+    no need to specify phase bindings in plugin configuration.\
+    Note: <<<{{{./test-compile-mojo.html}test-compile}}>>> goal will only be needed if there are custom protocol
+    buffer definitions being used in your tests.
 
   * An appropriate version of <<<com.google.protobuf:protobuf-java>>> dependency has to be declared,
     or made available through POM inheritance: this is needed for compiling the generated source code.
@@ -110,6 +110,16 @@ mvn clean install
 
 +-----+
 
+* Compiling Protobuf Sources into C++ or Python
+
+  The plugin configuration is similar to compiling into Java, with the following alterations:
+
+  * A different set of goals will need to be used (e.g. {{{./compile-cpp-mojo.html}compile-cpp}});
+
+  * A dependency on <<<com.google.protobuf:protobuf-java>>> artifact may not be required.
+
+  []
+
 * Running Plugin Goals On Command Line
 
   It is possible to run Protoc Plugin goals from the command line,
@@ -117,8 +127,8 @@ mvn clean install
 
 +-----+
 
-mvn protoc:compile     -DprotocExecutable="C:/Java/protobuf-2.4.1/bin/protoc.exe"
-mvn protoc:testCompile -DprotocExecutable="C:/Java/protobuf-2.4.1/bin/protoc.exe"
+mvn protoc:compile      -DprotocExecutable="C:/Java/protobuf-2.4.1/bin/protoc.exe"
+mvn protoc:test-compile -DprotocExecutable="C:/Java/protobuf-2.4.1/bin/protoc.exe"
 
 +-----+
 
@@ -129,7 +139,7 @@ mvn protoc:testCompile -DprotocExecutable="C:/Java/protobuf-2.4.1/bin/protoc.exe
 +-----+
 
 mvn toolchains:toolchain protoc:compile
-mvn toolchains:toolchain protoc:testCompile
+mvn toolchains:toolchain protoc:test-compile
 
 +-----+
 

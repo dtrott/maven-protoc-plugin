@@ -6,7 +6,7 @@
 
 Maven Protoc Plugin
 
-  The Protoc Plugin uses the Protocol Buffer Compiler (<<<protoc>>>) tool to generate java source files
+  The Protoc Plugin uses the Protocol Buffer Compiler (<<<protoc>>>) tool to generate Java source files
   from <<<.proto>>> (protocol buffer definition) files for the specified project.
   For more information about the Protocol Buffer Compiler, please refer to
   {{{http://code.google.com/apis/protocolbuffers/docs/reference/java-generated.html}Reference Guide}}.
@@ -23,10 +23,22 @@ Maven Protoc Plugin
   The Protoc Plugin has the following goals:
 
   * {{{./compile-mojo.html}protoc:compile}}
-    compiles main <<<.proto>>> definitions into java files and attaches the generated java sources to the project.
+    compiles main <<<.proto>>> definitions into Java files and attaches the generated Java sources to the project.
 
-  * {{{./testCompile-mojo.html}protoc:testCompile}}
-    compiles test <<<.proto>>> definitions into java files and attaches the generated java test sources to the project.
+  * {{{./test-compile-mojo.html}protoc:test-compile}}
+    compiles test <<<.proto>>> definitions into Java files and attaches the generated Java test sources to the project.
+
+  * {{{./compile-cpp-mojo.html}protoc:compile-cpp}}
+    compiles main <<<.proto>>> definitions into C++ files and attaches the generated C++ sources to the project.
+
+  * {{{./test-compile-cpp-mojo.html}protoc:test-compile-cpp}}
+    compiles test <<<.proto>>> definitions into C++ files and attaches the generated C++ test sources to the project.
+
+  * {{{./compile-python-mojo.html}protoc:compile-python}}
+    compiles main <<<.proto>>> definitions into Python files and attaches the generated Python sources to the project.
+
+  * {{{./test-compile-python-mojo.html}protoc:test-compile-python}}
+    compiles test <<<.proto>>> definitions into Python files and attaches the generated Python test sources to the project.
 
   []
 
@@ -37,7 +49,15 @@ Maven Protoc Plugin
 
   In case you still have questions regarding the Plugin's usage, please have a look at the {{{./faq.html}FAQ}}.
   ~~ TODO add mailing lists / newsgroups / wiki
-  ~~ TODO add issue tracking and contribution info
+
+  If you feel like the plugin is missing a feature or has a defect, you can fill a feature request or bug report in our
+  {{{./issue-tracking.html}issue tracker}}. When creating a new issue, please provide a comprehensive description of your
+  concern. Especially for fixing bugs it is crucial that the developers can reproduce your problem. For this reason,
+  entire debug logs, POMs or most preferably little demo projects attached to the issue are very much appreciated.
+
+  Of course, patches and pull requests are welcome, too. Contributors can check out the project from the
+  {{{./source-repository.html}source repository}} and will find supplementary information in the
+  {{{./contributions.html}contributor's guide}}.
 
 * Examples
 
