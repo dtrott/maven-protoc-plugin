@@ -29,6 +29,14 @@ public final class ProtocTestCompileMojo extends AbstractProtocMojo {
      */
     private File outputDirectory;
 
+    /**
+     * This is the directory into which the native proto classes will be created.
+     *
+     * @parameter default-value="${project.build.directory}/proto/"
+     * @required
+     */
+    private File nativeOutputDirectory;
+
     @Override
     protected void attachFiles() {
         project.addTestCompileSourceRoot(outputDirectory.getAbsolutePath());
@@ -47,6 +55,11 @@ public final class ProtocTestCompileMojo extends AbstractProtocMojo {
     @Override
     protected File getOutputDirectory() {
         return outputDirectory;
+    }
+
+    @Override
+    protected File getNativeOutputDirectory() {
+        return nativeOutputDirectory;
     }
 
     @Override

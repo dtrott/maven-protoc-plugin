@@ -21,7 +21,7 @@ import static com.google.common.collect.Sets.newHashSet;
  * compiler. The actual executable is invoked using the plexus
  * {@link Commandline}.
  * <p/>
- * This class currently only supports generating java source files.
+ * This class currently only supports generating java and python source files.
  *
  * @author gak@google.com (Gregory Kick)
  */
@@ -30,24 +30,32 @@ final class Protoc {
     private final ImmutableSet<File> protoPathElements;
     private final ImmutableSet<File> protoFiles;
     private final File javaOutputDirectory;
+    private final File nativeOutputDirectory;
+    private final boolean generatePythonSources;
     private final CommandLineUtils.StringStreamConsumer output;
     private final CommandLineUtils.StringStreamConsumer error;
 
     /**
      * Constructs a new instance. This should only be used by the {@link Builder}.
      *
-     * @param executable          The path to the {@code protoc} executable.
-     * @param protoPath           The directories in which to search for imports.
-     * @param protoFiles          The proto source files to compile.
-     * @param javaOutputDirectory The directory into which the java source files
-     *                            will be generated.
+     * @param executable             The path to the {@code protoc} executable.
+     * @param protoPath              The directories in which to search for imports.
+     * @param protoFiles             The proto source files to compile.
+     * @param javaOutputDirectory    The directory into which the java source files
+     *                               will be generated.
+     * @param nativeOutputDirectory  The directory into which native proto classes
+     *                               will be generated.
+     * @param generatePythonSources  Whether or not python sources should be generated.
      */
     private Protoc(String executable, ImmutableSet<File> protoPath,
-                   ImmutableSet<File> protoFiles, File javaOutputDirectory) {
+                   ImmutableSet<File> protoFiles, File javaOutputDirectory,
+                   File nativeOutputDirectory, boolean generatePythonSources) {
         this.executable = checkNotNull(executable, "executable");
         this.protoPathElements = checkNotNull(protoPath, "protoPath");
         this.protoFiles = checkNotNull(protoFiles, "protoFiles");
         this.javaOutputDirectory = checkNotNull(javaOutputDirectory, "javaOutputDirectory");
+        this.nativeOutputDirectory = checkNotNull(nativeOutputDirectory, "nativeOutputDirectory");
+        this.generatePythonSources = generatePythonSources;
         this.error = new CommandLineUtils.StringStreamConsumer();
         this.output = new CommandLineUtils.StringStreamConsumer();
     }
@@ -80,6 +88,9 @@ final class Protoc {
             command.add("--proto_path=" + protoPathElement);
         }
         command.add("--java_out=" + javaOutputDirectory);
+        if (generatePythonSources) {
+            command.add("--python_out=" + nativeOutputDirectory);
+        }
         for (File protoFile : protoFiles) {
             command.add(protoFile.toString());
         }
@@ -110,6 +121,8 @@ final class Protoc {
         private final File javaOutputDirectory;
         private Set<File> protopathElements;
         private Set<File> protoFiles;
+        private File nativeOutputDirectory;
+        private boolean generatePythonSources;
 
         /**
          * Constructs a new builder. The two parameters are present as they are
@@ -147,6 +160,29 @@ final class Protoc {
             checkArgument(protoFile.getName().endsWith(".proto"));
             checkProtoFileIsInProtopath(protoFile);
             protoFiles.add(protoFile);
+            return this;
+        }
+
+        /**
+         * Sets the output directory for native protos (python, C++, ruby, etc...)
+         *
+         * @param nativeOutputDirectory
+         * @return The builder
+         */
+        public Builder setNativeOutputDirectory(File nativeOutputDirectory) {
+            this.nativeOutputDirectory = nativeOutputDirectory;
+            return this;
+	}
+
+        /**
+         * Turn on the generation of python sources, this param controls whether or
+         * not we pass --python_out to the {@code nativeOutputDirectory}
+         *
+         * @param generatePythonSources
+         * @return The builder
+         */
+        public Builder setGeneratePythonSources(boolean generatePythonSources) {
+            this.generatePythonSources = generatePythonSources;
             return this;
         }
 
@@ -210,7 +246,8 @@ final class Protoc {
         public Protoc build() {
             checkState(!protoFiles.isEmpty());
             return new Protoc(executable, ImmutableSet.copyOf(protopathElements),
-                    ImmutableSet.copyOf(protoFiles), javaOutputDirectory);
+			      ImmutableSet.copyOf(protoFiles), javaOutputDirectory,
+                              nativeOutputDirectory, generatePythonSources);
         }
     }
 }
