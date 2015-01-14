@@ -110,6 +110,14 @@ abstract class AbstractProtocMojo extends AbstractMojo {
     private boolean hashDependentPaths;
 
     /**
+     * Set this to {@code true} to generate python protocol buffer classes
+     * <p/>
+     * @parameter default-value="true"
+     * @required
+     */
+    private boolean generatePythonSources;
+
+    /**
      * @parameter
      */
     private Set<String> includes = ImmutableSet.of(DEFAULT_INCLUDES);
@@ -139,6 +147,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
             try {
                 ImmutableSet<File> protoFiles = findProtoFilesInDirectory(protoSourceRoot);
                 final File outputDirectory = getOutputDirectory();
+                final File nativeOutputDirectory = getNativeOutputDirectory();
                 ImmutableSet<File> outputFiles = findGeneratedFilesInDirectory(getOutputDirectory());
 
                 if (protoFiles.isEmpty()) {
@@ -150,6 +159,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
                     ImmutableSet<File> derivedProtoPathElements =
                             makeProtoPathFromJars(temporaryProtoFileDirectory, getDependencyArtifactFiles());
                     outputDirectory.mkdirs();
+                    nativeOutputDirectory.mkdirs();
 
                     // Quick fix to fix issues with two mvn installs in a row (ie no clean)
                     cleanDirectory(outputDirectory);
@@ -159,6 +169,8 @@ abstract class AbstractProtocMojo extends AbstractMojo {
                             .addProtoPathElements(derivedProtoPathElements)
                             .addProtoPathElements(asList(additionalProtoPathElements))
                             .addProtoFiles(protoFiles)
+                            .setNativeOutputDirectory(nativeOutputDirectory)
+                            .setGeneratePythonSources(generatePythonSources)
                             .build();
                     final int exitStatus = protoc.compile();
                     if (exitStatus != 0) {
@@ -220,6 +232,8 @@ abstract class AbstractProtocMojo extends AbstractMojo {
     protected abstract List<Artifact> getDependencyArtifacts();
 
     protected abstract File getOutputDirectory();
+
+    protected abstract File getNativeOutputDirectory();
 
     protected abstract void attachFiles();
 

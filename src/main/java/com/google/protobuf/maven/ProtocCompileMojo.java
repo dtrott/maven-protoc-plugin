@@ -7,9 +7,9 @@ import java.io.File;
 import java.util.List;
 
 /**
- * This mojo executes the {@code protoc} compiler for generating java sources
- * from protocol buffer definitions. It also searches dependency artifacts for
- * proto files and includes them in the protopath so that they can be
+ * This mojo executes the {@code protoc} compiler for generating java and python
+ * sources from protocol buffer definitions. It also searches dependency artifacts
+ * for proto files and includes them in the protopath so that they can be
  * referenced. Finally, it adds the proto files to the project as resources so
  * that they are included in the final artifact.
  *
@@ -36,6 +36,14 @@ public final class ProtocCompileMojo extends AbstractProtocMojo {
      */
     private File outputDirectory;
 
+    /**
+     * This is the directory into which the native proto classes will be created.
+     *
+     * @parameter default-value="${project.build.directory}/proto/"
+     * @required
+     */
+    private File nativeOutputDirectory;
+
     @Override
     protected List<Artifact> getDependencyArtifacts() {
         // TODO(gak): maven-project needs generics
@@ -47,6 +55,11 @@ public final class ProtocCompileMojo extends AbstractProtocMojo {
     @Override
     protected File getOutputDirectory() {
         return outputDirectory;
+    }
+
+    @Override
+    protected File getNativeOutputDirectory() {
+	return nativeOutputDirectory;
     }
 
     @Override
