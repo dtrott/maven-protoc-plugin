@@ -160,6 +160,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
                             makeProtoPathFromJars(temporaryProtoFileDirectory, getDependencyArtifactFiles());
                     outputDirectory.mkdirs();
                     nativeOutputDirectory.mkdirs();
+
                     // Quick fix to fix issues with two mvn installs in a row (ie no clean)
                     cleanDirectory(outputDirectory);
 
@@ -167,7 +168,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
                             .addProtoPathElement(protoSourceRoot)
                             .addProtoPathElements(derivedProtoPathElements)
                             .addProtoPathElements(asList(additionalProtoPathElements))
-			    .addProtoFiles(protoFiles)
+                            .addProtoFiles(protoFiles)
                             .setNativeOutputDirectory(nativeOutputDirectory)
                             .setGeneratePythonSources(generatePythonSources)
                             .build();
