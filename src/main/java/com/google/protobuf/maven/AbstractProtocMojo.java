@@ -328,6 +328,12 @@ abstract class AbstractProtocMojo extends AbstractMojo {
     )
     private boolean forceMojoExecution;
 
+    @Parameter(
+            required = false,
+            defaultValue = "true"
+    )
+    private boolean clearOutputDirectory;
+
     /**
      * Executes the mojo.
      */
@@ -358,8 +364,10 @@ abstract class AbstractProtocMojo extends AbstractMojo {
                             makeProtoPathFromJars(temporaryProtoFileDirectory, getDependencyArtifactFiles());
                     FileUtils.mkdir(outputDirectory.getAbsolutePath());
 
-                    // Quick fix to fix issues with two mvn installs in a row (ie no clean)
-                    cleanDirectory(outputDirectory);
+                    if (clearOutputDirectory) {
+                        // Quick fix to fix issues with two mvn installs in a row (ie no clean)
+                        cleanDirectory(outputDirectory);
+                    }
 
                     if (writeDescriptorSet) {
                         final File descriptorSetOutputDirectory = getDescriptorSetOutputDirectory();
