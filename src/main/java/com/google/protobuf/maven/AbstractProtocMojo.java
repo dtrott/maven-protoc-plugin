@@ -328,6 +328,14 @@ abstract class AbstractProtocMojo extends AbstractMojo {
     )
     private boolean forceMojoExecution;
 
+    /**
+     * When {@code true}, the output directory will be cleared out prior to code generation.
+     * With the latest versions of protoc (2.5.0 or later) this is generally not required,
+     * although some earlier versions reportedly had issues with running
+     * two code generations in a row without clearing out the output directory in between.
+     *
+     * @since 0.4.0
+     */
     @Parameter(
             required = false,
             defaultValue = "true"
@@ -365,15 +373,15 @@ abstract class AbstractProtocMojo extends AbstractMojo {
                     FileUtils.mkdir(outputDirectory.getAbsolutePath());
 
                     if (clearOutputDirectory) {
-                        // Quick fix to fix issues with two mvn installs in a row (ie no clean)
                         cleanDirectory(outputDirectory);
                     }
 
                     if (writeDescriptorSet) {
                         final File descriptorSetOutputDirectory = getDescriptorSetOutputDirectory();
                         FileUtils.mkdir(descriptorSetOutputDirectory.getAbsolutePath());
-                        // See above
-                        cleanDirectory(descriptorSetOutputDirectory);
+                        if (clearOutputDirectory) {
+                            cleanDirectory(descriptorSetOutputDirectory);
+                        }
                     }
 
                     if (protocPlugins != null) {
