@@ -65,7 +65,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
     /**
      * The current Maven project.
      */
-    @Component
+    @Parameter(defaultValue = "${project}", readonly = true)
     protected MavenProject project;
 
     /**
@@ -73,7 +73,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
      *
      * @since 0.2.0
      */
-    @Component
+    @Parameter(defaultValue = "${session}", readonly = true)
     private MavenSession session;
 
     /**

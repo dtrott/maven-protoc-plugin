@@ -11,11 +11,10 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <mavenVersion>2.2.1</mavenVersion>
+        <mavenVersion>3.0</mavenVersion>
         <plexusVersion>1.5.5</plexusVersion>
-        <plexusUtilsVersion>2.1</plexusUtilsVersion>
-        <aetherVersion>1.13.1</aetherVersion>
-        <pluginToolsVersion>3.2</pluginToolsVersion>
+        <plexusUtilsVersion>3.0.21</plexusUtilsVersion>
+        <pluginToolsVersion>3.4</pluginToolsVersion>
     </properties>
 
     <prerequisites>
@@ -105,7 +104,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-plugin-plugin</artifactId>
-                    <version>3.2</version>
+                    <version>3.4</version>
                 </plugin>
 
                 <plugin>
@@ -138,7 +137,6 @@
                     <version>2.0</version>
                 </plugin>
 
-                <!-- maven-site-plugin has to be of version 3.0+ when build is being run under maven 3.x -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-site-plugin</artifactId>
@@ -174,13 +172,6 @@
                         <configuration>
                             <rules>
                                 <requireMavenVersion>
-                                    <!--
-                                        Enforce Maven3 when building the plugin,
-                                        because the site generation requires Maven3.
-
-                                        The deployed plugin can still be used in Maven2 projects
-                                        (controlled separately by 'prerequisites' section).
-                                    -->
                                     <version>[3.0,)</version>
                                 </requireMavenVersion>
                                 <requireJavaVersion>
@@ -213,7 +204,6 @@
                         </goals>
                         <configuration>
                             <helpPackageName>com.google.protobuf.maven</helpPackageName>
-                            <skipErrorNoDescriptorsFound>true</skipErrorNoDescriptorsFound>
                         </configuration>
                     </execution>
                 </executions>
@@ -287,7 +277,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-plugin-plugin</artifactId>
-                <version>3.2</version>
+                <version>3.4</version>
             </plugin>
 
             <plugin>
@@ -434,23 +424,12 @@
         <dependency>
             <groupId>org.codehaus.plexus</groupId>
             <artifactId>plexus-component-annotations</artifactId>
-            <version>${plexusVersion}</version>
+            <version>1.6</version>
         </dependency>
         <dependency>
             <groupId>org.sonatype.plexus</groupId>
             <artifactId>plexus-build-api</artifactId>
             <version>0.0.7</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.maven</groupId>
-            <artifactId>maven-project</artifactId>
-            <version>${mavenVersion}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>junit</groupId>
-                    <artifactId>junit</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.maven</groupId>
@@ -464,7 +443,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.maven</groupId>
-            <artifactId>maven-toolchain</artifactId>
+            <artifactId>maven-compat</artifactId>
             <version>${mavenVersion}</version>
         </dependency>
 
@@ -472,13 +451,13 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.11</version>
+            <version>4.12</version>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.apache.maven.shared</groupId>
+            <groupId>org.apache.maven.plugin-testing</groupId>
             <artifactId>maven-plugin-testing-harness</artifactId>
-            <version>1.1</version>
+            <version>3.3.0</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
