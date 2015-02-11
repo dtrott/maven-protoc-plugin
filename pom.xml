@@ -287,18 +287,6 @@
                 <configuration>
                     <minmemory>128m</minmemory>
                     <maxmemory>512m</maxmemory>
-                    <tagletArtifacts>
-                        <tagletArtifact>
-                            <groupId>org.apache.maven.plugin-tools</groupId>
-                            <artifactId>maven-plugin-tools-javadoc</artifactId>
-                            <version>${pluginToolsVersion}</version>
-                        </tagletArtifact>
-                        <tagletArtifact>
-                            <groupId>org.codehaus.plexus</groupId>
-                            <artifactId>plexus-component-javadoc</artifactId>
-                            <version>${plexusVersion}</version>
-                        </tagletArtifact>
-                    </tagletArtifacts>
                 </configuration>
             </plugin>
 
