@@ -47,10 +47,10 @@ import static org.codehaus.plexus.util.FileUtils.getFiles;
 
 /**
  * Abstract Mojo implementation.
- * <p/>
- * This class is extended by {@link ProtocCompileMojo} and
+ *
+ * <p>This class is extended by {@link ProtocCompileMojo} and
  * {@link ProtocTestCompileMojo} in order to override the specific configuration for
- * compiling the main or test classes respectively.
+ * compiling the main or test classes respectively.</p>
  *
  * @author Gregory Kick
  * @author David Trott
@@ -692,7 +692,15 @@ abstract class AbstractProtocMojo extends AbstractMojo {
     }
 
     /**
-     * @throws IOException
+     * Unpacks proto descriptors that are bundled inside dependent artifacts into a temporary directory.
+     * This is needed because protobuf compiler cannot handle imported descriptors that are packed inside jar files.
+     *
+     * @param temporaryProtoFileDirectory temporary directory to serve as root for unpacked structure.
+     * @param classpathElementFiles classpath elements, can be either jar files or directories.
+     * @throws IOException if one of the file operations fails.
+     * @throws MojoExecutionException if an internal error happens.
+     * @return a set of import roots for protobuf compiler
+     *         (these will all be subdirectories of the temporary directory).
      */
     protected ImmutableSet<File> makeProtoPathFromJars(
             final File temporaryProtoFileDirectory,
@@ -770,6 +778,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
      *
      * @param jarPath the full path of a jar file.
      * @return the truncated path relative to the local repository or root of the drive.
+     * @throws MojoExecutionException if an internal error happens.
      */
     protected String truncatePath(final String jarPath) throws MojoExecutionException {
 

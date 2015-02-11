@@ -139,6 +139,8 @@ public class ProtocPlugin {
 
     /**
      * Validate the state of this plugin specification.
+     *
+     * @param log a logger instance for diagnostic output.
      * @throws IllegalStateException if properties are incorrect or are missing
      */
     public void validate(final Log log) {
