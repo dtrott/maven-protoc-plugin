@@ -12,6 +12,14 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <!-- JDK version -->
+        <java.sdk.version>1.6</java.sdk.version>
+        <!-- Settings for the java compiler -->
+        <java.compiler.compilerVersion>${java.sdk.version}</java.compiler.compilerVersion>
+        <java.compiler.source>${java.sdk.version}</java.compiler.source>
+        <java.compiler.target>${java.sdk.version}</java.compiler.target>
+
         <mavenVersion>3.0</mavenVersion>
         <plexusComponentVersion>1.6</plexusComponentVersion>
         <plexusUtilsVersion>3.0.21</plexusUtilsVersion>
@@ -104,6 +112,12 @@
 
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-toolchains-plugin</artifactId>
+                    <version>1.1</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-plugin-plugin</artifactId>
                     <version>3.4</version>
                 </plugin>
@@ -182,7 +196,7 @@
                                     <version>[${mavenVersion},)</version>
                                 </requireMavenVersion>
                                 <requireJavaVersion>
-                                    <version>[1.6,)</version>
+                                    <version>[${java.sdk.version},)</version>
                                 </requireJavaVersion>
                             </rules>
                             <fail>true</fail>
@@ -240,6 +254,28 @@
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-toolchains-plugin</artifactId>
+                <inherited>true</inherited>
+                <executions>
+                    <execution>
+                        <id>default-toolchain</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>toolchain</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <toolchains>
+                        <jdk>
+                            <version>[${java.sdk.version},)</version>
+                        </jdk>
+                    </toolchains>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-plugin-plugin</artifactId>
                 <executions>
                     <execution>
@@ -281,8 +317,14 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>1.6</source>
-                    <target>1.6</target>
+                    <fork>true</fork>
+                    <compilerVersion>${java.compiler.compilerVersion}</compilerVersion>
+                    <source>${java.compiler.source}</source>
+                    <target>${java.compiler.target}</target>
+                    <showDeprecation>true</showDeprecation>
+                    <showWarnings>true</showWarnings>
+                    <compilerArgument>-Xlint:all</compilerArgument>
+                    <testCompilerArgument>-Xlint:all</testCompilerArgument>
                 </configuration>
             </plugin>
 
@@ -378,6 +420,9 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-report-plugin</artifactId>
                 <version>2.18.1</version>
+                <configuration>
+                    <alwaysGenerateSurefireReport>false</alwaysGenerateSurefireReport>
+                </configuration>
             </plugin>
 
             <plugin>
