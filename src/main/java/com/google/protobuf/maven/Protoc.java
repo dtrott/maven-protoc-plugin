@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableSet;
 import org.apache.maven.plugin.logging.Log;
 import org.codehaus.plexus.util.cli.CommandLineException;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
+import org.codehaus.plexus.util.cli.CommandLineUtils.StringStreamConsumer;
 import org.codehaus.plexus.util.cli.Commandline;
 
 import java.io.File;
@@ -73,12 +74,12 @@ final class Protoc {
     /**
      * A buffer to consume standard output from the {@code protoc} executable.
      */
-    private final CommandLineUtils.StringStreamConsumer output;
+    private final StringStreamConsumer output;
 
     /**
      * A buffer to consume error output from the {@code protoc} executable.
      */
-    private final CommandLineUtils.StringStreamConsumer error;
+    private final StringStreamConsumer error;
 
     /**
      * Constructs a new instance. This should only be used by the {@link Builder}.
@@ -114,15 +115,15 @@ final class Protoc {
         this.includeImportsInDescriptorSet = includeImportsInDescriptorSet;
         this.plugins = plugins;
         this.pluginDirectory = pluginDirectory;
-        this.error = new CommandLineUtils.StringStreamConsumer();
-        this.output = new CommandLineUtils.StringStreamConsumer();
+        this.error = new StringStreamConsumer();
+        this.output = new StringStreamConsumer();
     }
 
     /**
      * Invokes the {@code protoc} compiler using the configuration specified at construction.
      *
      * @return The exit status of {@code protoc}.
-     * @throws CommandLineException
+     * @throws CommandLineException if command line environment cannot be set up.
      */
     public int execute() throws CommandLineException {
         final Commandline cl = new Commandline();
@@ -146,8 +147,8 @@ final class Protoc {
 
     /**
      * Creates the command line arguments.
-     * <p/>
-     * This method has been made visible for testing only.
+     *
+     * <p>This method has been made visible for testing only.</p>
      *
      * @return A list consisting of the executable followed by any arguments.
      */
@@ -368,7 +369,7 @@ final class Protoc {
          * and this method will fail if a proto file is added without first adding a
          * parent directory to the protopath.
          *
-         * @param protoFile
+         * @param protoFile source protobuf definitions file.
          * @return The builder.
          * @throws IllegalStateException If a proto file is added without first
          * adding a parent directory to the protopath.
@@ -386,7 +387,7 @@ final class Protoc {
         /**
          * Adds a protoc plugin definition for custom code generation.
          * @param plugin plugin definition
-         * @return
+         * @return this builder instance.
          */
         public Builder addPlugin(final ProtocPlugin plugin) {
             checkNotNull(plugin);
@@ -425,6 +426,10 @@ final class Protoc {
         }
 
         /**
+         * Adds a collection of proto files to be compiled.
+         *
+         * @param protoFiles a collection of source protobuf definition files.
+         * @return this builder instance.
          * @see #addProtoFile(File)
          */
         public Builder addProtoFiles(final Iterable<File> protoFiles) {
@@ -451,6 +456,10 @@ final class Protoc {
         }
 
         /**
+         * Adds a number of elements to the protopath.
+         *
+         * @param protopathElements directories to be searched for imported protocol buffer definitions.
+         * @return this builder instance.
          * @see #addProtoPathElement(File)
          */
         public Builder addProtoPathElements(final Iterable<File> protopathElements) {
