@@ -7,7 +7,7 @@ assert generatedPythonFile.exists();
 assert generatedPythonFile.isFile();
 
 content = generatedPythonFile.text;
-assert content.contains('class TestMessage');
-assert content.contains('class NestedMessage');
+assert content.contains('TestMessage');
+assert content.contains('NestedMessage');
 
 return true;
