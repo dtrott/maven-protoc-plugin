@@ -5,13 +5,17 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
+
     <parent>
         <groupId>com.google.protobuf.tools.maven-protoc-plugin.its</groupId>
         <artifactId>TEST-6-parent</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
+
     <artifactId>TEST-6-project1</artifactId>
-    <name>Integration Test</name>
+
+    <name>Integration Test 6 (1)</name>
+
     <build>
         <plugins>
             <plugin>
@@ -28,10 +32,4 @@
             </plugin>
         </plugins>
     </build>
-    <dependencies>
-        <dependency>
-            <groupId>com.google.protobuf</groupId>
-            <artifactId>protobuf-java</artifactId>
-        </dependency>
-    </dependencies>
 </project>

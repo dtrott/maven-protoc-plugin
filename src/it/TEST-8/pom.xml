@@ -5,11 +5,19 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.google.protobuf.tools.maven-protoc-plugin.its</groupId>
+
+    <parent>
+        <groupId>com.google.protobuf.tools.maven-protoc-plugin.its</groupId>
+        <artifactId>it-parent</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
+
     <artifactId>TEST-8-parent</artifactId>
-    <name>Integration Test</name>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
+
+    <name>Integration Test 8 (Parent)</name>
+
     <profiles>
         <profile>
             <id>build-project1</id>
@@ -24,49 +32,28 @@
             </modules>
         </profile>
     </profiles>
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>com.google.protobuf</groupId>
-                <artifactId>protobuf-java</artifactId>
-                <version>[2.4,2.5)</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
+
     <build>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.1</version>
-                    <configuration>
-                        <source>1.6</source>
-                        <target>1.6</target>
-                    </configuration>
-                </plugin>
-            </plugins>
-        </pluginManagement>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-toolchains-plugin</artifactId>
-                <version>1.0</version>
                 <executions>
                     <execution>
+                        <id>protobuf-toolchain</id>
                         <phase>validate</phase>
                         <goals>
                             <goal>toolchain</goal>
                         </goals>
+                        <configuration>
+                            <toolchains>
+                                <protobuf>
+                                    <version>${protobufVersion}</version>
+                                </protobuf>
+                            </toolchains>
+                        </configuration>
                     </execution>
                 </executions>
-                <configuration>
-                    <toolchains>
-                        <protobuf>
-                            <version>[2.4,2.5)</version>
-                        </protobuf>
-                    </toolchains>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>com.google.protobuf.tools</groupId>

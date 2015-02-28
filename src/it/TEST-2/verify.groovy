@@ -3,6 +3,6 @@ assert buildLogFile.exists();
 assert buildLogFile.isFile();
 
 content = buildLogFile.text;
-assert content.contains('Toolchain (protobuf) matched:PROTOC');
+assert content.contains('Found matching toolchain for type protobuf: PROTOC');
 
 return true;
