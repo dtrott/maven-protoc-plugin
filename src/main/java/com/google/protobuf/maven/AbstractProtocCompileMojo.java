@@ -38,16 +38,13 @@ public abstract class AbstractProtocCompileMojo extends AbstractProtocMojo {
     protected void attachFiles() {
         project.addCompileSourceRoot(getOutputDirectory().getAbsolutePath());
         projectHelper.addResource(project, getProtoSourceRoot().getAbsolutePath(),
-                ImmutableList.of("**/*.proto"), ImmutableList.of());
+                ImmutableList.of("**/*.proto"), ImmutableList.<String>of());
         buildContext.refresh(getOutputDirectory());
     }
 
     @Override
     protected List<Artifact> getDependencyArtifacts() {
-        // TODO(gak): maven-project needs generics
-        @SuppressWarnings("unchecked")
-        List<Artifact> compileArtifacts = project.getCompileArtifacts();
-        return compileArtifacts;
+        return project.getCompileArtifacts();
     }
 
     @Override

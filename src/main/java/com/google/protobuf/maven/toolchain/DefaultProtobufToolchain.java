@@ -23,6 +23,7 @@ public class DefaultProtobufToolchain extends DefaultToolchain implements Protob
 
     private String protocExecutable;
 
+    @Override
     public String findTool(String toolName) {
         if ("protoc".equals(toolName)) {
             File protoc = new File(FileUtils.normalize(getProtocExecutable()));
@@ -33,14 +34,17 @@ public class DefaultProtobufToolchain extends DefaultToolchain implements Protob
         return null;
     }
 
+    @Override
     public String getProtocExecutable() {
         return this.protocExecutable;
     }
 
+    @Override
     public void setProtocExecutable(String protocExecutable) {
         this.protocExecutable = protocExecutable;
     }
 
+    @Override
     public String toString() {
         return "PROTOC[" + getProtocExecutable() + "]";
     }

@@ -264,7 +264,6 @@ public class ProtocPluginAssembler {
                             artifactMetadataSource,
                             null);
 
-            @SuppressWarnings({"unchecked"})
             final Set<Artifact> artifacts = artifactResolutionResult.getArtifacts();
 
             if (artifacts == null || artifacts.isEmpty()) {

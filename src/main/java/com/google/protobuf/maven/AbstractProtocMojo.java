@@ -345,6 +345,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
     /**
      * Executes the mojo.
      */
+    @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
 
         if (skipMojo()) {
@@ -592,7 +593,6 @@ abstract class AbstractProtocMojo extends AbstractMojo {
             return ImmutableSet.of();
         }
 
-        @SuppressWarnings({"unchecked"})
         final List<File> generatedFilesInDirectory = getFiles(directory, "**/*", getDefaultExcludesAsString());
         return ImmutableSet.copyOf(generatedFilesInDirectory);
     }
@@ -746,7 +746,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
                     }
                 }
             } else if (classpathElementFile.isDirectory()) {
-                final List protoFiles = getFiles(classpathElementFile, DEFAULT_INCLUDES, null);
+                final List<File> protoFiles = getFiles(classpathElementFile, DEFAULT_INCLUDES, null);
                 if (!protoFiles.isEmpty()) {
                     protoDirectories.add(classpathElementFile);
                 }
