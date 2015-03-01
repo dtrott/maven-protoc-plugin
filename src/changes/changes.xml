@@ -1,3 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
 <document xmlns="http://maven.apache.org/changes/1.0.0"
           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
           xsi:schemaLocation="http://maven.apache.org/changes/1.0.0
@@ -5,8 +7,20 @@
 
     <body>
 
-        <release version="0.3.3" date="In progress" description="Support for C++ and Python">
-            <action dev="sergei-ivanov" type="add">
+        <release version="0.4.0" date="In progress" description="Support for C++ and Python, Java 6, Maven 3">
+            <action dev="sergei-ivanov" type="fix" issue="25">
+                Fixed toolchain support that was broken by incompatible changes in Maven 3.2.5.
+            </action>
+            <action dev="sergei-ivanov" type="update" issue="27">
+                Maven 3.0 is now a minimum required version for running the plugin.
+            </action>
+            <action dev="sergei-ivanov" type="update" issue="26">
+                Java 1.6 is now a minimum required version for running the plugin.
+            </action>
+            <action dev="sergei-ivanov" type="add" issue="19">
+                A new option to suppress clearing of the output directory.
+            </action>
+            <action dev="sergei-ivanov" type="add" issue="5">
                 Added new goals to generate C++ and Python sources from protobuf definitions.
             </action>
             <action dev="sergei-ivanov" type="update">

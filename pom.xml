@@ -97,7 +97,7 @@
 
     <issueManagement>
         <system>Github</system>
-        <url>https://github.com/sergei-ivanov/maven-protoc-plugin/issues</url>
+        <url>https://github.com/sergei-ivanov/maven-protoc-plugin/issues/</url>
     </issueManagement>
 
     <build>
