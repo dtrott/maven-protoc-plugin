@@ -2,16 +2,17 @@ package com.google.protobuf.maven;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
-import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
 import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
+import org.apache.maven.artifact.resolver.ArtifactResolutionRequest;
 import org.apache.maven.artifact.resolver.ArtifactResolutionResult;
-import org.apache.maven.artifact.resolver.ArtifactResolver;
+import org.apache.maven.artifact.resolver.ResolutionErrorHandler;
 import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
 import org.apache.maven.artifact.versioning.VersionRange;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
+import org.apache.maven.repository.RepositorySystem;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.Os;
 
@@ -34,13 +35,15 @@ public class ProtocPluginAssembler {
 
     private final ProtocPlugin pluginDefinition;
 
+    private final MavenSession session;
+
     private final Artifact rootResolutionArtifact;
 
     private final ArtifactFactory artifactFactory;
 
-    private final ArtifactResolver artifactResolver;
+    private final RepositorySystem repositorySystem;
 
-    private final ArtifactMetadataSource artifactMetadataSource;
+    private final ResolutionErrorHandler resolutionErrorHandler;
 
     private final ArtifactRepository localRepository;
 
@@ -56,19 +59,21 @@ public class ProtocPluginAssembler {
 
     public ProtocPluginAssembler(
             final ProtocPlugin pluginDefinition,
+            final MavenSession session,
             final Artifact rootResolutionArtifact,
             final ArtifactFactory artifactFactory,
-            final ArtifactResolver artifactResolver,
-            final ArtifactMetadataSource artifactMetadataSource,
+            final RepositorySystem repositorySystem,
+            final ResolutionErrorHandler resolutionErrorHandler,
             final ArtifactRepository localRepository,
             final List<ArtifactRepository> remoteRepositories,
             final File pluginDirectory,
             final Log log) {
         this.pluginDefinition = pluginDefinition;
+        this.session = session;
         this.rootResolutionArtifact = rootResolutionArtifact;
         this.artifactFactory = artifactFactory;
-        this.artifactResolver = artifactResolver;
-        this.artifactMetadataSource = artifactMetadataSource;
+        this.repositorySystem = repositorySystem;
+        this.resolutionErrorHandler = resolutionErrorHandler;
         this.localRepository = localRepository;
         this.remoteRepositories = remoteRepositories;
         this.pluginDirectory = pluginDirectory;
@@ -255,16 +260,24 @@ public class ProtocPluginAssembler {
                         Artifact.SCOPE_RUNTIME);
 
         try {
-            final ArtifactResolutionResult artifactResolutionResult =
-                    artifactResolver.resolveTransitively(
-                            Collections.singleton(protocPluginArtifact),
-                            rootResolutionArtifact,
-                            localRepository,
-                            remoteRepositories,
-                            artifactMetadataSource,
-                            null);
+            final ArtifactResolutionRequest request = new ArtifactResolutionRequest()
+                    .setArtifact(rootResolutionArtifact)
+                    .setResolveRoot(false)
+                    .setArtifactDependencies(Collections.singleton(protocPluginArtifact))
+                    .setManagedVersionMap(Collections.emptyMap())
+                    .setLocalRepository(localRepository)
+                    .setRemoteRepositories(remoteRepositories)
+                    .setOffline(session.isOffline())
+                    .setForceUpdate(session.getRequest().isUpdateSnapshots())
+                    .setServers(session.getRequest().getServers())
+                    .setMirrors(session.getRequest().getMirrors())
+                    .setProxies(session.getRequest().getProxies());
 
-            final Set<Artifact> artifacts = artifactResolutionResult.getArtifacts();
+            final ArtifactResolutionResult result = repositorySystem.resolve(request);
+
+            resolutionErrorHandler.throwErrors(request, result);
+
+            final Set<Artifact> artifacts = result.getArtifacts();
 
             if (artifacts == null || artifacts.isEmpty()) {
                 throw new MojoExecutionException("Unable to resolve plugin artifact");
@@ -277,9 +290,7 @@ public class ProtocPluginAssembler {
             if (log.isDebugEnabled()) {
                 log.debug("Resolved jars: " + resolvedJars);
             }
-        } catch (ArtifactResolutionException e) {
-            throw new MojoExecutionException(e.getMessage(), e);
-        } catch (ArtifactNotFoundException e) {
+        } catch (final ArtifactResolutionException e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }
     }
