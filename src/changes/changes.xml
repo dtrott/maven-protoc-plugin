@@ -7,7 +7,7 @@
 
     <body>
 
-        <release version="0.4.0" date="In progress" description="Support for C++ and Python, Java 6, Maven 3">
+        <release version="0.4.0" date="2015-03-11" description="Support for C++ and Python, Java 6, Maven 3">
             <action dev="sergei-ivanov" type="fix" issue="25">
                 Fixed toolchain support that was broken by incompatible changes in Maven 3.2.5.
             </action>
@@ -17,7 +17,7 @@
             <action dev="sergei-ivanov" type="update" issue="26">
                 Java 1.6 is now a minimum required version for running the plugin.
             </action>
-            <action dev="sergei-ivanov" type="add" issue="19">
+            <action dev="sergei-ivanov" type="add" issue="19" due-to="abatalev">
                 A new option to suppress clearing of the output directory.
             </action>
             <action dev="sergei-ivanov" type="add" issue="5">

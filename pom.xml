@@ -68,6 +68,9 @@
             <name>B. K. Oxley (binkley)</name>
             <timezone>-6</timezone>
         </contributor>
+        <contributor>
+            <name>abatalev</name>
+        </contributor>
     </contributors>
 
     <scm>
