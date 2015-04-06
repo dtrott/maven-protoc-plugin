@@ -20,6 +20,7 @@ import org.apache.maven.toolchain.Toolchain;
 import org.apache.maven.toolchain.ToolchainManager;
 import org.apache.maven.toolchain.java.DefaultJavaToolChain;
 import org.codehaus.plexus.util.FileUtils;
+import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.cli.CommandLineException;
 import org.codehaus.plexus.util.io.RawInputStreamFacade;
 import org.sonatype.plexus.build.incremental.BuildContext;
@@ -75,7 +76,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
      * @since 0.2.0
      */
     @Parameter(defaultValue = "${session}", readonly = true)
-    private MavenSession session;
+    protected MavenSession session;
 
     /**
      * Build context that tracks changes to the source and target files.
@@ -91,7 +92,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
      * @since 0.2.0
      */
     @Component
-    private ToolchainManager toolchainManager;
+    protected ToolchainManager toolchainManager;
 
     /**
      * A helper used to add resources to the project.
@@ -449,11 +450,15 @@ abstract class AbstractProtocMojo extends AbstractMojo {
                     getLog().info(format("Compiling %d proto file(s) to %s", protoFiles.size(), outputDirectory));
 
                     final int exitStatus = protoc.execute();
+                    if (StringUtils.isNotBlank(protoc.getOutput())) {
+                        getLog().info("PROTOC: " + protoc.getOutput());
+                    }
                     if (exitStatus != 0) {
-                        getLog().error("protoc failed output: " + protoc.getOutput());
-                        getLog().error("protoc failed error: " + protoc.getError());
+                        getLog().error("PROTOC FAILED: " + protoc.getError());
                         throw new MojoFailureException(
                                 "protoc did not exit cleanly. Review output for more information.");
+                    } else if (StringUtils.isNotBlank(protoc.getError())) {
+                        getLog().warn("PROTOC: " + protoc.getError());
                     }
                     attachFiles();
                 }
