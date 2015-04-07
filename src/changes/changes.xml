@@ -7,6 +7,12 @@
 
     <body>
 
+        <release version="0.4.1" date="In progress" description="Support for native protoc plugins">
+            <action dev="sergei-ivanov" type="add" issue="30">
+                Added new goals to use custom native protoc plugins.
+            </action>
+        </release>
+
         <release version="0.4.0" date="2015-03-11" description="Support for C++ and Python, Java 6, Maven 3">
             <action dev="sergei-ivanov" type="fix" issue="25">
                 Fixed toolchain support that was broken by incompatible changes in Maven 3.2.5.

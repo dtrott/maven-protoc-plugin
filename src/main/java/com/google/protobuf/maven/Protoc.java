@@ -57,6 +57,12 @@ final class Protoc {
 
     private final File pluginDirectory;
 
+    private final String nativePluginId;
+
+    private final String nativePluginExecutable;
+
+    private final String nativePluginParameter;
+
     /**
      * A directory into which C++ source files will be generated.
      */
@@ -66,6 +72,11 @@ final class Protoc {
      * A directory into which Python source files will be generated.
      */
     private final File pythonOutputDirectory;
+
+    /**
+     *  A directory into which a custom protoc plugin will generate files.
+     */
+    private final File customOutputDirectory;
 
     private final File descriptorSetFile;
 
@@ -90,9 +101,15 @@ final class Protoc {
      * @param javaOutputDirectory a directory into which Java source files will be generated.
      * @param cppOutputDirectory a directory into which C++ source files will be generated.
      * @param pythonOutputDirectory a directory into which Python source files will be generated.
+     * @param customOutputDirectory a directory into which a custom protoc plugin will generate files.
      * @param descriptorSetFile The directory into which a descriptor set will be generated;
      * if {@code null}, no descriptor set will be written
      * @param includeImportsInDescriptorSet If {@code true}, dependencies will be included in the descriptor set.
+     * @param plugins a set of java protoc plugins.
+     * @param pluginDirectory location of protoc plugins to be added to system path.
+     * @param nativePluginId a unique id of a native plugin.
+     * @param nativePluginExecutable path to the native plugin executable.
+     * @param nativePluginParameter an optional parameter for a native plugin.
      */
     private Protoc(
             final String executable,
@@ -101,20 +118,28 @@ final class Protoc {
             final File javaOutputDirectory,
             final File cppOutputDirectory,
             final File pythonOutputDirectory,
+            final File customOutputDirectory,
             final File descriptorSetFile,
             final boolean includeImportsInDescriptorSet,
             final ImmutableSet<ProtocPlugin> plugins,
-            final File pluginDirectory) {
+            final File pluginDirectory,
+            final String nativePluginId,
+            final String nativePluginExecutable,
+            final String nativePluginParameter) {
         this.executable = checkNotNull(executable, "executable");
         this.protoPathElements = checkNotNull(protoPath, "protoPath");
         this.protoFiles = checkNotNull(protoFiles, "protoFiles");
         this.javaOutputDirectory = javaOutputDirectory;
         this.cppOutputDirectory = cppOutputDirectory;
         this.pythonOutputDirectory = pythonOutputDirectory;
+        this.customOutputDirectory = customOutputDirectory;
         this.descriptorSetFile = descriptorSetFile;
         this.includeImportsInDescriptorSet = includeImportsInDescriptorSet;
         this.plugins = plugins;
         this.pluginDirectory = pluginDirectory;
+        this.nativePluginId = nativePluginId;
+        this.nativePluginExecutable = nativePluginExecutable;
+        this.nativePluginParameter = nativePluginParameter;
         this.error = new StringStreamConsumer();
         this.output = new StringStreamConsumer();
     }
@@ -171,6 +196,18 @@ final class Protoc {
         }
         if (pythonOutputDirectory != null) {
             command.add("--python_out=" + pythonOutputDirectory);
+        }
+        if (customOutputDirectory != null) {
+            if (nativePluginExecutable != null) {
+                command.add("--plugin=protoc-gen-" + nativePluginId + '=' + nativePluginExecutable);
+            }
+
+            String outputOption = "--" + nativePluginId + "_out=";
+            if (nativePluginParameter != null) {
+                outputOption += nativePluginParameter + ':';
+            }
+            outputOption += customOutputDirectory;
+            command.add(outputOption);
         }
         for (final File protoFile : protoFiles) {
             command.add(protoFile.toString());
@@ -284,6 +321,16 @@ final class Protoc {
 
         private File pluginDirectory;
 
+        // TODO reorganise support for custom plugins
+        // This place is currently a mess because of the two different type of custom plugins supported:
+        // pure java (wrapped in a native launcher) and binary native.
+
+        private String nativePluginId;
+
+        private String nativePluginExecutable;
+
+        private String nativePluginParameter;
+
         /**
          * A directory into which Java source files will be generated.
          */
@@ -298,6 +345,11 @@ final class Protoc {
          * A directory into which Python source files will be generated.
          */
         private File pythonOutputDirectory;
+
+        /**
+         * A directory into which a custom protoc plugin will generate files.
+         */
+        private File customOutputDirectory;
 
         private File descriptorSetFile;
 
@@ -365,6 +417,22 @@ final class Protoc {
         }
 
         /**
+         * Sets the directory into which a custom protoc plugin will generate files.
+         *
+         * @param customOutputDirectory a directory into which a custom protoc plugin will generate files.
+         * @return this builder instance.
+         * @throws NullPointerException if {@code customOutputDirectory} is {@code null}.
+         * @throws IllegalArgumentException if {@code customOutputDirectory} is not a directory.
+         */
+        public Builder setCustomOutputDirectory(final File customOutputDirectory) {
+            this.customOutputDirectory = checkNotNull(customOutputDirectory, "'customOutputDirectory' is null");
+            checkArgument(
+                    customOutputDirectory.isDirectory(),
+                    "'customOutputDirectory' is not a directory: " + customOutputDirectory);
+            return this;
+        }
+
+        /**
          * Adds a proto file to be compiled. Proto files must be on the protopath
          * and this method will fail if a proto file is added without first adding a
          * parent directory to the protopath.
@@ -400,6 +468,29 @@ final class Protoc {
             checkArgument(directory.isDirectory(), "Plugin directory " + directory + "does not exist");
             pluginDirectory = directory;
             return this;
+        }
+
+        public void setNativePluginId(final String nativePluginId) {
+            checkNotNull(nativePluginId, "'nativePluginId' is null");
+            checkArgument(!nativePluginId.isEmpty(), "'nativePluginId' is empty");
+            checkArgument(
+                    !(nativePluginId.equals("java")
+                            || nativePluginId.equals("python")
+                            || nativePluginId.equals("cpp")
+                            || nativePluginId.equals("descriptor_set")),
+                    "'nativePluginId' matches one of the built-in protoc plugins");
+            this.nativePluginId = nativePluginId;
+        }
+
+        public void setNativePluginExecutable(final String nativePluginExecutable) {
+            checkNotNull(nativePluginExecutable, "'nativePluginExecutable' is null");
+            this.nativePluginExecutable = nativePluginExecutable;
+        }
+
+        public void setNativePluginParameter(final String nativePluginParameter) {
+            checkNotNull(nativePluginParameter, "'nativePluginParameter' is null");
+            checkArgument(!nativePluginParameter.contains(":"), "'nativePluginParameter' contains illegal characters");
+            this.nativePluginParameter = nativePluginParameter;
         }
 
         public Builder withDescriptorSetFile(final File descriptorSetFile, final boolean includeImports) {
@@ -474,9 +565,13 @@ final class Protoc {
          */
         private void validateState() {
             checkState(!protoFiles.isEmpty());
-            checkState(javaOutputDirectory != null || cppOutputDirectory != null || pythonOutputDirectory != null,
+            checkState(javaOutputDirectory != null
+                            || cppOutputDirectory != null
+                            || pythonOutputDirectory != null
+                            || customOutputDirectory != null,
                     "At least one of these properties must be set: " +
-                            "'javaOutputDirectory', 'cppOutputDirectory' or 'pythonOutputDirectory'");
+                            "'javaOutputDirectory', 'cppOutputDirectory', " +
+                            "'pythonOutputDirectory' or 'customOutputDirectory'");
         }
 
         /**
@@ -494,10 +589,14 @@ final class Protoc {
                     javaOutputDirectory,
                     cppOutputDirectory,
                     pythonOutputDirectory,
+                    customOutputDirectory,
                     descriptorSetFile,
                     includeImportsInDescriptorSet,
                     ImmutableSet.copyOf(plugins),
-                    pluginDirectory);
+                    pluginDirectory,
+                    nativePluginId,
+                    nativePluginExecutable,
+                    nativePluginParameter);
         }
     }
 }
