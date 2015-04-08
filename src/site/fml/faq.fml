@@ -24,9 +24,9 @@
                 Does the plugin support integration into Eclipse lifecycle?
             </question>
             <answer>
-                There is a limited support in the plugin for integration with M2E 1.1 and later.
-                Versions of M2E prior to 1.1 are not supported because integration would require
-                too much additional effort.
+                There is a limited support in the plugin for integration with M2E 1.5 and later.
+                Versions of M2E prior to 1.5 will fail to work with the plugin because of a
+                <a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=422106">class loading bug</a>.
             </answer>
         </faq>
 
