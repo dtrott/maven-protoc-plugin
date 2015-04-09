@@ -35,11 +35,16 @@ public abstract class AbstractProtocCompileMojo extends AbstractProtocMojo {
     private File descriptorSetOutputDirectory;
 
     @Override
-    protected void attachFiles() {
-        project.addCompileSourceRoot(getOutputDirectory().getAbsolutePath());
+    protected void doAttachProtoSources() {
         projectHelper.addResource(project, getProtoSourceRoot().getAbsolutePath(),
                 ImmutableList.copyOf(getIncludes()), ImmutableList.copyOf(getExcludes()));
-        buildContext.refresh(getOutputDirectory());
+    }
+
+    @Override
+    protected void doAttachGeneratedFiles() {
+        final File outputDirectory = getOutputDirectory();
+        project.addCompileSourceRoot(outputDirectory.getAbsolutePath());
+        buildContext.refresh(outputDirectory);
     }
 
     @Override

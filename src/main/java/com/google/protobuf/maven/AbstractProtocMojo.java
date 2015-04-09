@@ -239,6 +239,23 @@ abstract class AbstractProtocMojo extends AbstractMojo {
     private Set<String> excludes = ImmutableSet.of();
 
     /**
+     * If set to {@code true}, then the specified protobuf source files from this project will be attached
+     * as resources to the build, for subsequent inclusion into the final artifact.
+     * This is the default behaviour, as it allows downstream projects to import protobuf definitions
+     * from the upstream projects, and those imports are automatically resolved at build time.
+     *
+     * <p>If distribution of {@code .proto} source files is undesirable for security reasons
+     * or because of other considerations, then this parameter should be set to {@code false}.</p>
+     *
+     * @since 0.4.1
+     */
+    @Parameter(
+            required = true,
+            defaultValue = "true"
+    )
+    private boolean attachProtoSources;
+
+    /**
      * The descriptor set file name. Only used if {@code writeDescriptorSet} is set to {@code true}.
      *
      * @since 0.3.0
@@ -374,10 +391,10 @@ abstract class AbstractProtocMojo extends AbstractMojo {
                     getLog().info("No proto files to compile.");
                 } else if (!hasDelta(protoFiles)) {
                     getLog().info("Skipping compilation because build context has no changes.");
-                    attachFiles();
+                    doAttachFiles();
                 } else if (checkStaleness && checkFilesUpToDate(protoFiles, outputFiles)) {
                     getLog().info("Skipping compilation because target directory newer than sources.");
-                    attachFiles();
+                    doAttachFiles();
                 } else {
                     final ImmutableSet<File> derivedProtoPathElements =
                             makeProtoPathFromJars(temporaryProtoFileDirectory, getDependencyArtifactFiles());
@@ -460,7 +477,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
                     } else if (StringUtils.isNotBlank(protoc.getError())) {
                         getLog().warn("PROTOC: " + protoc.getError());
                     }
-                    attachFiles();
+                    doAttachFiles();
                 }
             } catch (IOException e) {
                 throw new MojoExecutionException("An IO error occured", e);
@@ -699,7 +716,16 @@ abstract class AbstractProtocMojo extends AbstractMojo {
      */
     protected abstract File getDescriptorSetOutputDirectory();
 
-    protected abstract void attachFiles();
+    protected void doAttachFiles() {
+        if (attachProtoSources) {
+            doAttachProtoSources();
+        }
+        doAttachGeneratedFiles();
+    }
+
+    protected abstract void doAttachProtoSources();
+
+    protected abstract void doAttachGeneratedFiles();
 
     /**
      * Gets the {@link File} for each dependency artifact.

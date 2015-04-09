@@ -35,11 +35,16 @@ public abstract class AbstractProtocTestCompileMojo extends AbstractProtocMojo {
     private File descriptorSetOutputDirectory;
 
     @Override
-    protected void attachFiles() {
-        project.addTestCompileSourceRoot(getOutputDirectory().getAbsolutePath());
+    protected void doAttachProtoSources() {
         projectHelper.addTestResource(project, getProtoSourceRoot().getAbsolutePath(),
                 ImmutableList.copyOf(getIncludes()), ImmutableList.copyOf(getExcludes()));
-        buildContext.refresh(getOutputDirectory());
+    }
+
+    @Override
+    protected void doAttachGeneratedFiles() {
+        final File outputDirectory = getOutputDirectory();
+        project.addTestCompileSourceRoot(outputDirectory.getAbsolutePath());
+        buildContext.refresh(outputDirectory);
     }
 
     @Override
