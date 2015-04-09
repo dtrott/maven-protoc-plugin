@@ -229,10 +229,8 @@ final class Protoc {
      */
     public void logExecutionParameters(final Log log) {
         if (log.isDebugEnabled()) {
-            if (log.isDebugEnabled()) {
-                log.debug(LOG_PREFIX + "Executable: ");
-                log.debug(LOG_PREFIX + ' ' + executable);
-            }
+            log.debug(LOG_PREFIX + "Executable: ");
+            log.debug(LOG_PREFIX + ' ' + executable);
 
             if (protoPathElements != null && !protoPathElements.isEmpty()) {
                 log.debug(LOG_PREFIX + "Protobuf import paths:");
