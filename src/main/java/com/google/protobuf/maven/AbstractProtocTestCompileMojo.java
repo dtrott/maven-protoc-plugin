@@ -38,7 +38,7 @@ public abstract class AbstractProtocTestCompileMojo extends AbstractProtocMojo {
     protected void attachFiles() {
         project.addTestCompileSourceRoot(getOutputDirectory().getAbsolutePath());
         projectHelper.addTestResource(project, getProtoSourceRoot().getAbsolutePath(),
-                ImmutableList.of("**/*.proto"), ImmutableList.<String>of());
+                ImmutableList.copyOf(getIncludes()), ImmutableList.copyOf(getExcludes()));
         buildContext.refresh(getOutputDirectory());
     }
 

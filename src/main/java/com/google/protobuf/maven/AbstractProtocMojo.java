@@ -669,6 +669,14 @@ abstract class AbstractProtocMojo extends AbstractMojo {
 
     protected abstract File getProtoSourceRoot();
 
+    protected Set<String> getIncludes() {
+        return includes;
+    }
+
+    protected Set<String> getExcludes() {
+        return excludes;
+    }
+
     // TODO add artifact filtering (inclusions and exclusions)
     // TODO add filtering for proto definitions in included artifacts
     protected abstract List<Artifact> getDependencyArtifacts();
@@ -775,7 +783,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
         checkArgument(directory.isDirectory(), "%s is not a directory", directory);
         final Joiner joiner = Joiner.on(',');
         final List<File> protoFilesInDirectory =
-                getFiles(directory, joiner.join(includes), joiner.join(excludes));
+                getFiles(directory, joiner.join(getIncludes()), joiner.join(getExcludes()));
         return ImmutableSet.copyOf(protoFilesInDirectory);
     }
 
