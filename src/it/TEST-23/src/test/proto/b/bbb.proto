@@ -1,0 +1,9 @@
+package b;
+
+option java_package = "b";
+option java_outer_classname = "BbbProtos";
+option optimize_for = SPEED;
+
+message Bbb {
+  optional int32 b = 1;
+}

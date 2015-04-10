@@ -22,7 +22,7 @@
 
         <mavenVersion>3.0</mavenVersion>
         <plexusComponentVersion>1.6</plexusComponentVersion>
-        <plexusUtilsVersion>3.0.21</plexusUtilsVersion>
+        <plexusUtilsVersion>3.0.22</plexusUtilsVersion>
         <pluginToolsVersion>3.4</pluginToolsVersion>
     </properties>
 
