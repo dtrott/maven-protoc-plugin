@@ -11,7 +11,6 @@ import org.codehaus.plexus.util.cli.Commandline;
 
 import java.io.File;
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -152,19 +151,6 @@ final class Protoc {
      */
     public int execute() throws CommandLineException {
         final Commandline cl = new Commandline();
-
-        // Prepend plugin directory to PATH so protoc can find our custom plugins.
-        // A cleaner way to do this would be to use the --plugin but this doesn't
-        // seem to work on Windows, even when .exe is included in the executable path.
-        if (pluginDirectory != null) {
-            try {
-                final Properties envVars = cl.getSystemEnvVars();
-                final String path = envVars.getProperty("PATH");
-                cl.addEnvironment("PATH", pluginDirectory + File.pathSeparator + path);
-            } catch (Exception e) {
-                throw new CommandLineException("could not get environment variables", e);
-            }
-        }
         cl.setExecutable(executable);
         cl.addArguments(buildProtocCommand().toArray(new String[] {}));
         return CommandLineUtils.executeCommandLine(cl, null, output, error);
@@ -188,6 +174,8 @@ final class Protoc {
 
             // For now we assume all custom plugins produce Java output
             for (final ProtocPlugin plugin : plugins) {
+                final File pluginExecutable = plugin.getPluginExecutableFile(pluginDirectory);
+                command.add("--plugin=protoc-gen-" + plugin.getId() + '=' + pluginExecutable);
                 command.add("--" + plugin.getId() + "_out=" + javaOutputDirectory);
             }
         }
