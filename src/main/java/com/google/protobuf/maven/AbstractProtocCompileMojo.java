@@ -34,6 +34,16 @@ public abstract class AbstractProtocCompileMojo extends AbstractProtocMojo {
     )
     private File descriptorSetOutputDirectory;
 
+    /**
+     * If generated descriptor set is to be attached to the build, specifies an optional classifier.
+     *
+     * @since 0.4.1
+     */
+    @Parameter(
+            required = false
+    )
+    protected String descriptorSetClassifier;
+
     @Override
     protected void doAttachProtoSources() {
         projectHelper.addResource(project, getProtoSourceRoot().getAbsolutePath(),
@@ -44,6 +54,10 @@ public abstract class AbstractProtocCompileMojo extends AbstractProtocMojo {
     protected void doAttachGeneratedFiles() {
         final File outputDirectory = getOutputDirectory();
         project.addCompileSourceRoot(outputDirectory.getAbsolutePath());
+        if (writeDescriptorSet) {
+            final File descriptorSetFile = new File(getDescriptorSetOutputDirectory(), descriptorSetFileName);
+            projectHelper.attachArtifact(project, "protobin", descriptorSetClassifier, descriptorSetFile);
+        }
         buildContext.refresh(outputDirectory);
     }
 

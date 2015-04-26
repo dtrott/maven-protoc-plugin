@@ -8,6 +8,9 @@
     <body>
 
         <release version="0.4.1" date="In progress" description="Support for native protoc plugins">
+            <action dev="sergei-ivanov" type="add" issue="21">
+                Generated descriptor set can be attached to the build.
+            </action>
             <action dev="sergei-ivanov" type="add" issue="30">
                 Added new goals to use custom native protoc plugins.
             </action>

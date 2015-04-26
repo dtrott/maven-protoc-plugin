@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<component-set>
+    <components>
+        <component>
+            <role>org.apache.maven.artifact.handler.ArtifactHandler</role>
+            <role-hint>protobin</role-hint>
+            <implementation>org.apache.maven.artifact.handler.DefaultArtifactHandler</implementation>
+            <configuration>
+                <extension>protobin</extension>
+                <type>protobin</type>
+                <packaging>protobin</packaging>
+                <language>protobuf</language>
+                <addedToClasspath>false</addedToClasspath>
+            </configuration>
+        </component>
+        <component>
+            <role>org.apache.maven.artifact.handler.ArtifactHandler</role>
+            <role-hint>test-protobin</role-hint>
+            <implementation>org.apache.maven.artifact.handler.DefaultArtifactHandler</implementation>
+            <configuration>
+                <classifier>test</classifier>
+                <extension>protobin</extension>
+                <type>test-protobin</type>
+                <packaging>protobin</packaging>
+                <language>protobuf</language>
+                <addedToClasspath>false</addedToClasspath>
+            </configuration>
+        </component>
+    </components>
+</component-set>

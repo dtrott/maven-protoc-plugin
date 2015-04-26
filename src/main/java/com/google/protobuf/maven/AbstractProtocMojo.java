@@ -253,7 +253,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
             required = true,
             defaultValue = "true"
     )
-    private boolean attachProtoSources;
+    protected boolean attachProtoSources;
 
     /**
      * The descriptor set file name. Only used if {@code writeDescriptorSet} is set to {@code true}.
@@ -264,7 +264,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
             required = true,
             defaultValue = "${project.build.finalName}.protobin"
     )
-    private String descriptorSetFileName;
+    protected String descriptorSetFileName;
 
     /**
      * If set to {@code true}, the compiler will generate a binary descriptor set file for the
@@ -276,7 +276,18 @@ abstract class AbstractProtocMojo extends AbstractMojo {
             required = true,
             defaultValue = "false"
     )
-    private boolean writeDescriptorSet;
+    protected boolean writeDescriptorSet;
+
+    /**
+     * If set to {@code true}, the generated descriptor set will be attached to the build.
+     *
+     * @since 0.4.1
+     */
+    @Parameter(
+            required = true,
+            defaultValue = "false"
+    )
+    protected boolean attachDescriptorSet;
 
     /**
      * If {@code true} and {@code writeDescriptorSet} has been set, the compiler will include
@@ -288,7 +299,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
             required = false,
             defaultValue = "false"
     )
-    private boolean includeDependenciesInDescriptorSet;
+    protected boolean includeDependenciesInDescriptorSet;
 
     /**
      * Specifies one of more custom protoc plugins, written in Java
