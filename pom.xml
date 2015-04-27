@@ -83,15 +83,10 @@
     <distributionManagement>
         <downloadUrl>https://bintray.com/sergei-ivanov/maven/maven-protoc-plugin/view</downloadUrl>
         <repository>
-            <id>sergei-ivanov-releases</id>
-            <name>Sergei Ivanov's Release Repository</name>
-            <url>file:../maven-protoc-plugin-site/repo/releases</url>
+            <id>bintray</id>
+            <name>Releases on Bintray</name>
+            <url>https://api.bintray.com/maven/sergei-ivanov/maven/maven-protoc-plugin</url>
         </repository>
-        <snapshotRepository>
-            <id>sergei-ivanov-snapshots</id>
-            <name>Sergei Ivanov's Snapshot Repository</name>
-            <url>file:../maven-protoc-plugin-site/repo/snapshots</url>
-        </snapshotRepository>
     </distributionManagement>
 
     <issueManagement>
