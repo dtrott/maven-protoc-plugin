@@ -7,7 +7,10 @@
 
     <body>
 
-        <release version="0.4.1" date="In progress" description="Support for native protoc plugins">
+        <release version="0.4.1" date="2015-04-27" description="Support for native protoc plugins">
+            <action dev="sergei-ivanov" type="add" issue="33">
+                Added an option to download protoc binary artifact from Maven repo.
+            </action>
             <action dev="sergei-ivanov" type="add" issue="21">
                 Generated descriptor set can be attached to the build.
             </action>

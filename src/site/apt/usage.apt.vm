@@ -191,6 +191,10 @@ mvn toolchains:toolchain protoc:test-compile
   metadata for generated classes. Descriptor sets are written by passing the <<<--descriptor_set_out>>>
   and <<<--include_imports>>> arguments to <<<protoc>>>.
 
+  Generated descriptor sets can optionally be attached to the build as artifacts.
+  The default type and extension for descriptor sets is <<<protobin>>>, and the plugin extensions need
+  to be enabled in order to support the correct resolution of those dependencies in downstream projects.
+
   The following plugin options configure descriptor set output:
 
   * <<<writeDescriptorSet>>> - determines if a descriptor set is written; default is <<<false>>>.
@@ -202,5 +206,9 @@ mvn toolchains:toolchain protoc:test-compile
     the <<<.protobin>>> extension.
 
   * <<<descriptorSetOutputDirectory>>> - the directory where the descriptor set file will be created
+
+  * <<<attachDescriptorSet>>> - attach the generated descriptor set as an artifact to the build
+
+  * <<<descriptorSetClassifier>>> - an optional artifact classifier for the attached descriptor
 
   []

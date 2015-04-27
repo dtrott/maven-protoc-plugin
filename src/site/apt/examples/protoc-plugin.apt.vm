@@ -6,18 +6,21 @@
 
 Using Custom Protoc Plugins
 
-  It is possible to customize <<<protoc>>>'s output with plugins. This is done by
-  adding adding a <<<protocPlugins>>> element containing one of more <<<protocPlugin>>> elements
-  to the <<<configuration>>> section. Protoc plugins are executables that are invoked by <<<protoc>>>.
+  It is possible to customize <<<protoc>>>'s output with plugins.
+  Protoc plugins are executables that are invoked by <<<protoc>>>.
   They read code generator requests from <<<stdin>>> and output results to <<<stdout>>>.
 
-  In the current version only plugins written in Java (or any other JVM
-  language) and resolvable as Maven artifacts are supported. Also, the output
-  directory for generated files is the same as the Java output directory. 
+  Currently, both native and pure Java plugins are supported.
 
-  In future versions support for other types of executables will be added as well.
+  Plugins written in Java (or any other JVM language) have to be resolvable as Maven artifacts.
+  Also, the output directory for generated files is the same as the Java output directory.
+  They are configured by adding a <<<protocPlugins>>> element containing one of more <<<protocPlugin>>> elements
+  to the <<<configuration>>> section.
 
-* Using a <<<protoc>>> plugin
+  Native plugins are supported by two dedicated goals: {{{../compile-custom-mojo.html}protoc:compile-custom}}
+  and {{{../test-compile-custom-mojo.html}protoc:test-compile-custom}}.
+
+* Using a pure Java <<<protoc>>> plugin
 
   The following example includes uses a single plugin to generate Java code in addition
   to <<<protoc>>>'s regular output.
@@ -98,7 +101,7 @@ Using Custom Protoc Plugins
 
 * Java plugin generation
 
-  An Java-based executable is assembled on the fly from the specified artifact and its dependencies and executed by
+  A Java-based executable is assembled on the fly from the specified artifact and its dependencies and executed by
   <<<protoc>>>. The way this is done is platform-dependent.
 
   On UNIX, a shell script is created in <<<target/protoc-plugins>>> that builds a classpath from local repository
@@ -106,7 +109,6 @@ Using Custom Protoc Plugins
 
   On Windows, a WinRun4J executable (bundled inside the Maven plugin jar) is copied into <<<target/protoc-plugins>>>
   and an <<<.ini>>> is generated with the required classpath, <<<jvm.dll>>> location, main class and arguments.
-  Please note that at the moment only 32-bit JVMs are supported on Windows.
 
   The <<<target/protoc-plugins>>> directory is prepended to the <<<PATH>>> in <<<protoc>>>'s runtime environment.
 

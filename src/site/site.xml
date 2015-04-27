@@ -20,6 +20,7 @@
         <menu name="Examples">
             <!-- TODO -->
             <item name="Protobuf Toolchain" href="examples/protobuf-toolchain.html"/>
+            <item name="Protoc Artifact" href="examples/protoc-artifact.html"/>
             <item name="Custom Protoc Plugins" href="examples/protoc-plugin.html"/>
         </menu>
 

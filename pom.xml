@@ -81,7 +81,7 @@
     </scm>
 
     <distributionManagement>
-        <downloadUrl>https://github.com/sergei-ivanov/maven-protoc-plugin/downloads</downloadUrl>
+        <downloadUrl>https://bintray.com/sergei-ivanov/maven/maven-protoc-plugin/view</downloadUrl>
         <site>
             <id>maven-protoc-plugin-site</id>
             <url>file:../maven-protoc-plugin-site</url>

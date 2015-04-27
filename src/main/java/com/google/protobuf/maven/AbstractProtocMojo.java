@@ -611,6 +611,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
      * Adds mojo-specific parameters to the protoc builder.
      *
      * @param protocBuilder the builder to be modified.
+     * @throws MojoExecutionException if parameters cannot be resolved or configured.
      */
     protected void addProtocBuilderParameters(final Protoc.Builder protocBuilder) throws MojoExecutionException {
         if (protocPlugins != null) {
