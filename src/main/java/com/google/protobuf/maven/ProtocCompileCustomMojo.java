@@ -1,5 +1,7 @@
 package com.google.protobuf.maven;
 
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -106,8 +108,20 @@ public final class ProtocCompileCustomMojo extends AbstractProtocCompileMojo {
     )
     private String pluginTool;
 
+    /**
+     * Plugin artifact specification, in {@code groupId:artifactId:version[:type[:classifier]]} format.
+     * When this parameter is set, the specified artifact will be resolved as a plugin executable.
+     *
+     * @since 0.4.1
+     */
+    @Parameter(
+            required = false,
+            property = "protocPluginArtifact"
+    )
+    private String pluginArtifact;
+
     @Override
-    protected void addProtocBuilderParameters(final Protoc.Builder protocBuilder) {
+    protected void addProtocBuilderParameters(final Protoc.Builder protocBuilder) throws MojoExecutionException {
         super.addProtocBuilderParameters(protocBuilder);
 
         protocBuilder.setNativePluginId(pluginId);
@@ -124,6 +138,11 @@ public final class ProtocCompileCustomMojo extends AbstractProtocCompileMojo {
                     pluginExecutable = tc.findTool(pluginTool);
                 }
             }
+        }
+        if (pluginExecutable == null && pluginArtifact != null) {
+            final Artifact artifact = createDependencyArtifact(pluginArtifact);
+            final File file = resolveBinaryArtifact(artifact);
+            pluginExecutable = file.getAbsolutePath();
         }
         if (pluginExecutable != null) {
             protocBuilder.setNativePluginExecutable(pluginExecutable);

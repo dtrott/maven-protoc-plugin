@@ -1,5 +1,6 @@
 package com.google.protobuf.maven;
 
+import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -34,7 +35,7 @@ public class ProtocTestCompileMojo extends AbstractProtocTestCompileMojo {
     private File outputDirectory;
 
     @Override
-    protected void addProtocBuilderParameters(final Protoc.Builder protocBuilder) {
+    protected void addProtocBuilderParameters(final Protoc.Builder protocBuilder) throws MojoExecutionException {
         super.addProtocBuilderParameters(protocBuilder);
         protocBuilder.setJavaOutputDirectory(getOutputDirectory());
         // We need to add project output directory to the protobuf import paths,

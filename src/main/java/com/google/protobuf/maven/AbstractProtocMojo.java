@@ -5,8 +5,13 @@ import com.google.common.collect.ImmutableSet;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.artifact.resolver.ArtifactResolutionException;
+import org.apache.maven.artifact.resolver.ArtifactResolutionRequest;
+import org.apache.maven.artifact.resolver.ArtifactResolutionResult;
 import org.apache.maven.artifact.resolver.ArtifactResolver;
 import org.apache.maven.artifact.resolver.ResolutionErrorHandler;
+import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
+import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -20,6 +25,7 @@ import org.apache.maven.toolchain.Toolchain;
 import org.apache.maven.toolchain.ToolchainManager;
 import org.apache.maven.toolchain.java.DefaultJavaToolChain;
 import org.codehaus.plexus.util.FileUtils;
+import org.codehaus.plexus.util.Os;
 import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.cli.CommandLineException;
 import org.codehaus.plexus.util.io.RawInputStreamFacade;
@@ -29,6 +35,7 @@ import java.io.File;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Set;
@@ -177,6 +184,18 @@ abstract class AbstractProtocMojo extends AbstractMojo {
             property = "protocExecutable"
     )
     private String protocExecutable;
+
+    /**
+     * Protobuf compiler artifact specification, in {@code groupId:artifactId:version[:type[:classifier]]} format.
+     * When this parameter is set, the plugin attempts to resolve the specified artifact as {@code protoc} executable.
+     *
+     * @since 0.4.1
+     */
+    @Parameter(
+            required = false,
+            property = "protocArtifact"
+    )
+    private String protocArtifact;
 
     /**
      * Additional source paths for {@code .proto} definitions.
@@ -440,6 +459,11 @@ abstract class AbstractProtocMojo extends AbstractMojo {
                             protocExecutable = tc.findTool("protoc"); //NOI18N
                         }
                     }
+                    if (protocExecutable == null && protocArtifact != null) {
+                        final Artifact artifact = createDependencyArtifact(protocArtifact);
+                        final File file = resolveBinaryArtifact(artifact);
+                        protocExecutable = file.getAbsolutePath();
+                    }
                     if (protocExecutable == null) {
                         // Try to fall back to 'protoc' in $PATH
                         getLog().warn("No 'protocExecutable' parameter is configured, using the default: 'protoc'");
@@ -588,7 +612,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
      *
      * @param protocBuilder the builder to be modified.
      */
-    protected void addProtocBuilderParameters(final Protoc.Builder protocBuilder) {
+    protected void addProtocBuilderParameters(final Protoc.Builder protocBuilder) throws MojoExecutionException {
         if (protocPlugins != null) {
             for (final ProtocPlugin plugin : protocPlugins) {
                 protocBuilder.addPlugin(plugin);
@@ -879,5 +903,113 @@ abstract class AbstractProtocMojo extends AbstractMojo {
             hexString.append(HEX_CHARS[(b & 0xF0) >> 4]).append(HEX_CHARS[b & 0x0F]);
         }
         return hexString.toString();
+    }
+
+    protected File resolveBinaryArtifact(final Artifact artifact) throws MojoExecutionException {
+        final ArtifactResolutionResult result;
+        try {
+            final ArtifactResolutionRequest request = new ArtifactResolutionRequest()
+                    .setArtifact(project.getArtifact())
+                    .setResolveRoot(false)
+                    .setResolveTransitively(false)
+                    .setArtifactDependencies(Collections.singleton(artifact))
+                    .setManagedVersionMap(Collections.emptyMap())
+                    .setLocalRepository(localRepository)
+                    .setRemoteRepositories(remoteRepositories)
+                    .setOffline(session.isOffline())
+                    .setForceUpdate(session.getRequest().isUpdateSnapshots())
+                    .setServers(session.getRequest().getServers())
+                    .setMirrors(session.getRequest().getMirrors())
+                    .setProxies(session.getRequest().getProxies());
+
+            result = repositorySystem.resolve(request);
+
+            resolutionErrorHandler.throwErrors(request, result);
+        } catch (final ArtifactResolutionException e) {
+            throw new MojoExecutionException(e.getMessage(), e);
+        }
+
+        final Set<Artifact> artifacts = result.getArtifacts();
+
+        if (artifacts == null || artifacts.isEmpty()) {
+            throw new MojoExecutionException("Unable to resolve plugin artifact");
+        }
+
+        final Artifact resolvedBinaryArtifact = artifacts.iterator().next();
+        if (getLog().isDebugEnabled()) {
+            getLog().debug("Resolved artifact: " + resolvedBinaryArtifact);
+        }
+
+        // Copy the file to the project build directory and make it executable
+        final File sourceFile = resolvedBinaryArtifact.getFile();
+        final String sourceFileName = sourceFile.getName();
+        final String targetFileName;
+        if (Os.isFamily(Os.FAMILY_WINDOWS) && !sourceFileName.endsWith(".exe")) {
+            targetFileName = sourceFileName + ".exe";
+        } else {
+            targetFileName = sourceFileName;
+        }
+        final File targetFile = new File(protocPluginDirectory, targetFileName);
+        try {
+            FileUtils.forceMkdir(protocPluginDirectory);
+        } catch (final IOException e) {
+            throw new MojoExecutionException("Unable to create directory " + protocPluginDirectory, e);
+        }
+        try {
+            FileUtils.copyFile(sourceFile, targetFile);
+        } catch (final IOException e) {
+            throw new MojoExecutionException("Unable to copy the file to " + protocPluginDirectory, e);
+        }
+        if (!Os.isFamily(Os.FAMILY_WINDOWS)) {
+            targetFile.setExecutable(true);
+        }
+
+        if (getLog().isDebugEnabled()) {
+            getLog().debug("Executable file: " + targetFile.getAbsolutePath());
+        }
+        return targetFile;
+    }
+
+    /**
+     * Creates a dependency artifact from a specification in
+     * {@code groupId:artifactId:version[:type[:classifier]]} format.
+     *
+     * @param artifactSpec artifact specification.
+     * @return artifact object instance.
+     * @throws MojoExecutionException if artifact specification cannot be parsed.
+     */
+    protected Artifact createDependencyArtifact(final String artifactSpec) throws MojoExecutionException {
+        final String[] parts = artifactSpec.split(":");
+        if (parts.length < 3 || parts.length > 5) {
+            throw new MojoExecutionException(
+                    "Invalid artifact specification format"
+                            + ", expected: groupId:artifactId:version[:type[:classifier]]"
+                            + ", actual: " + artifactSpec);
+        }
+        final String type = parts.length >= 4 ? parts[3] : "exe";
+        final String classifier = parts.length == 5 ? parts[4] : null;
+        return createDependencyArtifact(parts[0], parts[1], parts[2], type, classifier);
+    }
+
+    protected Artifact createDependencyArtifact(
+            final String groupId,
+            final String artifactId,
+            final String version,
+            final String type,
+            final String classifier
+    ) throws MojoExecutionException {
+        final VersionRange versionSpec;
+        try {
+            versionSpec = VersionRange.createFromVersionSpec(version);
+        } catch (final InvalidVersionSpecificationException e) {
+            throw new MojoExecutionException("Invalid version specification", e);
+        }
+        return artifactFactory.createDependencyArtifact(
+                groupId,
+                artifactId,
+                versionSpec,
+                type,
+                classifier,
+                Artifact.SCOPE_RUNTIME);
     }
 }
