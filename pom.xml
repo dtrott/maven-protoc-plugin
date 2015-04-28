@@ -81,6 +81,11 @@
 
     <distributionManagement>
         <downloadUrl>https://bintray.com/sergei-ivanov/maven/maven-protoc-plugin/view</downloadUrl>
+        <site>
+            <!-- release:perform checks this element to determine whether site-deploy goal needs to be run -->
+            <id>gh-pages</id>
+            <url>https://github.com/sergei-ivanov/maven-protoc-plugin/tree/gh-pages</url>
+        </site>
         <repository>
             <id>bintray</id>
             <name>Releases on Bintray</name>
