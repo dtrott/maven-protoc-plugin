@@ -7,6 +7,15 @@
 
     <body>
 
+        <release version="0.4.2" date="2015-04-29" description="Bug fixes">
+            <action dev="sergei-ivanov" type="fix" issue="34">
+                Made the order of imports predictable and matching the order of dependencies.
+            </action>
+            <action dev="sergei-ivanov" type="fix">
+                Fixed release configuration.
+            </action>
+        </release>
+
         <release version="0.4.1" date="2015-04-27" description="Support for native protoc plugins">
             <action dev="sergei-ivanov" type="add" issue="33">
                 Added an option to download protoc binary artifact from Maven repo.

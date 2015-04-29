@@ -82,7 +82,10 @@
     <distributionManagement>
         <downloadUrl>https://bintray.com/sergei-ivanov/maven/maven-protoc-plugin/view</downloadUrl>
         <site>
-            <!-- release:perform checks this element to determine whether site-deploy goal needs to be run -->
+            <!--
+                release:perform checks this element to determine whether site-deploy goal needs to be run.
+                The actual site deployment is done by GitHub site-maven-plugin, so the URL here is not used.
+            -->
             <id>gh-pages</id>
             <url>https://github.com/sergei-ivanov/maven-protoc-plugin/tree/gh-pages</url>
         </site>
@@ -153,13 +156,31 @@
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>versions-maven-plugin</artifactId>
-                    <version>2.1</version>
+                    <version>2.2</version>
                 </plugin>
 
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-jar-plugin</artifactId>
                     <version>2.6</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <version>2.4</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>2.10.3</version>
+                    <configuration>
+                        <minmemory>128m</minmemory>
+                        <maxmemory>512m</maxmemory>
+                        <detectLinks>true</detectLinks>
+                        <show>package</show>
+                    </configuration>
                 </plugin>
 
                 <plugin>
@@ -177,7 +198,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-release-plugin</artifactId>
-                    <version>2.5.1</version>
+                    <version>2.5.2</version>
                 </plugin>
 
                 <plugin>
@@ -341,9 +362,16 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
+                <!-- Override the default release settings from the Super-POM -->
                 <configuration>
-                    <!-- Enforce integration tests during release -->
+                    <!-- Suppress the default release profile from Maven Super-POM -->
+                    <useReleaseProfile>false</useReleaseProfile>
+                    <!-- Release profile that will be activated by release:perform -->
+                    <releaseProfiles>release</releaseProfiles>
+                    <!-- Enforce integration tests during both release:prepare and release:perform -->
                     <arguments>-P run-its</arguments>
+                    <!-- Not used in this project, but included for completeness -->
+                    <autoVersionSubmodules>true</autoVersionSubmodules>
                 </configuration>
             </plugin>
 
@@ -429,7 +457,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.10.2</version>
+                <version>2.10.3</version>
                 <configuration>
                     <minmemory>128m</minmemory>
                     <maxmemory>512m</maxmemory>
@@ -458,7 +486,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>versions-maven-plugin</artifactId>
-                <version>2.1</version>
+                <version>2.2</version>
                 <reportSets>
                     <reportSet>
                         <reports>
@@ -488,6 +516,11 @@
 
     <profiles>
         <profile>
+            <!--
+                A separate profile to optionally enable integration tests
+                (beware that they can be very time and resource-consuming).
+                It is forcibly activated when running the release goals.
+            -->
             <id>run-its</id>
             <build>
                 <plugins>
@@ -536,6 +569,41 @@
                     </plugin>
                 </plugins>
             </reporting>
+        </profile>
+
+        <profile>
+            <!--
+               A separate set of executions to be performed when running the release goals.
+           -->
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <goals>
+                                    <goal>jar-no-fork</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-deploy-plugin</artifactId>
+                        <configuration>
+                            <!--
+                                Explicitly disable updating the release metadata in the remote repository,
+                                because otherwise that messes BinTray repository layout up.
+                                BinTray itself takes care of metadata when the artifacts are promoted.
+                            -->
+                            <updateReleaseInfo>false</updateReleaseInfo>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
     </profiles>
 
