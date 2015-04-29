@@ -10,6 +10,7 @@ import org.codehaus.plexus.util.cli.CommandLineUtils.StringStreamConsumer;
 import org.codehaus.plexus.util.cli.Commandline;
 
 import java.io.File;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -17,7 +18,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newLinkedList;
-import static com.google.common.collect.Sets.newHashSet;
 
 /**
  * This class represents an invokable configuration of the {@code protoc} compiler.
@@ -349,9 +349,9 @@ final class Protoc {
          */
         Builder(final String executable) {
             this.executable = checkNotNull(executable, "executable");
-            this.protoFiles = newHashSet();
-            this.protopathElements = newHashSet();
-            this.plugins = newHashSet();
+            this.protoFiles = new LinkedHashSet<File>();
+            this.protopathElements = new LinkedHashSet<File>();
+            this.plugins = new LinkedHashSet<ProtocPlugin>();
         }
 
         /**

@@ -37,6 +37,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.jar.JarEntry;
@@ -45,7 +46,6 @@ import java.util.jar.JarFile;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
-import static com.google.common.collect.Sets.newHashSet;
 import static java.lang.Math.max;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
@@ -769,7 +769,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
      * @return A set of all dependency artifacts.
      */
     protected ImmutableSet<File> getDependencyArtifactFiles() {
-        final Set<File> dependencyArtifactFiles = newHashSet();
+        final Set<File> dependencyArtifactFiles = new LinkedHashSet<File>();
         for (final Artifact artifact : getDependencyArtifacts()) {
             dependencyArtifactFiles.add(artifact.getFile());
         }
@@ -799,7 +799,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
         if (temporaryProtoFileDirectory.exists()) {
             cleanDirectory(temporaryProtoFileDirectory);
         }
-        final Set<File> protoDirectories = newHashSet();
+        final Set<File> protoDirectories = new LinkedHashSet<File>();
         for (final File classpathElementFile : classpathElementFiles) {
             // for some reason under IAM, we receive poms as dependent files
             // I am excluding .xml rather than including .jar as there may be other extensions in use (sar, har, zip)
@@ -851,7 +851,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
 
     protected ImmutableSet<File> findProtoFilesInDirectories(final Iterable<File> directories) throws IOException {
         checkNotNull(directories);
-        final Set<File> protoFiles = newHashSet();
+        final Set<File> protoFiles = new LinkedHashSet<File>();
         for (final File directory : directories) {
             protoFiles.addAll(findProtoFilesInDirectory(directory));
         }
