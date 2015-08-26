@@ -52,6 +52,11 @@ final class Protoc {
      */
     private final File javaOutputDirectory;
 
+    /**
+     * A directory into which JavaNano source files will be generated.
+     */
+    private final File javaNanoOutputDirectory;
+
     private final ImmutableSet<ProtocPlugin> plugins;
 
     private final File pluginDirectory;
@@ -98,6 +103,7 @@ final class Protoc {
      * @param protoPath a set of directories in which to search for definition imports.
      * @param protoFiles a set of protobuf definitions to process.
      * @param javaOutputDirectory a directory into which Java source files will be generated.
+     * @param javaNanoOutputDirectory a directory into which JavaNano source files will be generated.
      * @param cppOutputDirectory a directory into which C++ source files will be generated.
      * @param pythonOutputDirectory a directory into which Python source files will be generated.
      * @param customOutputDirectory a directory into which a custom protoc plugin will generate files.
@@ -115,6 +121,7 @@ final class Protoc {
             final ImmutableSet<File> protoPath,
             final ImmutableSet<File> protoFiles,
             final File javaOutputDirectory,
+            final File javaNanoOutputDirectory,
             final File cppOutputDirectory,
             final File pythonOutputDirectory,
             final File customOutputDirectory,
@@ -129,6 +136,7 @@ final class Protoc {
         this.protoPathElements = checkNotNull(protoPath, "protoPath");
         this.protoFiles = checkNotNull(protoFiles, "protoFiles");
         this.javaOutputDirectory = javaOutputDirectory;
+        this.javaNanoOutputDirectory = javaNanoOutputDirectory;
         this.cppOutputDirectory = cppOutputDirectory;
         this.pythonOutputDirectory = pythonOutputDirectory;
         this.customOutputDirectory = customOutputDirectory;
@@ -178,6 +186,9 @@ final class Protoc {
                 command.add("--plugin=protoc-gen-" + plugin.getId() + '=' + pluginExecutable);
                 command.add("--" + plugin.getId() + "_out=" + javaOutputDirectory);
             }
+        }
+        if (javaNanoOutputDirectory != null) {
+            command.add("--javanano_out=" + javaNanoOutputDirectory);
         }
         if (cppOutputDirectory != null) {
             command.add("--cpp_out=" + cppOutputDirectory);
@@ -244,6 +255,10 @@ final class Protoc {
                 log.debug(LOG_PREFIX + ' ' + pluginDirectory);
             }
 
+            if (javaNanoOutputDirectory != null) {
+                log.debug(LOG_PREFIX + "Java Nano output directory:");
+                log.debug(LOG_PREFIX + ' ' + javaNanoOutputDirectory);
+            }
             if (cppOutputDirectory != null) {
                 log.debug(LOG_PREFIX + "C++ output directory:");
                 log.debug(LOG_PREFIX + ' ' + cppOutputDirectory);
@@ -323,6 +338,11 @@ final class Protoc {
         private File javaOutputDirectory;
 
         /**
+         * A directory into which Java Nano source files will be generated.
+         */
+        private File javaNanoOutputDirectory;
+
+        /**
          * A directory into which C++ source files will be generated.
          */
         private File cppOutputDirectory;
@@ -367,6 +387,22 @@ final class Protoc {
             checkArgument(
                     javaOutputDirectory.isDirectory(),
                     "'javaOutputDirectory' is not a directory: " + javaOutputDirectory);
+            return this;
+        }
+
+        /**
+         * Sets the directory into which JavaNano source files will be generated.
+         *
+         * @param javaNanoOutputDirectory a directory into which Java source files will be generated.
+         * @return this builder instance.
+         * @throws NullPointerException if {@code javaNanoOutputDirectory} is {@code null}.
+         * @throws IllegalArgumentException if {@code javaNanoOutputDirectory} is not a directory.
+         */
+        public Builder setJavaNanoOutputDirectory(final File javaNanoOutputDirectory) {
+            this.javaNanoOutputDirectory = checkNotNull(javaNanoOutputDirectory, "'javaNanoOutputDirectory' is null");
+            checkArgument(
+                  javaNanoOutputDirectory.isDirectory(),
+                  "'javaNanoOutputDirectory' is not a directory: " + javaNanoOutputDirectory);
             return this;
         }
 
@@ -461,6 +497,7 @@ final class Protoc {
             checkArgument(!nativePluginId.isEmpty(), "'nativePluginId' is empty");
             checkArgument(
                     !(nativePluginId.equals("java")
+                            || nativePluginId.equals("javanano")
                             || nativePluginId.equals("python")
                             || nativePluginId.equals("cpp")
                             || nativePluginId.equals("descriptor_set")),
@@ -552,11 +589,12 @@ final class Protoc {
         private void validateState() {
             checkState(!protoFiles.isEmpty());
             checkState(javaOutputDirectory != null
+                            || javaNanoOutputDirectory != null
                             || cppOutputDirectory != null
                             || pythonOutputDirectory != null
                             || customOutputDirectory != null,
                     "At least one of these properties must be set: " +
-                            "'javaOutputDirectory', 'cppOutputDirectory', " +
+                            "'javaOutputDirectory', 'javaNanoOutputDirectory', 'cppOutputDirectory', " +
                             "'pythonOutputDirectory' or 'customOutputDirectory'");
         }
 
@@ -573,6 +611,7 @@ final class Protoc {
                     ImmutableSet.copyOf(protopathElements),
                     ImmutableSet.copyOf(protoFiles),
                     javaOutputDirectory,
+                    javaNanoOutputDirectory,
                     cppOutputDirectory,
                     pythonOutputDirectory,
                     customOutputDirectory,

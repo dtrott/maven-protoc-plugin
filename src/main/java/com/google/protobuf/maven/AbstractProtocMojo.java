@@ -507,6 +507,10 @@ abstract class AbstractProtocMojo extends AbstractMojo {
                     }
                     if (exitStatus != 0) {
                         getLog().error("PROTOC FAILED: " + protoc.getError());
+                        for( File pf : protoFiles ) {
+                            buildContext.removeMessages( pf );
+                            buildContext.addMessage( pf, 0, 0, protoc.getError(), BuildContext.SEVERITY_ERROR, null);
+                        }
                         throw new MojoFailureException(
                                 "protoc did not exit cleanly. Review output for more information.");
                     } else if (StringUtils.isNotBlank(protoc.getError())) {
