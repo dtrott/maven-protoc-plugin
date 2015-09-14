@@ -11,6 +11,8 @@
                     <goal>compile-python</goal>
                     <goal>test-compile-python</goal>
                     <goal>testCompile</goal>
+                    <goal>compile-javanano</goal>
+                    <goal>test-compile-javanano</goal>
                 </goals>
             </pluginExecutionFilter>
             <action>
