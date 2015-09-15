@@ -188,7 +188,12 @@ final class Protoc {
             }
         }
         if (javaNanoOutputDirectory != null) {
-            command.add("--javanano_out=" + javaNanoOutputDirectory);
+            String outputOption = "--javanano_out=";
+            if (nativePluginParameter != null) {
+                outputOption += nativePluginParameter + ':';
+            }
+            outputOption += javaNanoOutputDirectory;
+            command.add(outputOption);
         }
         if (cppOutputDirectory != null) {
             command.add("--cpp_out=" + cppOutputDirectory);
@@ -401,8 +406,8 @@ final class Protoc {
         public Builder setJavaNanoOutputDirectory(final File javaNanoOutputDirectory) {
             this.javaNanoOutputDirectory = checkNotNull(javaNanoOutputDirectory, "'javaNanoOutputDirectory' is null");
             checkArgument(
-                  javaNanoOutputDirectory.isDirectory(),
-                  "'javaNanoOutputDirectory' is not a directory: " + javaNanoOutputDirectory);
+                    javaNanoOutputDirectory.isDirectory(),
+                    "'javaNanoOutputDirectory' is not a directory: " + javaNanoOutputDirectory);
             return this;
         }
 

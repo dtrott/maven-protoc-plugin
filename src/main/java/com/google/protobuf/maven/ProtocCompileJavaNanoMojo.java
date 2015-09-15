@@ -1,15 +1,15 @@
 package com.google.protobuf.maven;
 
-import java.io.File;
-
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 
+import java.io.File;
+
 /**
- * This mojo executes the {@code protoc} compiler for generating main Java sources
+ * This mojo executes the {@code protoc} compiler for generating main JavaNano sources
  * from protocol buffer definitions. It also searches dependency artifacts for
  * {@code .proto} files and includes them in the {@code proto_path} so that they can be
  * referenced. Finally, it adds the {@code .proto} files to the project as resources so
@@ -34,9 +34,22 @@ public final class ProtocCompileJavaNanoMojo extends AbstractProtocCompileMojo {
     )
     private File outputDirectory;
 
+    /**
+     * Optional comma-separated options to be passed to the JavaNano generator.
+     * <b>Cannot</b> contain colon (<tt>:</tt>) symbols.
+     */
+    @Parameter(
+            required = false,
+            property = "javaNanoOptions"
+    )
+    private String javaNanoOptions;
+
     @Override
     protected void addProtocBuilderParameters(final Protoc.Builder protocBuilder) throws MojoExecutionException {
         super.addProtocBuilderParameters(protocBuilder);
+        if (javaNanoOptions != null) {
+            protocBuilder.setNativePluginParameter(javaNanoOptions);
+        }
         protocBuilder.setJavaNanoOutputDirectory(getOutputDirectory());
     }
 
