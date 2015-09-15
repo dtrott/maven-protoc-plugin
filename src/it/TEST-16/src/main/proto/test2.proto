@@ -1,5 +1,3 @@
-package integration_test;
-
 option java_package = "test2";
 option java_outer_classname = "Test2Protos";
 option optimize_for = SPEED;

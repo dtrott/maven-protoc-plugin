@@ -1,5 +1,3 @@
-package integration_test;
-
 option java_package = "test";
 option java_outer_classname = "TestProtos";
 option parcelable_messages = true;
