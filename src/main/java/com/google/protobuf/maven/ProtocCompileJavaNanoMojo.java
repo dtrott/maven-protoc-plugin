@@ -35,7 +35,7 @@ public final class ProtocCompileJavaNanoMojo extends AbstractProtocCompileMojo {
     private File outputDirectory;
 
     /**
-     * Optional comma-separated options to be passed to the JavaNano generator.
+     * Additional comma-separated options to be passed to the JavaNano generator.
      * <b>Cannot</b> contain colon (<tt>:</tt>) symbols.
      */
     @Parameter(

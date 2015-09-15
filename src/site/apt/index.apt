@@ -31,9 +31,6 @@ Maven Protoc Plugin
   * {{{./compile-cpp-mojo.html}protoc:compile-cpp}}
     compiles main <<<.proto>>> definitions into C++ files and attaches the generated C++ sources to the project.
 
-  * {{{./compile-custom-mojo.html}protoc:compile-custom}}
-    compiles main <<<.proto>>> definitions using a custom <<<protoc>>> plugin.
-
   * {{{./test-compile-cpp-mojo.html}protoc:test-compile-cpp}}
     compiles test <<<.proto>>> definitions into C++ files and attaches the generated C++ test sources to the project.
 
@@ -42,6 +39,17 @@ Maven Protoc Plugin
 
   * {{{./test-compile-python-mojo.html}protoc:test-compile-python}}
     compiles test <<<.proto>>> definitions into Python files and attaches the generated Python test sources to the project.
+
+  * {{{./compile-javanano-mojo.html}protoc:compile-javanano}}
+    uses JavaNano generator (requires protobuf compiler version 3 or above) to
+    compile main <<<.proto>>> definitions into Java files and attaches the generated Java sources to the project.
+
+  * {{{./test-compile-javanano-mojo.html}protoc:test-compile-javanano}}
+    uses JavaNano generator (requires protobuf compiler version 3 or above) to
+    compile test <<<.proto>>> definitions into Java files and attaches the generated Java test sources to the project.
+
+  * {{{./compile-custom-mojo.html}protoc:compile-custom}}
+    compiles main <<<.proto>>> definitions using a custom <<<protoc>>> plugin.
 
   * {{{./test-compile-custom-mojo.html}protoc:test-compile-custom}}
     compiles test <<<.proto>>> definitions using a custom <<<protoc>>> plugin.

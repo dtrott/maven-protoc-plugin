@@ -7,6 +7,12 @@
 
     <body>
 
+        <release version="0.4.3" date="Pending" description="Support for JavaNano, minor changes">
+            <action dev="sergei-ivanov" type="add" issue="38" due-to="Marek Kedzierski (kedzie)">
+                Added support for JavaNano generator (requires protobuf compiler version 3 or above).
+            </action>
+        </release>
+
         <release version="0.4.2" date="2015-04-29" description="Bug fixes">
             <action dev="sergei-ivanov" type="fix" issue="34">
                 Made the order of imports predictable and matching the order of dependencies.
