@@ -33,6 +33,7 @@ public final class ProtocCompileCustomMojo extends AbstractProtocCompileMojo {
      * <strong>Cannot</strong> be one of the built-in protoc plugins:
      * <ul>
      *     <li>java</li>
+     *     <li>javanano</li>
      *     <li>cpp</li>
      *     <li>python</li>
      *     <li>descriptor-set</li>
