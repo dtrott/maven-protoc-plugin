@@ -17,6 +17,10 @@
 
     <name>Integration Test 26</name>
 
+    <properties>
+        <protobufVersion>3.0.0-alpha-3</protobufVersion>
+    </properties>
+
     <build>
         <extensions>
             <extension>
@@ -37,8 +41,9 @@
                             <goal>compile-javanano</goal>
                         </goals>
                         <configuration>
-                            <protocArtifact>com.google.protobuf:protoc:2.6.1:exe:${os.detected.classifier}
+                            <protocArtifact>com.google.protobuf:protoc:${protobufVersion}:exe:${os.detected.classifier}
                             </protocArtifact>
+                            <javaNanoOptions>parcelable_messages=true</javaNanoOptions>
                         </configuration>
                     </execution>
                 </executions>
