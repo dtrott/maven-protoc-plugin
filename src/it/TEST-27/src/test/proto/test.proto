@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+option java_package = "test";
+option java_outer_classname = "TestProtos";
+
+message TestMessage {
+}
