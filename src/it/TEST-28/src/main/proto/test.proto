@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+option java_package = "test";
+option java_outer_classname = "TestProtos";
+option optimize_for = SPEED;
+
+message TestMessage {
+  message NestedMessage {
+    int32 zz = 1;
+  }
+
+  enum NestedEnum {
+    FOO = 0;
+    BAR = 1;
+    BAZ = 2;
+  }
+
+  // Singular
+  int32 xx = 1;
+  repeated NestedEnum yy = 2;
+}
+
+service MyService {
+  rpc MyMethod(TestMessage) returns(TestMessage) {}
+}
