@@ -7,7 +7,7 @@
 
     <body>
 
-        <release version="0.4.3" date="Pending" description="Support for JavaNano, minor changes">
+        <release version="0.4.3" date="2015-09-20" description="Support for JavaNano, minor changes">
             <action dev="sergei-ivanov" type="add" issue="38" due-to="Marek Kedzierski (kedzie)">
                 Added support for JavaNano generator (requires protobuf compiler version 3 or above).
             </action>
