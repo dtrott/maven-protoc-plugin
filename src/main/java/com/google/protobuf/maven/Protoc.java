@@ -86,6 +86,8 @@ final class Protoc {
 
     private final boolean includeImportsInDescriptorSet;
 
+    private final boolean includeSourceInfoInDescriptorSet;
+
     /**
      * A buffer to consume standard output from the {@code protoc} executable.
      */
@@ -98,8 +100,7 @@ final class Protoc {
 
     /**
      * Constructs a new instance. This should only be used by the {@link Builder}.
-     *
-     * @param executable path to the {@code protoc} executable.
+     *  @param executable path to the {@code protoc} executable.
      * @param protoPath a set of directories in which to search for definition imports.
      * @param protoFiles a set of protobuf definitions to process.
      * @param javaOutputDirectory a directory into which Java source files will be generated.
@@ -108,8 +109,9 @@ final class Protoc {
      * @param pythonOutputDirectory a directory into which Python source files will be generated.
      * @param customOutputDirectory a directory into which a custom protoc plugin will generate files.
      * @param descriptorSetFile The directory into which a descriptor set will be generated;
-     * if {@code null}, no descriptor set will be written
+* if {@code null}, no descriptor set will be written
      * @param includeImportsInDescriptorSet If {@code true}, dependencies will be included in the descriptor set.
+     * @param includeSourceInfoInDescriptorSet
      * @param plugins a set of java protoc plugins.
      * @param pluginDirectory location of protoc plugins to be added to system path.
      * @param nativePluginId a unique id of a native plugin.
@@ -127,6 +129,7 @@ final class Protoc {
             final File customOutputDirectory,
             final File descriptorSetFile,
             final boolean includeImportsInDescriptorSet,
+            final boolean includeSourceInfoInDescriptorSet, 
             final ImmutableSet<ProtocPlugin> plugins,
             final File pluginDirectory,
             final String nativePluginId,
@@ -142,6 +145,7 @@ final class Protoc {
         this.customOutputDirectory = customOutputDirectory;
         this.descriptorSetFile = descriptorSetFile;
         this.includeImportsInDescriptorSet = includeImportsInDescriptorSet;
+        this.includeSourceInfoInDescriptorSet = includeSourceInfoInDescriptorSet;
         this.plugins = plugins;
         this.pluginDirectory = pluginDirectory;
         this.nativePluginId = nativePluginId;
@@ -220,6 +224,9 @@ final class Protoc {
             command.add("--descriptor_set_out=" + descriptorSetFile);
             if (includeImportsInDescriptorSet) {
                 command.add("--include_imports");
+            }
+            if (includeSourceInfoInDescriptorSet) {
+                command.add("--include_source_info");
             }
         }
         return ImmutableList.copyOf(command);
@@ -365,6 +372,8 @@ final class Protoc {
         private File descriptorSetFile;
 
         private boolean includeImportsInDescriptorSet;
+        
+        private boolean includeSourceInfoInDescriptorSet;
 
         /**
          * Constructs a new builder.
@@ -521,11 +530,14 @@ final class Protoc {
             this.nativePluginParameter = nativePluginParameter;
         }
 
-        public Builder withDescriptorSetFile(final File descriptorSetFile, final boolean includeImports) {
+        public Builder withDescriptorSetFile(final File descriptorSetFile, 
+                                             final boolean includeImports, 
+                                             final boolean includeSourceInfoInDescriptorSet) {
             checkNotNull(descriptorSetFile, "descriptorSetFile");
             checkArgument(descriptorSetFile.getParentFile().isDirectory());
             this.descriptorSetFile = descriptorSetFile;
             this.includeImportsInDescriptorSet = includeImports;
+            this.includeSourceInfoInDescriptorSet = includeSourceInfoInDescriptorSet;
             return this;
         }
 
@@ -622,6 +634,7 @@ final class Protoc {
                     customOutputDirectory,
                     descriptorSetFile,
                     includeImportsInDescriptorSet,
+                    includeSourceInfoInDescriptorSet,
                     ImmutableSet.copyOf(plugins),
                     pluginDirectory,
                     nativePluginId,

@@ -319,6 +319,18 @@ abstract class AbstractProtocMojo extends AbstractMojo {
             defaultValue = "false"
     )
     protected boolean includeDependenciesInDescriptorSet;
+    
+    /**
+     * If {@code true} and {@code writeDescriptorSet} has been set, do not strip SourceCodeInfo 
+     * from the FileDescriptorProto. This results in vastly larger descriptors that include information 
+     * about the original location of each decl in the source file as well as surrounding comments.
+     * @since 0.3.1
+     */
+    @Parameter(
+            required = false,
+            defaultValue = "false"
+    )
+    protected boolean includeSourceInfoInDescriptorSet;
 
     /**
      * Specifies one of more custom protoc plugins, written in Java
@@ -629,7 +641,9 @@ abstract class AbstractProtocMojo extends AbstractMojo {
             final File descriptorSetFile = new File(getDescriptorSetOutputDirectory(), descriptorSetFileName);
             getLog().info("Will write descriptor set:");
             getLog().info(" " + descriptorSetFile.getAbsolutePath());
-            protocBuilder.withDescriptorSetFile(descriptorSetFile, includeDependenciesInDescriptorSet);
+                protocBuilder.withDescriptorSetFile(descriptorSetFile, 
+                        includeDependenciesInDescriptorSet, 
+                        includeSourceInfoInDescriptorSet);
         }
     }
 
