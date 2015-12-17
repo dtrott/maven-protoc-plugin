@@ -111,7 +111,8 @@ final class Protoc {
      * @param descriptorSetFile The directory into which a descriptor set will be generated;
 * if {@code null}, no descriptor set will be written
      * @param includeImportsInDescriptorSet If {@code true}, dependencies will be included in the descriptor set.
-     * @param includeSourceInfoInDescriptorSet
+     * @param includeSourceInfoInDescriptorSet If {@code true}, source code information will be included 
+     *                                         in the descriptor set.
      * @param plugins a set of java protoc plugins.
      * @param pluginDirectory location of protoc plugins to be added to system path.
      * @param nativePluginId a unique id of a native plugin.
