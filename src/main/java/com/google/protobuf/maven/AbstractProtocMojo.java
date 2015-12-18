@@ -321,6 +321,18 @@ abstract class AbstractProtocMojo extends AbstractMojo {
     protected boolean includeDependenciesInDescriptorSet;
 
     /**
+     * If {@code true} and {@code writeDescriptorSet} has been set, do not strip SourceCodeInfo 
+     * from the FileDescriptorProto. This results in vastly larger descriptors that include information 
+     * about the original location of each decl in the source file as well as surrounding comments.
+     * @since 0.4.4
+     */
+    @Parameter(
+            required = false,
+            defaultValue = "false"
+    )
+    protected boolean includeSourceInfoInDescriptorSet;
+
+    /**
      * Specifies one of more custom protoc plugins, written in Java
      * and available as Maven artifacts. An executable plugin will be created
      * at execution time. On UNIX the executable is a shell script and on
@@ -507,9 +519,9 @@ abstract class AbstractProtocMojo extends AbstractMojo {
                     }
                     if (exitStatus != 0) {
                         getLog().error("PROTOC FAILED: " + protoc.getError());
-                        for( File pf : protoFiles ) {
-                            buildContext.removeMessages( pf );
-                            buildContext.addMessage( pf, 0, 0, protoc.getError(), BuildContext.SEVERITY_ERROR, null);
+                        for (File pf : protoFiles) {
+                            buildContext.removeMessages(pf);
+                            buildContext.addMessage(pf, 0, 0, protoc.getError(), BuildContext.SEVERITY_ERROR, null);
                         }
                         throw new MojoFailureException(
                                 "protoc did not exit cleanly. Review output for more information.");
@@ -629,7 +641,10 @@ abstract class AbstractProtocMojo extends AbstractMojo {
             final File descriptorSetFile = new File(getDescriptorSetOutputDirectory(), descriptorSetFileName);
             getLog().info("Will write descriptor set:");
             getLog().info(" " + descriptorSetFile.getAbsolutePath());
-            protocBuilder.withDescriptorSetFile(descriptorSetFile, includeDependenciesInDescriptorSet);
+            protocBuilder.withDescriptorSetFile(
+                    descriptorSetFile,
+                    includeDependenciesInDescriptorSet,
+                    includeSourceInfoInDescriptorSet);
         }
     }
 
