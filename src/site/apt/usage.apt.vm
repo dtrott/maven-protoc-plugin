@@ -202,6 +202,10 @@ mvn toolchains:toolchain protoc:test-compile
   * <<<includeDependenciesInDescriptorSet>>> - if <<<true>>>, all imports are included in the descriptor set; default
     is <<<false>>>.
 
+  * <<<includeSourceInfoInDescriptorSet>>> - if <<<true>>>, source code information will be included in the
+    descriptor set; default is <<<false>>>. Please note that the size of the description set may increase significantly
+    if this option is enabled.
+
   * <<<descriptorSetFileName>>> - the file name of the descriptor set; default is the artifact name with
     the <<<.protobin>>> extension.
 

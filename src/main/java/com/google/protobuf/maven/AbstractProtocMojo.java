@@ -324,6 +324,7 @@ abstract class AbstractProtocMojo extends AbstractMojo {
      * If {@code true} and {@code writeDescriptorSet} has been set, do not strip SourceCodeInfo 
      * from the FileDescriptorProto. This results in vastly larger descriptors that include information 
      * about the original location of each decl in the source file as well as surrounding comments.
+     *
      * @since 0.4.4
      */
     @Parameter(
