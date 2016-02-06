@@ -15,20 +15,6 @@
         <connection>scm:git:git://github.com/dtrott/maven-protoc-plugin.git</connection>
     </scm>
 
-    <distributionManagement>
-        <downloadUrl>http://maven.davidtrott.com/repository</downloadUrl>
-        <repository>
-            <id>dtrott-public</id>
-            <name>David Trott's Public Repository</name>
-            <url>file:///repositories/maven.davidtrott.com/release</url>
-        </repository>
-        <snapshotRepository>
-            <id>dtrott-public</id>
-            <name>David Trott's Public Snapshot Repository</name>
-            <url>file:///repositories/maven.davidtrott.com/snapshot</url>
-        </snapshotRepository>
-    </distributionManagement>
-
     <build>
         <plugins>
             <plugin>
