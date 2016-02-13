@@ -84,3 +84,16 @@ this can be overriden by setting:
 If you build on NFS you may also need the following setting:
                   <staleMillis>10000</staleMillis>
 
+Protoc plugins can be added in the configuration by identifying the plugin prefix,
+output directory, the command protoc should invoke, and whether the output directory
+should be treated as a Maven source directory.
+
+        <plugins>
+            <plugin>
+                <name>lang</name>
+                <outputDirectory>${project.build.directory}/generated-sources/lang</outputDirectory>
+                <pluginCommand>protoc-gen-lang</pluginCommand> <!-- optional -->
+                <projectSource>true</projectSource>  <!-- optional, default: true -->
+            </plugin>
+        </plugins>
+

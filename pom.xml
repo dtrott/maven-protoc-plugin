@@ -1,11 +1,11 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.google.protobuf.tools</groupId>
+    <groupId>org.totalgrid.maven</groupId>
     <artifactId>maven-protoc-plugin</artifactId>
     <packaging>maven-plugin</packaging>
     <name>Maven Protoc Plugin</name>
-    <version>0.1.11-SNAPSHOT</version>
+    <version>0.1.12-SNAPSHOT</version>
 
     <prerequisites>
         <maven>2.0.6</maven>
@@ -14,20 +14,6 @@
     <scm>
         <connection>scm:git:git://github.com/dtrott/maven-protoc-plugin.git</connection>
     </scm>
-
-    <distributionManagement>
-        <downloadUrl>http://maven.davidtrott.com/repository</downloadUrl>
-        <repository>
-            <id>dtrott-public</id>
-            <name>David Trott's Public Repository</name>
-            <url>file:///repositories/maven.davidtrott.com/release</url>
-        </repository>
-        <snapshotRepository>
-            <id>dtrott-public</id>
-            <name>David Trott's Public Snapshot Repository</name>
-            <url>file:///repositories/maven.davidtrott.com/snapshot</url>
-        </snapshotRepository>
-    </distributionManagement>
 
     <build>
         <plugins>

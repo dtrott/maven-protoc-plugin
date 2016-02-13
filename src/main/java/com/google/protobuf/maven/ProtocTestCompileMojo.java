@@ -37,6 +37,11 @@ public final class ProtocTestCompileMojo extends AbstractProtocMojo {
     }
 
     @Override
+    protected void attachPluginFiles(File pluginOutputDirectory) {
+        project.addTestCompileSourceRoot(pluginOutputDirectory.getAbsolutePath());
+    }
+
+    @Override
     protected List<Artifact> getDependencyArtifacts() {
         // TODO(gak): maven-project needs generics
         @SuppressWarnings("unchecked")

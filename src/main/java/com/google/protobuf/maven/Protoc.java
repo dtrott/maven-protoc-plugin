@@ -30,6 +30,7 @@ final class Protoc {
     private final ImmutableSet<File> protoPathElements;
     private final ImmutableSet<File> protoFiles;
     private final File javaOutputDirectory;
+    private final Set<PluginDefinition> plugins;
     private final CommandLineUtils.StringStreamConsumer output;
     private final CommandLineUtils.StringStreamConsumer error;
 
@@ -43,11 +44,13 @@ final class Protoc {
      *                            will be generated.
      */
     private Protoc(String executable, ImmutableSet<File> protoPath,
-                   ImmutableSet<File> protoFiles, File javaOutputDirectory) {
+                   ImmutableSet<File> protoFiles, File javaOutputDirectory,
+                   Set<PluginDefinition> plugins) {
         this.executable = checkNotNull(executable, "executable");
         this.protoPathElements = checkNotNull(protoPath, "protoPath");
         this.protoFiles = checkNotNull(protoFiles, "protoFiles");
         this.javaOutputDirectory = checkNotNull(javaOutputDirectory, "javaOutputDirectory");
+        this.plugins = checkNotNull(plugins, "plugins");
         this.error = new CommandLineUtils.StringStreamConsumer();
         this.output = new CommandLineUtils.StringStreamConsumer();
     }
@@ -80,6 +83,12 @@ final class Protoc {
             command.add("--proto_path=" + protoPathElement);
         }
         command.add("--java_out=" + javaOutputDirectory);
+        for (PluginDefinition plugin : plugins) {
+            command.add("--" + plugin.getName() + "_out=" + plugin.getOutputDirectory());
+            if (plugin.getPluginCommand() != null) {
+                command.add("--plugin=protoc-gen-" + plugin.getName() + "=" + plugin.getPluginCommand());
+            }
+        }
         for (File protoFile : protoFiles) {
             command.add(protoFile.toString());
         }
@@ -110,6 +119,7 @@ final class Protoc {
         private final File javaOutputDirectory;
         private Set<File> protopathElements;
         private Set<File> protoFiles;
+        private Set<PluginDefinition> plugins;
 
         /**
          * Constructs a new builder. The two parameters are present as they are
@@ -128,6 +138,7 @@ final class Protoc {
             checkArgument(javaOutputDirectory.isDirectory());
             this.protoFiles = newHashSet();
             this.protopathElements = newHashSet();
+            this.plugins = newHashSet();
         }
 
         /**
@@ -204,13 +215,26 @@ final class Protoc {
         }
 
         /**
+         * Add plugin definitions.
+         *
+         * @param plugins
+         * @return The builder.
+         * @throws NullPointerException     If {@code plugins} is {@code null}.
+         */
+        public Builder addPluginDefinitions(Set<PluginDefinition> plugins) {
+            checkNotNull(plugins);
+            this.plugins.addAll(plugins);
+            return this;
+        }
+
+        /**
          * @return A configured {@link Protoc} instance.
          * @throws IllegalStateException If no proto files have been added.
          */
         public Protoc build() {
             checkState(!protoFiles.isEmpty());
             return new Protoc(executable, ImmutableSet.copyOf(protopathElements),
-                    ImmutableSet.copyOf(protoFiles), javaOutputDirectory);
+                    ImmutableSet.copyOf(protoFiles), javaOutputDirectory, plugins);
         }
     }
 }

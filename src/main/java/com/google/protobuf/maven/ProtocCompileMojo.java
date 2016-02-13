@@ -60,4 +60,9 @@ public final class ProtocCompileMojo extends AbstractProtocMojo {
         projectHelper.addResource(project, protoSourceRoot.getAbsolutePath(),
                 ImmutableList.of("**/*.proto"), ImmutableList.of());
     }
+
+    @Override
+    protected void attachPluginFiles(File pluginOutputDirectory) {
+        project.addCompileSourceRoot(pluginOutputDirectory.getAbsolutePath());
+    }
 }
