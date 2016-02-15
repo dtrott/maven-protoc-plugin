@@ -7,6 +7,12 @@
 
     <body>
 
+        <release version="0.5.0" date="2016-02-15" description="Artifact relocation">
+            <action dev="sergei-ivanov" type="update">
+                Plugin relocated to https://www.xolstice.org/protobuf-maven-plugin/
+            </action>
+        </release>
+
         <release version="0.4.4" date="2015-12-21" description="Additional protoc options">
             <action dev="sergei-ivanov" type="add" issue="39" due-to="Alexander Torstling (atorstling)">
                 Added support for including source info in descriptor sets.

@@ -6,24 +6,10 @@
 
     <body>
 
-        <links>
-            <item name="Google Protocol Buffers" href="http://code.google.com/p/protobuf/"/>
-        </links>
-
         <menu name="Overview">
             <item name="Introduction" href="index.html"/>
-            <item name="Goals" href="plugin-info.html"/>
-            <item name="Usage" href="usage.html"/>
-            <item name="FAQ" href="faq.html"/>
+            <item name="Changes" href="changes-report.html"/>
         </menu>
 
-        <menu name="Examples">
-            <!-- TODO -->
-            <item name="Protobuf Toolchain" href="examples/protobuf-toolchain.html"/>
-            <item name="Protoc Artifact" href="examples/protoc-artifact.html"/>
-            <item name="Custom Protoc Plugins" href="examples/protoc-plugin.html"/>
-        </menu>
-
-        <menu ref="reports"/>
     </body>
 </project>
