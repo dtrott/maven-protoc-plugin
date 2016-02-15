@@ -6,7 +6,7 @@
     <artifactId>maven-protoc-plugin</artifactId>
     <packaging>pom</packaging>
     <name>Maven Protoc Plugin</name>
-    <version>0.5.0</version>
+    <version>0.5.1-SNAPSHOT</version>
     <url>https://github.com/sergei-ivanov/maven-protoc-plugin</url>
 
     <properties>
@@ -17,7 +17,7 @@
         <url>https://github.com/sergei-ivanov/maven-protoc-plugin</url>
         <connection>scm:git:git://github.com/sergei-ivanov/maven-protoc-plugin.git</connection>
         <developerConnection>scm:git:ssh://git@github.com/sergei-ivanov/maven-protoc-plugin.git</developerConnection>
-        <tag>maven-protoc-plugin-0.5.0</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <distributionManagement>
